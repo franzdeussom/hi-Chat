@@ -1,0 +1,89 @@
+
+  .contener{
+    width: 100%;
+    height: 90%;
+    border-radius: 20px;
+    .sending{
+        float: right;
+        width: fit-content;
+        max-width: 250px;
+        height: fit-content;
+        min-height: 30px;
+        text-align: center; 
+        padding-top: 6px;
+        background-color: #39b912;
+        color: #fff;
+        border-radius: 50px;
+        .msg{
+          padding-left: 5px;
+          padding-right: 5px;
+          margin-bottom: 2px;
+          margin-top: 3px;
+          margin-right: 5px;
+          margin-left: 5px;
+        }
+        .date{
+          font-size: 8px;
+          margin-right: 14%;
+          margin-bottom: 3px;
+          float: right;
+        }
+        .confirmation{
+          font-size: 15px;
+          color: rgb(201, 198, 39);
+        }
+    }
+    .received{
+      float: left;
+      width: fit-content;
+      text-align: center;
+      max-width: 250px;
+      min-height: 30px;
+      padding-top: 6px;
+      height: fit-content;
+      background-color: #4a5353;
+      color: #fff;
+      border-radius: 50px;
+        .msg{
+          padding-left: 5px;
+          padding-right: 5px;
+          margin-bottom: 2px;
+          margin-top: 3px;
+          margin-right: 5px;
+          margin-left: 5px;
+        }
+      .date{
+        font-size: 8px;
+        margin-left: 14%;
+        margin-bottom: 3px;
+        float: left;
+      }
+  }
+
+  .field{
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 50px;
+    display: flex;
+    z-index: 1;
+    background-color: #373737;
+    .custom-textarea {
+        background-color: #373737;
+        color: #fff;
+        width: 80%;
+        
+        padding: 30px;
+        border: none;
+        
+    }
+    .send{
+      margin-top: 10px;
+      margin-bottom: 10px;
+      width: 15%;
+      margin-left: 10px;
+      font-size: 30px;
+    }
+  }
+  }
+

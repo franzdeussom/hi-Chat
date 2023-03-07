@@ -1,0 +1,79 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Recherche
+    </ion-title>
+  </ion-toolbar>
+  <ion-searchbar color="medium" placeholder="search" [(ngModel)]="value" (ionChange)="simpleSearch()">
+  </ion-searchbar>
+  <div *ngIf="!isNotFound || !isNotFoundOption">
+      <ion-list>
+        <div *ngFor="let item of GlobalSearchResult" >
+            <ion-item (click)="goToProfil(item)">
+              <ion-label> {{ item.nom }} {{ item.prenom }} </ion-label> 
+            </ion-item> 
+        </div>
+
+      </ion-list>
+  </div>
+</ion-header>
+
+<div class="resultSearch">
+
+</div>
+<ion-content [fullscreen]="true">
+  <div *ngIf="isNotFound">
+    <div id="container">
+      <strong><h3>Aucun Utilisateur pour ce nom <em>" {{ value }} " </em></h3></strong>
+    </div>
+  </div>
+  <div *ngIf="isNotFoundOption">
+    <div id="container">
+      <strong><h3>Aucun Utilisateur trouvé pour ces parametres ! </h3></strong>
+    </div>
+  </div>
+
+  <div class="ion-margin" *ngIf="!disableSpaceOption" >
+      <div>
+          <table style="width: 100%;">
+            <tr>
+              <th width="50%">Avec Option ? </th>
+              <th width="40%" align="right"> <ion-checkbox (click)="enableSearchWithOption()"></ion-checkbox> </th>
+            </tr>
+          </table>
+      </div>
+      <div *ngIf="isWithOption">
+
+        <form (submit)="launchSearchWithOption()">
+          <ion-list class="ion-padding">
+            <ion-item class="ion-margin">
+              <ion-label position="floating">Age ?</ion-label>
+              <ion-input type="number" class="input" [(ngModel)]="optionSearch.age" name="age" max="90"></ion-input>
+            </ion-item>
+        
+            <ion-item class="ion-margin">
+              <ion-label position="floating">Sexe ?</ion-label>
+              <ion-input type="text" class="input" [(ngModel)]="optionSearch.sexe" maxlength="1" name="sexe"></ion-input> 
+            </ion-item>
+        
+            <ion-item class="ion-margin">
+              <ion-label position="floating">Pays ?</ion-label>
+              <ion-input type="text" class="input" [(ngModel)]="optionSearch.pays" name="pays" id="ville"></ion-input>
+            </ion-item>
+
+            <ion-item class="ion-margin">
+              <ion-label position="floating">Ville ?</ion-label>
+              <ion-input type="text" class="input" [(ngModel)]="optionSearch.ville" name="ville" id="ville"></ion-input>
+            </ion-item>
+
+            <ion-row class="ion-padding">
+              <ion-col>
+                <ion-button type="submit" expand="block" color="tertiary" id="search">Rechercher</ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-list>
+        </form>
+      </div>
+  </div>
+
+</ion-content>

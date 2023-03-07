@@ -1,0 +1,48 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Connexion</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="ion-margin">
+    <span style="color:red;"> {{ errorMessage }} </span>
+  </div>
+  <form (submit)="doLogin()">
+    
+  <ion-list class="ion-padding">
+
+    <div style="text-align: center;" class="ion-margin">
+      <img src="../../../assets/icon/appIcon.png" width="200px" height="150px" class="appIcon">
+      <span style="margin-top: 20px;"><h2>Hi-Chat</h2></span>
+    </div>
+
+    <ion-item class="ion-margin">
+      <ion-label position="floating">Nom :</ion-label>
+      <ion-input type="string" [(ngModel)]="account.login" name="username"></ion-input>
+    </ion-item>
+
+    <ion-item class="ion-margin">
+      <ion-label position="floating">Password :</ion-label>
+      <ion-input type="password" [(ngModel)]="account.mdp" name="password"></ion-input>
+    </ion-item>
+
+    <ion-item class="ion-margin">
+      <ion-label>Garder ma session Ouverte :</ion-label>
+      <ion-toggle name="rememberMe" (click)="rememberUser()"></ion-toggle>
+    </ion-item>
+
+    <ion-row class="ion-padding">
+      <ion-col>
+        <ion-button expand="block" type="submit" color="primary" id="login">Se Connecter</ion-button>
+      </ion-col>
+    </ion-row>
+    <span style="margin-left:50%;">Ou</span>
+    <ion-row class="ion-padding">
+      <ion-col>
+        <ion-button expand="block" type="reset" (click)="goSignup()" color="tertiary" id="login">Creer un Compte HiChat</ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-list>
+</form>
+</ion-content>

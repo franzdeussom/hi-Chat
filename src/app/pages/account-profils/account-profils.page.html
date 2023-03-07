@@ -1,0 +1,46 @@
+<ion-header>
+  <ion-toolbar>
+    <div *ngIf="actived" ><ion-back-button slot="start"></ion-back-button></div>
+    <ion-title>Mon Profils</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="header">
+    <h2>{{ dataUser.nom }} {{ dataUser.prenom }} </h2>
+
+    <div class="space-between">
+
+      <div class="followings">
+        <ion-badge color="primary" mode="ios">42M</ion-badge>
+        <p>Abonnés</p>
+      </div> 
+
+      <div class="img-box">
+        <span *ngIf="dataUser.profilImgUrl != null" ><img src="/assets/icon/appIcon.png"></span>
+        <span *ngIf="dataUser.profilImgUrl == null" ><img src="/assets/icon/avatar.svg"></span>
+      </div>
+
+      <div class="followings">
+        <ion-badge color="primary" mode="ios">142</ion-badge>
+        <p>Abonnement</p>
+      </div>
+
+    </div>
+
+   <ion-row class="ion-padding">
+    <ion-col>
+      <ion-button color="primary" expand="block">
+       <span> Modifier mon profil </span>
+      </ion-button>
+    </ion-col>
+   </ion-row>
+  </div>
+
+
+  <ion-row class="ion-padding">
+    <ion-col>
+      <ion-button expand="block" type="reset" (click)="logout()" color="danger" id="login">Se Deconnecter</ion-button>
+    </ion-col>
+  </ion-row>
+</ion-content>

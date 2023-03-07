@@ -1,0 +1,54 @@
+<ion-header>
+  <ion-toolbar>
+  <ion-back-button slot="start" (click)="renitListMessage()"></ion-back-button>
+    <div (click)="goToProfil()">
+      <ion-title>{{ receivData.nom }} {{ receivData.prenom }} </ion-title>
+    </div>
+    <ion-buttons slot="end" (click)="notAvailable()">
+      <div style="font-size: 25px; margin-right: 20px;">
+        <ion-icon name="videocam"></ion-icon> 
+      </div>
+      <div style="font-size: 25px; margin-left: 10px;" >
+         <ion-icon name="call"></ion-icon> 
+     </div>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="contener">
+  <div>
+    <div *ngFor="let item of message" >
+      <ion-row>
+        <ion-col>
+          <div [ngClass]="item.isReceived ? 'received':'sending'" (click)="showDetailmsg(item)">
+                  <span class="msg">{{item.libelle}}</span><br>
+           
+          </div> 
+        </ion-col> 
+      </ion-row>
+    </div>
+    <!--
+      <ion-row>
+      <ion-col>
+        <div>
+          <span class="received">Oui</span>
+        </div>
+      </ion-col> 
+    </ion-row>  
+    --> 
+  </div>
+
+
+
+
+  <ion-footer class="field">
+       
+        <ion-input class="custom-textarea" (ionChange)="setColor('primary')" [(ngModel)]="value" [value]="value" autocapitalize placeholder="Type something here"></ion-input>
+          <span class="send">
+            <ion-buttons (click)="sendMessage()">
+                <ion-icon name="send-outline" [color]="colorSendBtn"></ion-icon>
+            </ion-buttons>
+          </span>
+
+  </ion-footer>
+</ion-content>

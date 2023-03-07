@@ -1,0 +1,51 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-back-button slot="start"></ion-back-button> 
+    <ion-title>
+      Profil
+    </ion-title>
+    <ion-buttons slot="end" color="danger" (click)="signal()">
+      <span style="color: red;">
+        Signaler
+      </span>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="header">
+    <h2>{{ dataUserFound.nom }} {{ dataUserFound.prenom }} </h2>
+
+    <div class="space-between">
+
+      <div class="followings">
+        <ion-badge color="primary" mode="ios">42M</ion-badge>
+        <p>Abonnés</p>
+      </div> 
+
+      <div class="img-box">
+        <span *ngIf="dataUserFound.profilImgUrl != null" ><img [src]="dataUserFound.profilImgUrl"></span>
+        <span *ngIf="dataUserFound.profilImgUrl == null" ><img src="/assets/icon/avatar.svg"></span>
+      </div>
+
+      <div class="followings">
+        <ion-badge color="primary" mode="ios">142</ion-badge>
+        <p>Abonnement</p>
+      </div>
+
+    </div>
+
+   <ion-row class="ion-padding">
+    <ion-col>
+      <ion-button color="primary" expand="block">
+       <span> Suivre </span>
+      </ion-button>
+    </ion-col>
+    <ion-col>
+      <ion-button color="light" expand="block" (click)="goToChatPage()">
+       <span> ecrire... </span>
+      </ion-button>
+    </ion-col>
+   </ion-row>
+  </div>
+</ion-content>

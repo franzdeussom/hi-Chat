@@ -1,0 +1,110 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-back-button slot="start"></ion-back-button>
+    <ion-title>Creation Compte</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div>
+    <form (submit)="doSignup()">
+      
+      <div class="ion-margin">
+        <span style="color: red;"> {{ errorMessage }} </span>
+      </div>
+
+      <ion-list class="ion-padding">
+        
+        <div style="text-align: center;" class="ion-margin">
+
+          <div style="margin-bottom: 20px;">
+            <span [ngClass]="fieldCompleted[0].isCompleted ? 'complete':'error'"><ion-icon [name]="fieldCompleted[0].isCompleted ? 'checkmark-circle-outline':'close-circle-outline'"></ion-icon></span>
+            <span [ngClass]="fieldCompleted[1].isCompleted ? 'complete':'error'"><ion-icon [name]="fieldCompleted[1].isCompleted ? 'checkmark-circle-outline':'close-circle-outline'"></ion-icon></span>
+            <span [ngClass]="fieldCompleted[2].isCompleted ? 'complete':'error'"><ion-icon [name]="fieldCompleted[2].isCompleted ? 'checkmark-circle-outline':'close-circle-outline'"></ion-icon></span>
+          </div>
+
+          <img src="../../../assets/icon/appIcon.png" width="200px" height="150px" class="appIcon">
+          <span style="margin-top: 20px;"><h2>Hi-Chat</h2></span>
+
+        </div>
+
+        <div *ngIf="fieldCompleted[0].showItem" >
+          <ion-item class="ion-margin">
+            <ion-label position="floating">Nom :</ion-label>
+            <ion-input type="string" [(ngModel)]="account.nom" name="nom"></ion-input>
+          </ion-item>
+    
+          <ion-item class="ion-margin">
+            <ion-label position="floating">Prenom :</ion-label>
+            <ion-input type="string" [(ngModel)]="account.prenom" name="prenom"></ion-input>
+          </ion-item>
+    
+          <ion-item class="ion-margin">
+            <ion-label position="floating">Email :</ion-label>
+            <ion-input type="email" (ionBlur)="verifEmail()" [(ngModel)]="account.email" name="email"></ion-input>
+          </ion-item>
+
+        </div>
+
+        <div *ngIf="fieldCompleted[1].showItem">
+
+          <ion-item class="ion-margin">
+            <ion-label position="floating">Telephone :</ion-label>
+            <ion-input type="tel" [(ngModel)]="account.tel" name="ville"></ion-input>
+          </ion-item>
+
+          <ion-item class="ion-margin">
+            <ion-label position="">Date Naissance :</ion-label>
+            <ion-input type="date" (ionChange)="setAge()" [(ngModel)]="account.date_naiss" name="date_naiss"></ion-input>
+          </ion-item>
+    
+          <ion-item class="ion-margin">
+            <ion-label position="floating">Age :</ion-label>
+            <ion-input type="text" disabled [value]="account.age" name="age"></ion-input>
+          </ion-item>
+          
+        </div>
+
+        <div *ngIf="fieldCompleted[2].showItem">
+          <ion-item class="ion-margin">
+            <ion-label position="floating">Sexe</ion-label>
+            <ion-input type="text" placeholder="M OU F" maxlength="1" (ionChange)="sexeChar()" [(ngModel)]="account.sexe" name="sexe"></ion-input>
+          </ion-item>
+
+          <ion-item class="ion-margin">
+            <ion-label position="floating">Pays :</ion-label>
+            <ion-input type="text" [(ngModel)]="account.pays" name="pays"></ion-input>
+          </ion-item>
+    
+          <ion-item class="ion-margin">
+            <ion-label position="floating">Ville :</ion-label>
+            <ion-input type="text" [(ngModel)]="account.ville" name="ville"></ion-input>
+          </ion-item>
+
+          <ion-item class="ion-margin">
+            <ion-label position="floating">Mot de passe</ion-label>
+            <ion-input type="password" min="4" [(ngModel)]="account.mdp" name="password"></ion-input>
+          </ion-item>
+          
+        </div>   
+        
+        <div style="margin-bottom: 10px;" class="ion-margin">
+          <div style="float: left;">
+            <span style="font-size: 40px; color: greenyellow;" (click)="prev()" slot="start"><ion-icon name="chevron-back-circle-outline"></ion-icon></span>
+          </div>
+          <div style="float: right;">
+            <span style="font-size: 40px; color: greenyellow;" (click)="next()" slot="end"><ion-icon name="chevron-forward-circle-outline"></ion-icon></span>
+          </div>
+        </div>
+
+        <div class="ion-margin">
+        <ion-row class="ion-padding">
+          <ion-col>
+            <ion-button expand="block" type="submit" [disabled]="!showBtnSend" color="primary">Creer mon compte</ion-button>
+          </ion-col>
+        </ion-row>  
+      </div>
+      </ion-list>
+    </form>
+  </div>
+</ion-content>
