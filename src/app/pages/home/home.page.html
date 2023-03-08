@@ -7,7 +7,7 @@
       <span>{{ dataUser[0].nom }} <span style="color: yellowgreen; font-size: 35px;">°</span></span>
     </ion-buttons>
   </ion-toolbar>
-  <ion-searchbar color="medium" placeholder="search" [(ngModel)]="search.value" (ionChange)="searchUser()" (ionBlur)="disableResultField()" (ionFocus)="enableResultField()">
+  <ion-searchbar color="medium" placeholder="search" [(ngModel)]="search.value" (ionChange)="searchUser()" (ionFocus)="enableResultField()">
   </ion-searchbar>
   <div class="resultSearch" *ngIf="activFieldResults">
     <div>

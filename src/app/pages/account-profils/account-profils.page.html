@@ -17,8 +17,23 @@
       </div> 
 
       <div class="img-box">
-        <span *ngIf="dataUser.profilImgUrl != null" ><img src="/assets/icon/appIcon.png"></span>
-        <span *ngIf="dataUser.profilImgUrl == null" ><img src="/assets/icon/avatar.svg"></span>
+        <span *ngIf="dataUser.profilImgUrl != null" id="open-modal" ><img [src]="dataUser.profilImgUrl"></span>
+        <span *ngIf="dataUser.profilImgUrl == null" id="open-modal" ><img src="/assets/icon/avatar.svg"></span>
+              <ion-modal #modal trigger="open-modal" [canDismiss]="canDismiss" [presentingElement]="presentingElement">
+                <ng-template>
+                  <ion-header>
+                    <ion-toolbar>
+                      <ion-title>Modal</ion-title>
+                      <ion-buttons slot="end">
+                        <ion-button (click)="modal.dismiss()">Close</ion-button>
+                      </ion-buttons>
+                    </ion-toolbar>
+                  </ion-header>
+                  <ion-content class="ion-padding">
+                    <p>You will be prompted when closing this modal.</p>
+                  </ion-content>
+                </ng-template>
+              </ion-modal>
       </div>
 
       <div class="followings">
@@ -31,7 +46,7 @@
    <ion-row class="ion-padding">
     <ion-col>
       <ion-button color="primary" expand="block">
-       <span> Modifier mon profil </span>
+       <span> Modifier mon profil <ion-icon name="create" slot="end"></ion-icon> </span>
       </ion-button>
     </ion-col>
    </ion-row>

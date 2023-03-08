@@ -21,8 +21,9 @@
       <ion-row>
         <ion-col>
           <div [ngClass]="item.isReceived ? 'received':'sending'" (click)="showDetailmsg(item)">
-                  <span class="msg">{{item.libelle}}</span><br>
-           
+                  <span class="msg">
+                     {{item.libelle}}                    
+                  </span><br>
           </div> 
         </ion-col> 
       </ion-row>

@@ -156,7 +156,9 @@ async checkDestinataireIDMsg(id_destinateur_user: any, msg : Message, changeSend
 
   this.listOfSender.forEach((message: Message)=>{
     if(message.nom === msg.nom && !keyTab.includes(id_destinateur_user)){
-      exits = true;
+      if(keyTab.includes(message.id_destinateur_user)){
+            exits = true;
+      }
     }
   });
   console.log('include:', exits);
@@ -169,7 +171,7 @@ async checkDestinataireIDMsg(id_destinateur_user: any, msg : Message, changeSend
         this.listOfSender.length = 0;
         this.rangeMessage.getBackupMessage();
         this.listOfSender = this.rangeMessage.backupMessage;
-  }
+      }
 
 
   handleRefresh(event:any) {
@@ -257,12 +259,15 @@ async checkDestinataireIDMsg(id_destinateur_user: any, msg : Message, changeSend
     this.search.value = '';
   }
   searchUser(){
-
     let exec = (message: Message)=>{
-        return message.nom.toString().substring(0, this.search.value.length);
+    console.log('execute 111', this.search.value.length)
+
+        return message.nom.toString().toLowerCase().substring(0, this.search.value.length) === this.search.value.toLowerCase();
         
     }
+    console.log('execute')
     this.listOfSearchBar = this.listOfSender.filter(exec);
+    this.search.value = '';
   }
 
   getDataUser(){
