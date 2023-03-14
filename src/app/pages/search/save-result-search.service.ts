@@ -6,6 +6,7 @@ import { Storage } from '@capacitor/storage';
 })
 export class SaveResultSearchService {
   public dataUserFound : any;
+  public isOderUser: any;
   public isFromSearch: boolean;
   constructor() { this.isFromSearch = false }
 

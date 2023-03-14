@@ -63,16 +63,17 @@ export class LoginPage implements OnInit {
       this.init();
       if(data.length > 0 ){
          if(!data.noData){
-          this.currentUserData = data;
-
-          this.globalStorage.currentUser = this.currentUserData
+          this.currentUserData = JSON.stringify(JSON.parse(data)[0]);
+          console.log(this.currentUserData);
+          this.globalStorage.currentUser = this.currentUserData;
+          this.globalStorage.listLike = JSON.parse(data)[1];
           //localStorage.setItem('id_users', );
           
           if(this.rememberMe){
             this.saveUserData();
           }
           //save data of the current user, to use in the App
-          this.dataUser.userData = data;
+          this.dataUser.userData = JSON.stringify(JSON.parse(data)[0]);
          }
           
           this.navController.navigateRoot('tabs/home');

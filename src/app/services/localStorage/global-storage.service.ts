@@ -7,6 +7,7 @@ import { Storage } from '@capacitor/storage';
 })
 export class GlobalStorageService {
 public currentUser: any;
+public listLike : any;
 
   constructor() {  }
 

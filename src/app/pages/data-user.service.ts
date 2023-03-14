@@ -1,4 +1,3 @@
-import { User } from './signup/users.model';
 import { Injectable } from '@angular/core';
 
 @Injectable({
@@ -7,5 +6,7 @@ import { Injectable } from '@angular/core';
 
 export class DataUserService {
  public userData: any;
+ public publication: any;
+ public indexPub: any;
   constructor() {  }
 }

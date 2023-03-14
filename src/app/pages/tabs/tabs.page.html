@@ -21,6 +21,11 @@
       <ion-label>Profil</ion-label>
     </ion-tab-button>
     
+    <ion-tab-button tab="" *ngIf="isAdmin" >
+      <ion-icon name="person-circle-outline"></ion-icon>
+      <ion-label>Admin</ion-label>
+    </ion-tab-button>
+    
   </ion-tab-bar>
  </ion-tabs>
 </ion-content>

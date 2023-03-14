@@ -91,18 +91,24 @@ export class RangeMessageService {
       }else{
         let tmpBackUp;
         let count = 0;
+        let i = 0;
         tmpBackUp = await this.localSave.getData(key);
-        tmpBackUp.forEach((element: any) => {
+        tmpBackUp.forEach((element: any, index: number) => {
             if(element == id_sender){
               count++;
+              i = index;
             }
         });
         if(count == 0){
-          tmpBackUp.push(id_sender);
+          tmpBackUp.unshift(id_sender);
           this.localSave.deleteData(key);
           this.localSave.saveData(tmpBackUp, key);
         }else{
-
+          let tmpID = tmpBackUp[i];
+          tmpBackUp.splice(i, 1);
+          tmpBackUp.unshift(tmpID);
+          this.localSave.deleteData(key);
+          this.localSave.saveData(tmpBackUp, key);  
         }
         
       }
@@ -151,13 +157,10 @@ export class RangeMessageService {
     
     if(Array.isArray(keyTab)){
           if(keyTab.length > 0 && keyTab.includes(id_destinateur_user)){
-            this.tmpMissedID.push(msg.id_destinateur_user);          
             return id_destinateur_user;
           }else if(keyTab.length > 0 && keyTab.includes(msg.id_sender)) {
-            this.tmpMissedID.push(msg.id_sender);
             return msg.id_sender;
           }else{
-            this.tmpMissedID.push(msg.id_sender);
             return msg.id_sender;
           }
     }else{
@@ -181,7 +184,6 @@ export class RangeMessageService {
         
     const value = await this.localSave.getData(keyDiscussion);
     if(!value || value === '[]' || value.length === 0){
-      console.log('pas de backup pour cette discusion');
       let backUp = [];
       backUp.push(elemnt);
       this.localSave.saveData(backUp, keyDiscussion);    
@@ -237,7 +239,7 @@ export class RangeMessageService {
     if(Array.isArray(listOfKey)){
       //----to change
       listOfKey.forEach((key: number, index: number)=>{
-        if(key == id_sender){
+        if(key === id_sender){
           count++;
           i = index;
         }
@@ -365,14 +367,14 @@ export class RangeMessageService {
     let list : SecurityMsg[] = await this.localSave.getData(key);
 
 
-    return list[0].pass_key;
+    return Array.isArray(list) ? list[0].pass_key: '';
   }
   
  async getListMsgSecure(): Promise<number[]>{
     let key = 'SECURITY_DISC_KEY'+this.id_currentUser;
     let list : any = await this.localSave.getData(key);
 
-    return list[0].discussion_list;
+    return  Array.isArray(list) ? list[0].discussion_list: [];
   }
   async isDiscussionSecured(id: number): Promise<boolean>{
     let key = 'SECURITY_DISC_KEY'+this.id_currentUser;

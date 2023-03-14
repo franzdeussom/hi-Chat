@@ -2,20 +2,27 @@
   .contener{
     width: 100%;
     height: 90%;
-    border-radius: 20px;
-    
+    border-radius: 5px;
+    text-align: center;
+    vertical-align: middle;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-bottom: 5px;
     .sending{
         float: right;
         width: fit-content;
         max-width: 250px;
         height: fit-content;
         min-height: 30px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
         background-color: #39b912;
         color: #fff;
         padding-left: 3px;
         padding-bottom: 4px;
         padding-top: 6px;
-        border-radius: 50px;
+        border-radius: 20px;
         .msg{
           padding-left: 3px;
           padding-right: 5px;
@@ -44,10 +51,13 @@
       padding-bottom: 4px;
       padding-top: 6px;
       padding-right: 3px;
+      display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
       height: fit-content;
       background-color: #4a5353;
       color: #fff;
-      border-radius: 50px;
+      border-radius: 20px;
         .msg{
           padding-left: 3px;
           padding-right: 5px;

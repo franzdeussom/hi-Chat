@@ -1,9 +1,160 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>Actualite</ion-title>
+
+    <ion-segment [scrollable]="true" slot="end" (ionChange)="segmentChanged($event)" [(ngModel)]="type">
+      <ion-segment-button value="home">
+        <ion-icon name="home"></ion-icon>
+      </ion-segment-button>
+      
+      <ion-segment-button value="globe">
+        <ion-icon name="globe"></ion-icon>
+      </ion-segment-button>
+
+    </ion-segment>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+  <div [ngSwitch]="type">
+    <div *ngSwitchCase="'home'">
 
+       <div class="createPub">
+          <ion-avatar slot="start" *ngIf="dataUser.profilImgUrl != null" (click)="goToProfil()" >
+            <img alt="" [src]="dataUser.profilImgUrl" />
+          </ion-avatar>
+          <ion-avatar slot="start" (click)="goToProfil()" *ngIf="dataUser.profilImgUrl == null">
+            <img alt="" src="/assets/icon/avatar.svg" />
+          </ion-avatar>
+          <ion-input id="open-modal1" [placeholder]="'Quoi de neuf ? ' + dataUser.prenom" disabled></ion-input>
+       </div>
+       <ion-modal trigger="open-modal1" (willDismiss)="onWillDismiss($event)">
+        <ng-template>
+          <ion-header>
+            <ion-toolbar>
+              <ion-buttons slot="start">
+                <ion-button (click)="cancel()">Annuler</ion-button>
+              </ion-buttons>
+              <ion-title>Creation Publications</ion-title>
+              <ion-buttons slot="end">
+                <ion-button (click)="confirm()" [strong]="true">Publier</ion-button>
+              </ion-buttons>
+            </ion-toolbar>
+          </ion-header>
+          <ion-content class="ion-padding">
+            <ion-list id="ion-margin">
+              <ion-item>
+                <ion-label>Publication publique:</ion-label>
+                <ion-toggle name="public" (click)="setOrUnsetPub()"></ion-toggle>
+              </ion-item>
+              
+                  <div *ngIf="!showApercu" >
+                    <ion-item>
+                      <ion-textarea class="custom-textarea" [(ngModel)]="publication.libelle" placeholder="Quoi de neuf ?"></ion-textarea>
+                    </ion-item>
+                  </div>
+
+                  <div *ngIf="showApercu">
+                      <ion-list class="head">
+                              <ion-item>
+                                      <ion-avatar slot="start" *ngIf="dataUser.profilImgUrl != null">
+                                        <img alt="" [src]="dataUser.profilImgUrl" />
+                                      </ion-avatar>
+                                      <ion-avatar slot="start" *ngIf="dataUser.profilImgUrl == null" >
+                                          <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+                                      </ion-avatar>
+                                    <ion-label>
+                                       <span class="name">{{ dataUser.nom }} {{ dataUser.prenom }}</span><br>
+                                      <span class="datePub">19h30 min</span> <span class="isPublic">*****</span>
+                                    </ion-label>
+                              </ion-item>
+                        </ion-list>  
+                      <div class="apercu" [ngStyle]="{'background':  colorBgApercu}" (click)="renitAp()" >
+                          
+                          <span class="message"> {{ publication.libelle }} </span>
+                      </div>
+                </div>
+
+                    <div class="choiceColor">
+                          <div  *ngFor="let color of Color">
+                            <div class="color" [ngStyle]="{'background': color.value }" (click)="setBgApercu(color.value)">
+                            </div>
+                          </div>
+                    </div>
+
+                <ion-row class="ion-padding">
+                  <ion-col>
+                    <ion-button expand="block" type="reset" (click)="confirm()" color="primary" id="login"> Publier </ion-button>
+                  </ion-col>
+                </ion-row>
+
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+
+      <div class="pub">
+            <div *ngFor="let pub of listPublication; let index = index" >
+                <ion-card style="width: 100% !important; margin-left: 0; margin-top: 2px;">
+                      <ion-list class="head">
+                              <ion-item>
+                                      <ion-avatar slot="start" *ngIf="pub.profilImgUrl != null" (click)="goToProfilFriend(pub.nom, pub.prenom)" >
+                                        <img alt="" [src]="pub.profilImgUrl" />
+                                      </ion-avatar>
+                                      <ion-avatar slot="start" *ngIf="pub.profilImgUrl == null" (click)="goToProfilFriend(pub.nom, pub.prenom)">
+                                          <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+                                      </ion-avatar>
+                                    <ion-label>
+                                       <span class="name" (click)="goToProfilFriend(pub.nom, pub.prenom)">{{ pub.nom }} {{ pub.prenom }}</span><br>
+                                       <span class="datePub"> {{ pub.date_pub }} </span> 
+
+                                       <span class="isPublic" *ngIf="pub.is_public === 0" >
+                                        <ion-icon name="globe"  style="margin-left: 8px; font-size: 13px;"></ion-icon>
+                                       </span>
+
+                                       <span class="isPublic" *ngIf="pub.is_public === 1" >
+                                        <ion-icon name="home" style="margin-left: 8px; font-size: 13px;"></ion-icon>
+                                       </span>
+
+                                        <span style="float: right; font-size: 12px;"><sup class="menu">...</sup> </span>
+                                      </ion-label>
+                              </ion-item>
+                        </ion-list>  
+                      <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
+                          <span class="message"> {{ pub.libelle }} </span>
+                      </div>
+
+                      <div class="reaction">
+                                <span (click)="getListUsersLike(pub.id_pub, pub.id_user)" *ngIf="pub.nbrLike > 0 ? true:false" > {{ pub.nbrLike }} <ion-icon name="heart" class="heart"></ion-icon> </span>
+                        
+                      </div>
+
+                      <div class="action">
+                          <div class="like">
+                              <ion-buttons slot="start" >
+                                  <span *ngIf="pub.alreadyLike === 0"><ion-button (click)="doLike(pub.id_pub, index)" >Jaime</ion-button></span>
+                                  <span *ngIf="pub.alreadyLike !== 0" ><ion-button (click)="doUnLike(pub.id_pub, index)" >Jaime plus</ion-button></span>
+                              </ion-buttons>
+                          </div>
+                        
+                          <div class="comment">
+                            <ion-buttons slot="end">
+                              <ion-button (click)="goToDetail(pub, index)" >Commenter</ion-button>
+                          </ion-buttons>
+                          </div>
+                      </div>
+                    </ion-card>
+              </div>
+      </div>
+    </div>
+
+    <ion-list *ngSwitchCase="'globe'">
+      <ion-item>
+          <ion-label>globe</ion-label>
+      </ion-item>
+   </ion-list>
+  </div>
 </ion-content>

@@ -17,7 +17,7 @@
             <ion-item-options side="start">
               <ion-item-option color="success">
                 <ion-icon slot="end" name="archive"></ion-icon>
-                Archive
+                  Archive
               </ion-item-option>
             </ion-item-options>
               
@@ -35,7 +35,7 @@
               <ion-label>
                <h3><p><span [ngClass]="(item.statut === 0 || !item.statut) &&  item.id_sender != dataUser[0].id_users ? 'notRead':'none' ">{{ item.nom}} {{ item.prenom}}</span></p></h3>
                <span style="color: gray;" [ngClass]="(item.statut == 0 || !item.statut) && item.id_sender != dataUser[0].id_users ? 'notRead':'none' "><span *ngIf="item.id_sender === dataUser[0].id_users"><em>vous:</em></span> {{ item.libelle }} </span>
-              <span style="float: right; font-size: 5px; z-index: 1;"> 
+              <span style="float: right; font-size: 5px; z-index: 1; position: fixed; margin-left: 90%;"> 
                 <ion-badge color="primary" mode="ios">{{ item.date_envoie }} </ion-badge>
               </span>
               </ion-label>

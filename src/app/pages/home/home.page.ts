@@ -148,21 +148,27 @@ async checkDestinataireID(id_destinateur_user: any, msg : Message, changeSender?
 
 async checkDestinataireIDMsg(id_destinateur_user: any, msg : Message, changeSender?: boolean): Promise<number>{
   changeSender = false;
-
+  let id = 0;
   let key = 'SENDER_ID';
   let keyTab = Array();
-  let exits = false;
   keyTab = await this.localSave.getData(key);
 
-  this.listOfSender.forEach((message: Message)=>{
-    if(message.nom === msg.nom && !keyTab.includes(id_destinateur_user)){
-      if(keyTab.includes(message.id_destinateur_user)){
-            exits = true;
+if(this.listOfSender.length > 0){
+    this.listOfSender.forEach((message: Message)=>{
+      if(message.nom === msg.nom && keyTab.includes(message.id_destinateur_user)){
+        id = message.id_destinateur_user;
+      }else if(message.nom === msg.nom && keyTab.includes(message.id_sender)){
+        id = message.id_sender;
+      }else{
+          id = msg.id_sender;
       }
-    }
-  });
-  console.log('include:', exits);
- return exits ? id_destinateur_user: msg.id_sender;
+    });
+}else{
+  id =msg.id_sender;
+}
+  console.log('include:', id);
+
+ return id;
 }  
 
   loadMessage(){
@@ -204,7 +210,7 @@ async checkDestinataireIDMsg(id_destinateur_user: any, msg : Message, changeSend
           this.listOfSender[i].id_sender = msg.id_sender;
           this.listOfSender[i].id_destinateur_user = msg.id_destinateur_user;
           this.listOfSender[i].isReceived = msg.isReceived;
-          this.listOfSender[i].statut = msg.statut;
+          this.listOfSender[i].statut = false;
           this.listOfSender[i].imageEnvoyeur = msg.imageEnvoyeur;
           //save tmp msg
           tmpValueOfListOfSender = this.listOfSender[i];
@@ -258,14 +264,12 @@ async checkDestinataireIDMsg(id_destinateur_user: any, msg : Message, changeSend
     this.activFieldResults = false;
     this.search.value = '';
   }
+
   searchUser(){
     let exec = (message: Message)=>{
-    console.log('execute 111', this.search.value.length)
-
-        return message.nom.toString().toLowerCase().substring(0, this.search.value.length) === this.search.value.toLowerCase();
-        
+        return message.nom.toString().toLowerCase().substring(0, this.search.value.length) === this.search.value.toLowerCase();    
     }
-    console.log('execute')
+
     this.listOfSearchBar = this.listOfSender.filter(exec);
     this.search.value = '';
   }
@@ -336,7 +340,7 @@ async checkDestinataireIDMsg(id_destinateur_user: any, msg : Message, changeSend
   }
 
    async deleteDiscussion(id_DU: number, msg: any){
-        let id_ToDelete = await this.checkDestinataireID(id_DU, msg);
+        let id_ToDelete = await this.checkDestinataireIDMsg(id_DU, msg);
         let key = 'MSG_BUP_WITDH='+id_ToDelete+'AND'+this.dataUser[0].id_users;
 
         this.localSave.deleteData(key);

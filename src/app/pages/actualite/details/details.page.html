@@ -1,0 +1,117 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-back-button slot="start"></ion-back-button>
+    <ion-title>Publication de {{pub.prenom}} </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="pub">
+    <div>
+        <ion-card style="width: 100% !important; margin-left: 0; margin-top: 2px;">
+              <ion-list class="head">
+                      <ion-item>
+                              <ion-avatar slot="start" *ngIf="pub.profilImgUrl != null">
+                                <img alt="" [src]="pub.profilImgUrl" />
+                              </ion-avatar>
+                              <ion-avatar slot="start" *ngIf="pub.profilImgUrl == null" >
+                                  <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+                              </ion-avatar>
+                            <ion-label>
+                              <span class="name">{{ pub.nom }} {{ pub.prenom }}</span><br>
+                              <span class="datePub"> {{ pub.date_pub }} </span> 
+
+                              <span class="isPublic" *ngIf="pub.is_public === 0" >
+                                <ion-icon name="globe"  style="margin-left: 8px; font-size: 13px;"></ion-icon>
+                              </span>
+
+                              <span class="isPublic" *ngIf="pub.is_public === 1" >
+                                <ion-icon name="home" style="margin-left: 8px; font-size: 13px;"></ion-icon>
+                              </span>
+
+                                <span style="float: right; font-size: 12px;">
+                                  <sup class="menu" *ngIf="pub.id_user === dataUser.id_users" >
+                                    ...
+                                  </sup>
+                                </span>
+                              </ion-label>
+                      </ion-item>
+                </ion-list>  
+              <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
+                  <span class="message"> {{ pub.libelle }} </span>
+              </div>
+
+              <div class="reaction">
+                  <span *ngIf="pub.nbrLike > 0 ? true:false" > {{ pub.nbrLike }} <ion-icon name="heart" class="heart"></ion-icon> </span>
+              </div>
+
+              <div class="action">
+                  <div class="like">
+                      <ion-buttons slot="start" >
+                          <span *ngIf="pub.alreadyLike === 0"><ion-button (click)="doLike(pub.id_pub)" >Jaime</ion-button></span>
+                          <span *ngIf="pub.alreadyLike !== 0" ><ion-button (click)="doUnLike(pub.id_pub)" >Jaime plus</ion-button></span>
+                      </ion-buttons>
+                  </div>
+                
+                  <div class="comment">
+                    <ion-buttons slot="end">
+                      <ion-button>Commenter</ion-button>
+                  </ion-buttons>
+                  </div>
+              </div>
+          </ion-card>
+    </div>
+</div>
+
+<div *ngIf="commentaires.length > 0 " style="text-align: center; margin: auto !important;;">
+  <ion-spinner name="circular" style="margin: auto;"></ion-spinner>
+</div>
+
+<div class="commentContener"  *ngIf="commentaires.length === 0">
+  <ion-searchbar color="ligth" placeholder="recherche" [(ngModel)]="searchUserValueComment" (ionChange)="searchUserInComments()">
+  </ion-searchbar>
+
+  <div class="resultSearch" *ngIf="activeFieldRslt">
+      <div>
+      
+      </div>
+  </div>
+
+  <div *ngIf="!activeFieldRslt">
+      <div>
+        <div class="commentaire">
+          <div class="profil" style="top:0 !important;">
+              <ion-avatar>
+                <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+              </ion-avatar>
+          </div>
+            <ion-card style="margin-right: 2px !important;top:0 !important;">
+                <ion-card-title style="font-size: 15px; margin-top: 8px; margin-left: 10px;">
+                  Nom Prenom
+                  <ion-badge style="float: right; margin-top: 1px;">19/2/2003 18h30</ion-badge>
+                </ion-card-title>
+                <ion-card-content>
+                    <span style="font-size: 20px;">
+                      Le contenur ici Lorem ipsum dolor sit amet consectetur adipisicing elit. Laudantium non eveniet, qui voluptates hic natus mollitia. Tempore enim possimus, quas minima accusamus consequuntur consequatur, numquam nostrum unde delectus suscipit autem!
+                    </span>
+                </ion-card-content>
+                  <div class="reaction" style="float: right; margin-right: 8px; margin-top: 5px;">
+                    <ion-buttons slot="end">
+                      <span style="margin-right: 5px;">1</span>
+
+                        <ion-button>
+                          J'aime
+                        </ion-button>
+                    </ion-buttons>
+                </div>
+            </ion-card>
+            
+        </div>
+    </div>
+  </div>
+</div>
+</ion-content>

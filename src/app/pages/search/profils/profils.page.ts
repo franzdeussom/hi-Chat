@@ -1,3 +1,6 @@
+import { Publication } from './../../actualite/publicatin.model';
+import { User } from './../../signup/users.model';
+import { AccountApiService } from './../../../services/account-api.service';
 import { SecurityMsg } from './../../home/securitymsg.model';
 import { ToastAppService } from './../../../services/Toast/toast-app.service';
 import { DataUserService } from './../../data-user.service';
@@ -6,7 +9,6 @@ import { ReceiverDataService } from './../../home/receiver-data.service';
 import { NavController, AlertController } from '@ionic/angular';
 import { SaveResultSearchService } from './../save-result-search.service';
 import { Component, OnInit } from '@angular/core';
-import { GetAllMessageService } from '../../home/get-all-message.service';
 
 @Component({
   selector: 'app-profils',
@@ -15,22 +17,49 @@ import { GetAllMessageService } from '../../home/get-all-message.service';
 })
 export class ProfilsPage implements OnInit {
   dataUserFound!: any;
+  dataCurrentUser: User;
   listDiscSecur: SecurityMsg;
+  type: string = 'publications';
+  listAbonne: Array<User>;
+  listAbonnenment: Array<User>;
+  listPublication: Array<Publication>;
+  isAlreadyFollowed!: boolean;
+  indexIfIsFollowed: number = 0;
+  searchValue: string = '';
+  searchValueAbm: string = '';
+  listSearchFollowers: Array<User>;
+  activeFieldSearchResult: boolean = false;
+  listSearchAbm: Array<User>;
+  activeFieldSearchResultAbm: boolean = false;
+
   constructor(private searchResltService: SaveResultSearchService,
               private navCtrl : NavController,
-              private currenDatUser: DataUserService,
-              private getAllMesg: GetAllMessageService,
               private rangeMessage: RangeMessageService,
               private toast: ToastAppService,
+              private accountApi: AccountApiService,
               private alertController: AlertController,
-              private receiverData: ReceiverDataService) {
+              private dataUser: DataUserService,
+              private receiverData: ReceiverDataService)
+              {
                 this.listDiscSecur = new SecurityMsg();
+                this.dataCurrentUser = new User();
+                this.listAbonne = new Array<User>();
+                this.listAbonnenment = new Array<User>();
+                this.listPublication = new Array<Publication>();
+                this.listSearchFollowers = new Array<User>();
+                this.listSearchAbm = new Array<User>();
                }
 
   ngOnInit() {
       this.checkTheData();
-      this.loadSecurityDisc();     
+      this.loadSecurityDisc();
+      this.getDataCurrentUser();
+      this.isAlreadyAddOnFollowList();
 }
+
+ionViewWillEnter(){
+  this.loadFwAbmPubThisUsers();      
+} 
 
   async loadSecurityDisc(){
       this.listDiscSecur.discussion_list  = await this.rangeMessage.getListMsgSecure();
@@ -87,6 +116,205 @@ export class ProfilsPage implements OnInit {
     await alert.present();
 
   }
+
+  follow(){
+    //id_WF = id users who make follow; id_F = id user who is followed
+      const getParamQuery = ()=>{
+            const queryParam : {
+              id_WF: any,
+              id_F: number
+          } = {
+            id_WF: this.dataCurrentUser.id_users,
+            id_F: this.dataUserFound.id_users
+          };
+          return JSON.stringify(queryParam);
+      }
+      
+      if(!this.isAlreadyAddOnFollowList()){
+          this.accountApi.post('user-api/addFollowers.php', getParamQuery()).subscribe((response)=>{
+                if(Object.keys(response).length > 0 ? true:false){
+                    this.toast.makeToast('Vous suivez desormais ' + this.dataUserFound.prenom);
+                    this.listAbonne.push(this.dataCurrentUser);
+                    this.isAlreadyFollowed = true;
+                }else{
+                    this.toast.makeToast('Erreur interne du serveur');
+              }
+          });
+      }else{
+        this.accountApi.post('user-api/delFollowers.php', getParamQuery()).subscribe((response)=>{
+          if(Object.keys(response).length > 0 ? true:false){
+              this.toast.makeToast("Vous n'ètes plus abonné(e) à " + this.dataUserFound.prenom);
+              this.listAbonne.splice(this.indexIfIsFollowed, 1);
+              this.isAlreadyFollowed = false;
+          }else{
+              this.toast.makeToast('Erreur interne du serveur');
+          }
+        });
+      }
+   }
+
+   isAlreadyAddOnFollowList(): boolean{
+    let isExist = false;
+
+        if(Array.isArray(this.listAbonne)){
+            this.listAbonne.forEach((user: User, index: number)=>{
+                if(user.id_users === this.dataCurrentUser.id_users){
+                    isExist = true;
+                    this.isAlreadyFollowed = true;
+                    this.indexIfIsFollowed = index;
+                }
+            });
+        }else{
+          this.isAlreadyFollowed = false;
+        }
+
+    return isExist;
+   }
+
+  loadFwAbmPubThisUsers(){
+    if(typeof this.searchResltService.isOderUser === 'boolean' || this.searchResltService.isOderUser){
+          this.accountApi.post('user-api/getFwAbmPubOrderUser.php', this.getParamQuery(true)).subscribe((response: any)=>{
+          if(Object.keys(response).length > 0 ? true:false){
+                this.setValuelist(JSON.parse(response));
+                this.isAlreadyAddOnFollowList();
+            }else{
+            this.toast.makeToast('Erreur interne du serveur');
+          }
+      });
+    }else{
+        this.accountApi.post('user-api/getFwAbmPub.php', this.getParamQuery(false)).subscribe((response: any)=>{
+          if(Object.keys(response).length > 0 ? true:false){
+                this.setValuelist(JSON.parse(response));
+                this.isAlreadyAddOnFollowList();
+            }else{
+            this.toast.makeToast('Erreur interne du serveur');
+          }
+      });
+    }
+      
+
+  }
+
+  setValuelist(data: any){
+    this.listPublication = data[0].length === 0 ? [] : data[0];
+    this.listAbonne = data[1].length === 0 ? [] : data[1];
+    this.listAbonnenment = data[2].length === 0 ? [] : data[2];
+  }
+
+  getParamQuery(isOrderUser: boolean): any{
+    if(isOrderUser){
+      const dataUser : {
+        id_users: number,
+        id_oderUser: any
+        nom: string
+      } = {
+        id_users: this.dataUserFound.id_users,
+        id_oderUser: this.dataCurrentUser.id_users,
+        nom: this.dataUserFound.nom
+      };
+      return JSON.stringify(dataUser);
+    }else{
+      const dataUser : {
+        id_users: number,
+        nom: string
+      } = {
+        id_users: this.dataUserFound.id_users,
+        nom: this.dataUserFound.nom
+      };
+      return JSON.stringify(dataUser);
+    }
+    
+  }
+
+  getDataCurrentUser(){
+        this.dataCurrentUser = JSON.parse(this.dataUser.userData)[0];
+  }
+  test(id:any){
+      console.log(id);
+  }
+
+  searchFollowers(tokken: number){
+    if(tokken == 1){
+          if(this.searchValue.length > 0){
+            this.activeFieldSearchResult = true;
+        }else{
+          this.activeFieldSearchResult = false;
+        }
+
+          let exec = (user: User)=>{
+            return user.nom?.toLowerCase().substring(0, this.searchValue.length)=== this.searchValue.toLowerCase();
+          }
+
+          this.listSearchFollowers = this.listAbonne.filter(exec);
+
+          this.searchValue = '';
+    }
+  }
+
+  searchAbm(){
+    if(this.searchValueAbm.length > 0){
+          this.activeFieldSearchResultAbm = true;
+     }else{
+          this.activeFieldSearchResultAbm = false;
+     }
+            let execAbm = (user: User)=>{
+              return user.nom?.toLowerCase().substring(0, this.searchValueAbm.length) === this.searchValueAbm.toLowerCase();
+            }
+
+            this.listSearchAbm = this.listAbonnenment.filter(execAbm);
+            console.log(this.listSearchAbm);
+            this.searchValueAbm = '';
+  }
+
+  doLike(idPublication: any, index:number){
+    let data: {
+      id_users: any,
+      id_pub: number
+    } = { 
+      id_users: this.dataCurrentUser.id_users,
+      id_pub: idPublication
+    }
+    if(this.listPublication[index].alreadyLike == 0 ){
+        this.accountApi.post('user-api/addLike.php', JSON.stringify(data)).subscribe((response)=>{
+            if(Object.keys(response).length > 0){
+                this.addLike(index, this.listPublication[index].nbrLike)
+            }else{
+              console.log('erreur');
+            }
+        }, (err)=>{
+            this.toast.makeToast(''+ err.getMessage());
+        });
+    }
+        
+  }
+  
+  addLike(index: number, nbrLike:any){
+    this.listPublication[index].nbrLike = nbrLike+1; 
+    this.listPublication[index].alreadyLike = 1;
+  }
+  delLike(index: number, nbrLike:any){
+    this.listPublication[index].nbrLike = nbrLike-1; 
+    this.listPublication[index].alreadyLike = 0; 
+  }
+  
+  doUnLike(idPublication: any, index:number){
+    let data: {
+      id_users: any,
+      id_pub: number
+    } = { 
+      id_users: this.dataCurrentUser.id_users,
+      id_pub: idPublication
+    }
+    this.accountApi.post('user-api/unLike.php', JSON.stringify(data)).subscribe((response)=>{
+           if(Object.keys(response).length > 0){
+                this.delLike(index, this.listPublication[index].nbrLike);
+            }else{
+              console.log('erreur');
+            }
+    })
+  }
+
+
   async goToChatPage(){
       this.receiverData.ID_RECIVER_AND_DATA = this.dataUserFound;
       if(await this.rangeMessage.isDiscussionSecured(this.dataUserFound.id_users)){
@@ -95,6 +323,6 @@ export class ProfilsPage implements OnInit {
         this.rangeMessage.setMessageOfDiscusion(this.dataUserFound.id_users);
         this.navCtrl.navigateForward('discusion');
       }
-     
+
   }
 }

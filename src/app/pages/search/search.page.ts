@@ -56,7 +56,6 @@ export class SearchPage implements OnInit {
   }
 
   simpleSearch(){
-    console.log(this.value);
     this.devidedVal();
     this.enableSearchSpaceWithOption();
     this.enableSearchWithOption();

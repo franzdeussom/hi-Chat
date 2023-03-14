@@ -13,39 +13,208 @@
 </ion-header>
 
 <ion-content>
+ 
   <div class="header">
     <h2>{{ dataUserFound.nom }} {{ dataUserFound.prenom }} </h2>
 
     <div class="space-between">
 
-      <div class="followings">
-        <ion-badge color="primary" mode="ios">42M</ion-badge>
-        <p>Abonnés</p>
-      </div> 
+        <div class="followings">
+          <ion-badge color="primary" mode="ios">
+              {{ listAbonne.length }}
+          </ion-badge>
+          <p *ngIf="listAbonne.length > 1">Followers</p>
+          <p *ngIf="listAbonne.length == 1 || listAbonne.length == 0">Follower</p>
 
-      <div class="img-box">
-        <span *ngIf="dataUserFound.profilImgUrl != null" ><img [src]="dataUserFound.profilImgUrl"></span>
-        <span *ngIf="dataUserFound.profilImgUrl == null" ><img src="/assets/icon/avatar.svg"></span>
+        </div> 
+                  <div class="img-box">
+                      <span *ngIf="dataUserFound.profilImgUrl != null" ><img [src]="dataUserFound.profilImgUrl"></span>
+                      <span *ngIf="dataUserFound.profilImgUrl == null" ><img src="/assets/icon/avatar.svg"></span>
+                  </div>
+
+                    <div class="followings">
+                      <ion-badge color="primary" mode="ios">
+                          {{ listAbonnenment.length }}
+                      </ion-badge>
+                      <p *ngIf="listAbonnenment.length > 1">Abonnements</p>
+                      <p *ngIf="listAbonnenment.length == 1 || listAbonnenment.length == 0">Abonnement </p>
+
+                    </div>
+    </div>
+      
+            <ion-row class="ion-padding">
+              <ion-col>
+                <ion-button color="primary" expand="block" (click)="follow()" >
+                  <span *ngIf="isAlreadyFollowed" > Se desabonner </span>
+                  <span *ngIf="!isAlreadyFollowed" > S'abonner </span>
+
+                </ion-button>
+              </ion-col>
+              <ion-col>
+                <ion-button color="light" expand="block" (click)="goToChatPage()">
+                <span> Ecrire... </span>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+
+</div>
+
+
+  <ion-segment value="all" [(ngModel)]="type" [scrollable]="true">
+      <ion-segment-button value="publications">
+        Publications
+      </ion-segment-button>
+      <ion-segment-button value="followers">
+        Followers
+      </ion-segment-button>
+      <ion-segment-button value="abonnement">
+        Abonnement
+      </ion-segment-button>
+      <ion-segment-button value="infos">
+        A propos
+      </ion-segment-button>
+  </ion-segment>
+
+  <div [ngSwitch]="type">
+    <div *ngSwitchCase="'publications'">
+            <div *ngSwitchCase="'publications'">
+                    <div class="pub">
+                      <div *ngFor="let pub of listPublication; let index = index" >
+                          <ion-card style="width: 100% !important; margin-left: 0; margin-top: 2px;">
+                                <ion-list class="head">
+                                        <ion-item>
+                                                <ion-avatar slot="start" *ngIf="pub.profilImgUrl != null">
+                                                  <img alt="" [src]="pub.profilImgUrl" />
+                                                </ion-avatar>
+                                                <ion-avatar slot="start" *ngIf="pub.profilImgUrl == null" >
+                                                    <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+                                                </ion-avatar>
+                                              <ion-label>
+                                                <span class="name">{{ pub.nom }} {{ pub.prenom }}</span><br>
+                                                <span class="datePub"> {{ pub.date_pub }} </span> 
+          
+                                                <span class="isPublic" *ngIf="pub.is_public === 0" >
+                                                  <ion-icon name="globe"  style="margin-left: 8px; font-size: 13px;"></ion-icon>
+                                                </span>
+          
+                                                <span class="isPublic" *ngIf="pub.is_public === 1" >
+                                                  <ion-icon name="home" style="margin-left: 8px; font-size: 13px;"></ion-icon>
+                                                </span>
+          
+                                                  <span style="float: right; font-size: 12px;">
+                                                    <sup class="menu" *ngIf="pub.id_user === dataCurrentUser.id_users" >
+                                                      ...
+                                                    </sup>
+                                                  </span>
+                                                </ion-label>
+                                        </ion-item>
+                                  </ion-list>  
+                                <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
+                                    <span class="message"> {{ pub.libelle }} </span>
+                                </div>
+          
+                                <div class="reaction">
+                                    <span *ngIf="pub.nbrLike > 0 ? true:false" > {{ pub.nbrLike }} <ion-icon name="heart" class="heart"></ion-icon> </span>
+                                </div>
+          
+                                <div class="action">
+                                    <div class="like">
+                                        <ion-buttons slot="start" >
+                                            <span *ngIf="pub.alreadyLike === 0"><ion-button (click)="doLike(pub.id_pub, index)" >Jaime</ion-button></span>
+                                            <span *ngIf="pub.alreadyLike !== 0" ><ion-button (click)="doUnLike(pub.id_pub, index)" >Jaime plus</ion-button></span>
+                                        </ion-buttons>
+                                    </div>
+                                  
+                                    <div class="comment">
+                                      <ion-buttons slot="end">
+                                        <ion-button>Commenter</ion-button>
+                                    </ion-buttons>
+                                    </div>
+                                </div>
+                            </ion-card>
+                      </div>
+                </div>
+            </div>
+        </div>
+
+   <div *ngSwitchCase="'followers'">
+      <p *ngIf="listAbonne.length == 0" >Aucun Follower </p>
+      <ion-searchbar color="ligth" placeholder="recherche" [(ngModel)]="searchValue" (ionChange)="searchFollowers(1)">
+      </ion-searchbar>
+
+      <div *ngIf="activeFieldSearchResult">
+            <ion-list *ngFor="let follower of listSearchFollowers" class="ion-margin">
+              <ion-item>
+                <ion-avatar slot="start" *ngIf="follower.profilImgUrl != null">
+                  <img alt="" [src]="follower.profilImgUrl " />
+                </ion-avatar>
+                <ion-avatar slot="start" *ngIf="follower.profilImgUrl == null" >
+                    <img alt="" src="/assets/icon/avatar.svg" />
+                </ion-avatar>
+                <ion-label *ngIf="follower.id_users != dataCurrentUser.id_users " > {{ follower.nom }} {{ follower.prenom }} </ion-label>
+                <ion-label *ngIf="follower.id_users == dataCurrentUser.id_users " > Vous </ion-label>
+            </ion-item>
+          </ion-list>
       </div>
 
-      <div class="followings">
-        <ion-badge color="primary" mode="ios">142</ion-badge>
-        <p>Abonnement</p>
+      <div *ngIf="!activeFieldSearchResult" >
+            <ion-list *ngFor="let follower of listAbonne" class="ion-margin">
+              <ion-item>
+                <ion-avatar slot="start" *ngIf="follower.profilImgUrl != null">
+                  <img alt="" [src]="follower.profilImgUrl " />
+                </ion-avatar>
+                <ion-avatar slot="start" *ngIf="follower.profilImgUrl == null" >
+                    <img alt="" src="/assets/icon/avatar.svg" />
+                </ion-avatar>
+                <ion-label *ngIf="follower.id_users != dataCurrentUser.id_users " > {{ follower.nom }} {{ follower.prenom }} </ion-label>
+                <ion-label *ngIf="follower.id_users == dataCurrentUser.id_users " > Vous </ion-label>
+            </ion-item>
+          </ion-list>
       </div>
 
     </div>
 
-   <ion-row class="ion-padding">
-    <ion-col>
-      <ion-button color="primary" expand="block">
-       <span> Suivre </span>
-      </ion-button>
-    </ion-col>
-    <ion-col>
-      <ion-button color="light" expand="block" (click)="goToChatPage()">
-       <span> ecrire... </span>
-      </ion-button>
-    </ion-col>
-   </ion-row>
+    <div *ngSwitchCase="'abonnement'">
+      <ion-searchbar color="ligth" placeholder="recherche" [(ngModel)]="searchValueAbm" (ionChange)="searchAbm()">
+      </ion-searchbar>
+      <p> {{ dataUserFound.prenom }} Est Abonné à :</p>
+
+      <div *ngIf="activeFieldSearchResultAbm" >
+        <ion-list *ngFor="let item of listSearchAbm"  class="ion-margin">
+          <ion-item>
+            <ion-avatar slot="start" *ngIf="item.profilImgUrl != null">
+              <img alt="" [src]="item.profilImgUrl " />
+            </ion-avatar>
+            <ion-avatar slot="start" *ngIf="item.profilImgUrl == null" >
+                <img alt="" src="/assets/icon/avatar.svg" />
+             </ion-avatar>
+              <ion-label *ngIf="item.id_users != dataCurrentUser.id_users " > {{ item.nom }} {{ item.prenom }} </ion-label>
+              <ion-label *ngIf="item.id_users == dataCurrentUser.id_users " > Vous </ion-label>
+          </ion-item>
+        </ion-list>
+      </div>
+
+      <div *ngIf="!activeFieldSearchResultAbm">
+        <ion-list *ngFor="let item of listAbonnenment" class="ion-padding">
+          <ion-item>
+            <ion-avatar slot="start" *ngIf="item.profilImgUrl != null">
+              <img alt="" [src]="item.profilImgUrl " />
+            </ion-avatar>
+            <ion-avatar slot="start" *ngIf="item.profilImgUrl == null" >
+                <img alt="" src="/assets/icon/avatar.svg" />
+             </ion-avatar>
+              <ion-label *ngIf="item.id_users != dataCurrentUser.id_users " > {{ item.nom }} {{ item.prenom }} </ion-label>
+              <ion-label *ngIf="item.id_users == dataCurrentUser.id_users " > Vous </ion-label>
+          </ion-item>
+        </ion-list>
+      </div>
+    </div>
+
+      <ion-list *ngSwitchCase="'infos'">
+          <ion-item>
+              <ion-label>Mes Info</ion-label>
+          </ion-item>
+      </ion-list>
   </div>
+
 </ion-content>
