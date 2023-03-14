@@ -33,11 +33,32 @@
         ':mdp' => $mdp
     ]);
     $responseRow = $query->rowCount();
-    $queryResult = $query->fetchAll();
+    $queryResult = array();
+    $tmpUserData = $query->fetchAll();
+
+    array_push($queryResult, $tmpUserData);
 
     if($responseRow > 0){
         //it's the user
+        array_push($queryResult, getListOfIsPubLike($conn, $tmpUserData));
         $response = json_encode($queryResult);
         echo $response;
+    }
+
+    function getListOfIsPubLike($conn, $tmp): array{
+         $sql = $conn->prepare('SELECT * FROM HiChat.PUB_LIKE WHERE PUB_LIKE.id_users = :id_users');
+         $sql->execute([
+            ':id_users'=> getUserID($tmp)
+         ]);
+         if($sql->rowCount() > 0){
+            return $sql->fetchAll();   
+         }else{
+            return [];
+         }
+         
+    }
+
+    function getUserID($data): int{
+        return $data[0]['id_users'];
     }
 ?>
