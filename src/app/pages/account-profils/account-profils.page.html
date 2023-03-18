@@ -118,7 +118,7 @@
                                              </span>
       
                                               <span style="float: right; font-size: 12px;">
-                                                <sup class="menu" *ngIf="pub.id_user === dataUser.id_users" >
+                                                <sup class="menu" (click)="actionSheetPub(pub.id_user, pub.id_pub, index, pub.libelle, false)">
                                                   ...
                                                 </sup>
                                               </span>
@@ -129,9 +129,9 @@
                                 <span class="message"> {{ pub.libelle }} </span>
                             </div>
       
-                            <div class="reaction">
-                                <span  id="open-modal2" (click)="getListUsersLike(pub.id_pub, pub.id_user)" *ngIf="pub.nbrLike > 0 ? true:false"> {{ pub.nbrLike }} <ion-icon name="heart" class="heart"></ion-icon></span>
-                                <ion-modal #modal trigger="open-modal2">
+                            <div class="reaction" [id]="'open' + pub.id_pub">
+                                <span (click)="getListUsersLike(pub.id_pub, pub.id_user)" *ngIf="pub.nbrLike > 0 ? true:false"> {{ pub.nbrLike }} <ion-icon name="heart" class="heart"></ion-icon></span>
+                                <ion-modal #modal [trigger]="'open' + pub.id_pub">
                                   <ng-template>
                                     <ion-header>
                                       <ion-toolbar>
@@ -202,22 +202,23 @@
                                     </ion-content>
                                   </ng-template>
                                 </ion-modal>
+                                            <ion-badge slot="end" style="float: right; margin-right: 5px;" *ngIf="pub.nbrCommentaire > 0" > {{ pub.nbrCommentaire }} Commentaires </ion-badge>
                              </div>
       
                             <div class="action">
                                 <div class="like">
                                     <ion-buttons slot="start" >
                                         <span *ngIf="pub.alreadyLike === 0">
-                                          <ion-button (click)="doLike(pub.id_pub, index)" >
+                                          <ion-button (click)="doLike(pub.id_pub, index, pub)" >
                                             J'aime
                                           </ion-button>
                                         </span>
                                         <span *ngIf="pub.alreadyLike !== 0" ><ion-button (click)="doUnLike(pub.id_pub, index)" >Jaime plus</ion-button></span>
-                                    </ion-buttons>
+                                      </ion-buttons>
                                 </div>
                               
                                 <div class="comment">
-                                  <ion-buttons slot="end">
+                                  <ion-buttons slot="end" (click)="goToDetail(pub, index)" >
                                     <ion-button>Commenter</ion-button>
                                 </ion-buttons>
                                 </div>

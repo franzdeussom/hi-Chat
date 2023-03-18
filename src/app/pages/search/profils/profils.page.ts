@@ -1,3 +1,5 @@
+import { TypeNotification } from '../../notifications/typeNotif.enum';
+import { GetNotificationService } from '../../notifications/get-notification.service';
 import { Publication } from './../../actualite/publicatin.model';
 import { User } from './../../signup/users.model';
 import { AccountApiService } from './../../../services/account-api.service';
@@ -39,6 +41,7 @@ export class ProfilsPage implements OnInit {
               private accountApi: AccountApiService,
               private alertController: AlertController,
               private dataUser: DataUserService,
+              private wsNotif: GetNotificationService,
               private receiverData: ReceiverDataService)
               {
                 this.listDiscSecur = new SecurityMsg();
@@ -136,6 +139,7 @@ ionViewWillEnter(){
                     this.toast.makeToast('Vous suivez desormais ' + this.dataUserFound.prenom);
                     this.listAbonne.push(this.dataCurrentUser);
                     this.isAlreadyFollowed = true;
+                    this.wsNotif.sendNotification(TypeNotification.NEW_FOLLOWER, this.dataCurrentUser, 0, this.dataUserFound);
                 }else{
                     this.toast.makeToast('Erreur interne du serveur');
               }
@@ -275,9 +279,10 @@ ionViewWillEnter(){
       id_pub: idPublication
     }
     if(this.listPublication[index].alreadyLike == 0 ){
+      this.addLike(index, this.listPublication[index].nbrLike);
         this.accountApi.post('user-api/addLike.php', JSON.stringify(data)).subscribe((response)=>{
             if(Object.keys(response).length > 0){
-                this.addLike(index, this.listPublication[index].nbrLike)
+                  this.wsNotif.sendNotification(TypeNotification.LIKE, this.dataCurrentUser, this.listPublication[index]);
             }else{
               console.log('erreur');
             }
@@ -307,6 +312,7 @@ ionViewWillEnter(){
     }
     this.accountApi.post('user-api/unLike.php', JSON.stringify(data)).subscribe((response)=>{
            if(Object.keys(response).length > 0){
+              this.wsNotif.sendNotification(TypeNotification.UNLIKE, this.dataCurrentUser, this.listPublication[index])
                 this.delLike(index, this.listPublication[index].nbrLike);
             }else{
               console.log('erreur');
@@ -314,6 +320,12 @@ ionViewWillEnter(){
     })
   }
 
+  goToDetail(pub: Publication, index: number){
+    this.dataUser.publication = pub;
+    this.dataUser.indexPub =index;
+
+    this.navCtrl.navigateForward('details');
+  }
 
   async goToChatPage(){
       this.receiverData.ID_RECIVER_AND_DATA = this.dataUserFound;

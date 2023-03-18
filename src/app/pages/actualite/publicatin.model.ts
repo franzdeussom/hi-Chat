@@ -1,6 +1,7 @@
 export class Publication{
     constructor(
         public id_pub?: number,
+        public PID?: any,
         public id_user?: number,
         public libelle?: string,
         public date_pub?: any,
@@ -11,6 +12,8 @@ export class Publication{
         public prenom?: string,
         public profilImgUrl?: string,
         public nbrLike?: any,
-        public alreadyLike?: any
+        public nbrCommentaire?:any,
+        public alreadyLike?: any,
+        public id_CurrentUsers?: any//will use to check if the user has already like a comment on a pub
     ){ this.nbrLike = 0}
 }

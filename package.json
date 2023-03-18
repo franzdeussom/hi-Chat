@@ -23,6 +23,7 @@
     "@capacitor/core": "4.6.3",
     "@capacitor/network": "^4.1.0",
     "@capacitor/storage": "^1.2.5",
+    "@ionic-native/clipboard": "^5.36.0",
     "@ionic/angular": "^6.1.9",
     "cordova-plugin-websocket-server": "^1.6.0",
     "ionicons": "^6.0.3",

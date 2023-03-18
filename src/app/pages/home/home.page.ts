@@ -1,3 +1,5 @@
+import { AccountApiService } from 'src/app/services/account-api.service';
+import { GetNotificationService } from './../notifications/get-notification.service';
 import { SecurityMsg } from './securitymsg.model';
 import { GlobalStorageService } from './../../services/localStorage/global-storage.service';
 import { DataUserService } from './../data-user.service';
@@ -6,9 +8,10 @@ import { RangeMessageService } from './range-message.service';
 import { AlertController, NavController } from '@ionic/angular';
 import { GetAllMessageService } from './get-all-message.service';
 import { MessageApiService } from '../../services/message-api.service';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Message } from './discusion/message.model';
 import { ToastAppService } from '../../services/Toast/toast-app.service';
+import { User } from '../signup/users.model';
 
 @Component({
   selector: 'app-home',
@@ -29,12 +32,14 @@ export class HomePage implements OnInit {
   AllMessage: any;
   listDiscSecur : SecurityMsg;
   listOfSearchBar: Message[] = [];
-
+  
   constructor(private webSocket : MessageApiService,
+              private cdRef:ChangeDetectorRef,
               private loadDataUser: DataUserService,
-              private getAllMessage: GetAllMessageService,
               private api: MessageApiService,
+              private accountServ: AccountApiService,
               private receiver: ReceiverDataService,
+              private wsNotif: GetNotificationService,
               private rangeMessage: RangeMessageService,
               private navController: NavController,
               private localSave: GlobalStorageService,
@@ -42,7 +47,6 @@ export class HomePage implements OnInit {
               private alertController: AlertController
               ) {
                 this.listDiscSecur = new SecurityMsg();
-                //this.ws = new WebSocket('ws://localhost:8084?param='+JSON.parse(this.loadDataUser.userData)[0].id_users);
                 this.listOfSender = new Array<Message>(); this.listLastMesg = new Array<Message>()  
               }
 
@@ -54,9 +58,8 @@ export class HomePage implements OnInit {
       this.loadMessage();
       this.checkUpdateListOfSenderHome();
       this.loadSecurityDisc();
-     // this.ws.onmessage = (msg)=>{
-     //   console.log('eeee', msg);
-     // }
+      this.getFollowers();
+  
       
   }
 
@@ -72,6 +75,24 @@ export class HomePage implements OnInit {
     }catch(err){
 
     }
+    this.cdRef.detectChanges();
+
+  }
+
+  async getFollowers(){
+    this.wsNotif.listAbonneCurrentUser = await this.loadAbonne();
+  }
+
+  loadAbonne(): Promise<User[]>{
+    return  new Promise((resolve, reject)=>{
+      this.accountServ.post('user-api/getUserFollowersHome.php', JSON.stringify(this.dataUser[0])).subscribe((data)=>{
+          if(Object.keys(data).length > 0){
+            resolve(JSON.parse(data));
+          }
+        }, (err)=>{
+            reject(err);
+        });
+     });
   }
 
   checkUpdateListOfSenderHome(){
@@ -91,7 +112,9 @@ export class HomePage implements OnInit {
   connectWebSocket(){
     //connect to the websocket chat server
     this.webSocket.webSocketInit(JSON.parse(this.loadDataUser.userData)[0].id_users);
-   
+    
+    //connect to the websocket Notification server and start listenner
+    this.wsNotif.makeConnectionToWsNotif(JSON.parse(this.loadDataUser.userData)[0].id_users)
     //console.log('message recu', this.webSocket.webSocketOnMessage()); 
   }
 
@@ -271,7 +294,6 @@ if(this.listOfSender.length > 0){
     }
 
     this.listOfSearchBar = this.listOfSender.filter(exec);
-    this.search.value = '';
   }
 
   getDataUser(){

@@ -1,6 +1,8 @@
 <?php 
     require('../connectDB.php');
     require('../header.php');
+    require('../user-api/getFollowers.php');
+
 
     global $conn;
   //get data send from frontEnd
@@ -33,7 +35,7 @@
         ':mdp' => $mdp
     ]);
     $responseRow = $query->rowCount();
-    $queryResult = array();
+    $queryResult = Array();
     $tmpUserData = $query->fetchAll();
 
     array_push($queryResult, $tmpUserData);
@@ -41,6 +43,7 @@
     if($responseRow > 0){
         //it's the user
         array_push($queryResult, getListOfIsPubLike($conn, $tmpUserData));
+        array_push($queryResult, getFollowers(getUserID($tmpUserData)));
         $response = json_encode($queryResult);
         echo $response;
     }

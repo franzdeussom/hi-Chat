@@ -1,5 +1,7 @@
 {
   "name": "Hi-Chat",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }

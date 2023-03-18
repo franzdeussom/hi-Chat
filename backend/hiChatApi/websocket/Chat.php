@@ -64,7 +64,7 @@ class Chat implements MessageComponentInterface{
                         echo 'Error on save\n';
                     };
                 }catch(Exception $e){
-                    $e->getMessage();
+                   echo $e->getMessage();
                 }
             }
             

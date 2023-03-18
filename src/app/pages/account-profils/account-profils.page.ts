@@ -1,8 +1,10 @@
+import { TypeNotification } from './../notifications/typeNotif.enum';
+import { GetNotificationService } from 'src/app/pages/notifications/get-notification.service';
 import { MessageApiService } from './../../services/message-api.service';
 import { User } from './../signup/users.model';
 import { DataUserService } from './../data-user.service';
 import { RangeMessageService } from './../home/range-message.service';
-import { ActionSheetController, IonModal, NavController } from '@ionic/angular';
+import { ActionSheetController, IonModal, NavController, AlertController } from '@ionic/angular';
 import { GlobalStorageService } from './../../services/localStorage/global-storage.service';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ToastAppService } from 'src/app/services/Toast/toast-app.service';
@@ -11,6 +13,7 @@ import { Publication } from '../actualite/publicatin.model';
 import { OverlayEventDetail } from '@ionic/core/components';
 import { SaveResultSearchService } from '../search/save-result-search.service';
 import { SearchService } from '../search/search.service';
+import { Clipboard } from '@ionic-native/clipboard/ngx';
 
 @Component({
   selector: 'app-account-profils',
@@ -19,6 +22,7 @@ import { SearchService } from '../search/search.service';
 })
 export class AccountProfilsPage implements OnInit {
   @ViewChild(IonModal) modal!: IonModal;
+
   actived!: boolean;
   typeList: string = 'girl';
   searchValueListLike: string = '';
@@ -36,6 +40,7 @@ export class AccountProfilsPage implements OnInit {
   activeFieldSearchResult: boolean = false;
   listSearchAbm: Array<User>;
   activeFieldSearchResultAbm: boolean = false;
+  
   constructor(private globalStorage: GlobalStorageService,
               private navController: NavController,
               private dataUsers: DataUserService,
@@ -44,7 +49,10 @@ export class AccountProfilsPage implements OnInit {
               private toast: ToastAppService,
               private accountApi: AccountApiService,
               private actionSheetCtrl: ActionSheetController,
+              private alertController: AlertController,
+              private wsNotif: GetNotificationService,
               private search : SearchService,
+              private copyCliboard: Clipboard,
               private saveSearch: SaveResultSearchService
               ) { this.dataUser = new User()
                   this.listAbonne = new Array<User>();
@@ -72,13 +80,9 @@ export class AccountProfilsPage implements OnInit {
 
   cancel() {
     this.listUsersLike.length = 0;
-    this.modal.dismiss(null, 'cancel');
+    this.modal.dismiss('cancel');
   }
-  onWillDismiss(event: Event) {
-    const ev = event as CustomEvent<OverlayEventDetail<any>>;
-    if(ev.detail.role === 'confirm') {
-    }
-  }
+
   loadDataCurrentUser(){
     this.dataUser = JSON.parse(this.dataUsers.userData)[0];
   }
@@ -182,7 +186,7 @@ searchFollowers(){
 
         this.searchValue = '';
 }
-doLike(idPublication: any, index:number){
+doLike(idPublication: any, index:number, pub: Publication){
   let data: {
     id_users: any,
     id_pub: number
@@ -191,11 +195,10 @@ doLike(idPublication: any, index:number){
     id_pub: idPublication
   }
   if(this.listPublication[index].alreadyLike == 0 ){
+    this.addLike(index, this.listPublication[index].nbrLike)
       this.accountApi.post('user-api/addLike.php', JSON.stringify(data)).subscribe((response)=>{
-          if(Object.keys(response).length > 0){
-              this.addLike(index, this.listPublication[index].nbrLike)
-          }else{
-            console.log('erreur');
+          if(Object.keys(response).length < 0){
+              this.toast.makeToast('Operation Error');
           }
       }, (err)=>{
           this.toast.makeToast(''+ err.getMessage());
@@ -225,24 +228,135 @@ doUnLike(idPublication: any, index:number){
          if(Object.keys(response).length > 0){
               this.delLike(index, this.listPublication[index].nbrLike);
           }else{
-            console.log('erreur');
           }
   })
 }
 
 getListUsersLike(idPub: any, idUsersPub: any){
     this.listUsersLike.length = 0;
-    console.log(this.listUsersLike.length);
     let param : { id_pub : any, id_user: any } = {id_pub: idPub , id_user: idUsersPub }
       this.accountApi.post('user-api/getLikeList.php', JSON.stringify(param)).subscribe((data)=>{
           if(Object.keys(data).length > 0){
               this.listUsersLike = JSON.parse(data);
-              console.log(this.listUsersLike);
           }else{
               this.listUsersLike = [];
           }
       });
   }
+  async actionSheetPub(idUserWhoCommented: any, id_pub: any, index:number,  prevText?:any, isFromSeachList?: boolean){
+      const actionSheet = await this.actionSheetCtrl.create({
+        header: 'Quelle action pour cette publication ?',
+        buttons: [
+          {
+            text: 'Modifier le text',
+            role: 'confirm',
+            handler: ()=>{
+              this.showAlertNewValuePub(id_pub, idUserWhoCommented, prevText, index, isFromSeachList);
+            }
+          },
+          {
+            text: 'Copier le text',
+            role: 'confirm',
+            handler: ()=>{
+             this.copiedText(prevText);
+            }
+          },
+          {
+            text:'Supprimer',
+            role: 'confirm',
+            handler: ()=>{
+              console.log('id:', id_pub);
+              this.deletePub(id_pub, index, isFromSeachList);
+            }
+          },
+          {
+            text:'Annuler',
+            role:'cancel'
+          }
+        ],
+      });
+  
+      actionSheet.present();
+      const { role } = await actionSheet.onWillDismiss();
+  
+      return role === 'confirm';
+    }
+
+    copiedText(textToCopy: string){
+         this.copyCliboard.copy(textToCopy);
+    }
+    
+  async showAlertNewValuePub(idPublication:any, id_users:any,  prevValue:string, index:number, isFromSeachList?:boolean){
+    const alert = await this.alertController.create({
+      header: 'Nouveau text :',
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+          {
+            text: 'Modifier',
+            role: 'confirm',
+            handler: (data)=>{
+                  if(data.newValue !== ''){
+                        this.updatePubText(idPublication, index, data.newValue, isFromSeachList);
+                  }else{
+                    this.toast.makeToast('Aucune Entrée !')
+                  }
+            }
+          },
+      ],
+      inputs: [
+        {
+          type: 'text',
+          name: 'newValue',
+          value: prevValue
+          
+        }
+      ],
+    });
+
+    await alert.present();
+  }
+
+  updatePubText(idPub: number, index: any, newValue:string, isFromSeachList?: any){
+      const data : { 
+          id_pub: number,
+          newValue: string
+     } = {
+      id_pub : idPub,
+      newValue : newValue
+     };
+      this.accountApi.post('user-api/updateTextPublication.php', JSON.stringify(data)).subscribe((response)=>{
+            if(Object.keys(response).length > 0){
+                this.listPublication[index].libelle = data.newValue;
+            }
+      });
+  }
+
+  deletePub(idPublication:any, index:any, isFromSeachList?: boolean){
+          const data : { 
+          id_pub: number,
+          id_users: any
+     } = {
+      id_pub : idPublication,
+      id_users : this.dataUser.id_users
+     };
+     console.log(idPublication)
+      this.accountApi.post('user-api/deletePub.php', JSON.stringify(data)).subscribe((response)=>{
+            if(Object.keys(response).length > 0){
+                this.listPublication.splice(index, 1);
+            }
+      });
+  }
+
+
+  goToDetail(pub: Publication, index: number){
+    this.dataUsers.publication = pub;
+    this.dataUsers.indexPub =index;
+
+    this.navController.navigateForward('details');
+}
 
   logout(){
     this.rangeMessage.AllMessage.length = 0;

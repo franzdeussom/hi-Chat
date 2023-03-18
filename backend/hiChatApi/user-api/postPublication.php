@@ -26,13 +26,16 @@
                                 date_pub,
                                 url_file,
                                 is_public,
-                                colorBg )  VALUES(
+                                colorBg,
+                                PID )  VALUES(
                                     :id,
                                     :libelle,
                                     :date_pub,
                                     :url_file,
                                     :isPublic,
-                                    :Color )
+                                    :Color,
+                                    :pid
+                                     )
                             ');
     $query->execute([
         ':id' => $id_users,
@@ -40,7 +43,8 @@
         ':date_pub' => $datePub,
         ':url_file' => $url_file,
         ':isPublic' => $is_public,
-        ':Color' => $bgColor
+        ':Color' => $bgColor,
+        ':pid'=> $data->PID
     ]);
 
     if($query){

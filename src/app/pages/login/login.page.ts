@@ -64,9 +64,10 @@ export class LoginPage implements OnInit {
       if(data.length > 0 ){
          if(!data.noData){
           this.currentUserData = JSON.stringify(JSON.parse(data)[0]);
-          console.log(this.currentUserData);
           this.globalStorage.currentUser = this.currentUserData;
           this.globalStorage.listLike = JSON.parse(data)[1];
+         // console.log(JSON.parse(data)[2]);
+
           //localStorage.setItem('id_users', );
           
           if(this.rememberMe){

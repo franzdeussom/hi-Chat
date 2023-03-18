@@ -1,5 +1,5 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar color="light">
   <ion-back-button slot="start" (click)="renitListMessage()"></ion-back-button>
     <div (click)="goToProfil()">
       <ion-title>{{ receivData.nom }} {{ receivData.prenom }} </ion-title>
@@ -16,7 +16,7 @@
 </ion-header>
 
 <ion-content class="contener">
-  <div>
+  <div class="chat-box">
     <div *ngFor="let item of message" >
       <ion-row>
         <ion-col>
@@ -44,7 +44,7 @@
 
   <ion-footer class="field">
        
-        <ion-input class="custom-textarea" (ionChange)="setColor('primary')" [(ngModel)]="value" [value]="value" autocapitalize placeholder="Type something here"></ion-input>
+        <ion-input class="custom-textarea" (ionChange)="setColor('primary')" [(ngModel)]="value" [value]="value" [autocapitalize]="true" placeholder="Type something here"></ion-input>
           <span class="send">
             <ion-buttons (click)="sendMessage()">
                 <ion-icon name="send-outline" [color]="colorSendBtn"></ion-icon>

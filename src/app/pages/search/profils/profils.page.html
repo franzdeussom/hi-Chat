@@ -115,6 +115,7 @@
           
                                 <div class="reaction">
                                     <span *ngIf="pub.nbrLike > 0 ? true:false" > {{ pub.nbrLike }} <ion-icon name="heart" class="heart"></ion-icon> </span>
+                                    <ion-badge slot="end" style="float: right; margin-right: 5px;" *ngIf="pub.nbrCommentaire > 0" > {{ pub.nbrCommentaire }} Commentaires </ion-badge>
                                 </div>
           
                                 <div class="action">
@@ -122,13 +123,14 @@
                                         <ion-buttons slot="start" >
                                             <span *ngIf="pub.alreadyLike === 0"><ion-button (click)="doLike(pub.id_pub, index)" >Jaime</ion-button></span>
                                             <span *ngIf="pub.alreadyLike !== 0" ><ion-button (click)="doUnLike(pub.id_pub, index)" >Jaime plus</ion-button></span>
-                                        </ion-buttons>
+                                          </ion-buttons>
                                     </div>
                                   
                                     <div class="comment">
                                       <ion-buttons slot="end">
-                                        <ion-button>Commenter</ion-button>
-                                    </ion-buttons>
+                                        <ion-button (click)="goToDetail(pub, index)" >Commenter</ion-button>
+                                       
+                                      </ion-buttons>
                                     </div>
                                 </div>
                             </ion-card>

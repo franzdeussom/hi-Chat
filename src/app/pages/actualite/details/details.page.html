@@ -12,6 +12,7 @@
 
   <div class="pub">
     <div>
+      <div>
         <ion-card style="width: 100% !important; margin-left: 0; margin-top: 2px;">
               <ion-list class="head">
                       <ion-item>
@@ -46,72 +47,126 @@
               </div>
 
               <div class="reaction">
-                  <span *ngIf="pub.nbrLike > 0 ? true:false" > {{ pub.nbrLike }} <ion-icon name="heart" class="heart"></ion-icon> </span>
+                  <span *ngIf="pub.nbrLike > 0 ? true:false" > <ion-icon name="heart" class="heart" style="color: red;"></ion-icon> {{ pub.nbrLike }}  </span>
+                  <span slot="end" style="float: right; margin-right: 5px;" *ngIf="pub.nbrCommentaire > 0" > {{ pub.nbrCommentaire }} Commentaires </span>
+
               </div>
 
               <div class="action">
                   <div class="like">
                       <ion-buttons slot="start" >
-                          <span *ngIf="pub.alreadyLike === 0"><ion-button (click)="doLike(pub.id_pub)" >Jaime</ion-button></span>
-                          <span *ngIf="pub.alreadyLike !== 0" ><ion-button (click)="doUnLike(pub.id_pub)" >Jaime plus</ion-button></span>
+                         <span>{{ pub.nbrLike }} </span>
                       </ion-buttons>
                   </div>
                 
                   <div class="comment">
                     <ion-buttons slot="end">
-                      <ion-button>Commenter</ion-button>
+                      <ion-button disabled>Commenter</ion-button>
                   </ion-buttons>
                   </div>
               </div>
           </ion-card>
+        </div>
     </div>
 </div>
 
-<div *ngIf="commentaires.length > 0 " style="text-align: center; margin: auto !important;;">
-  <ion-spinner name="circular" style="margin: auto;"></ion-spinner>
+<div *ngIf="commentaires.length == 0 " style="text-align: center; margin: auto !important;;">
+  <ion-spinner name="dots" style="margin: auto;"></ion-spinner>
 </div>
 
-<div class="commentContener"  *ngIf="commentaires.length === 0">
+<div class="commentContener"  *ngIf="commentaires.length > 0">
   <ion-searchbar color="ligth" placeholder="recherche" [(ngModel)]="searchUserValueComment" (ionChange)="searchUserInComments()">
   </ion-searchbar>
 
-  <div class="resultSearch" *ngIf="activeFieldRslt">
-      <div>
-      
-      </div>
-  </div>
+  <div class="resultSearch cment" *ngIf="activeFieldRslt">
+    <span style="margin-right: 10px; font-size: 18px;" *ngIf="listSearchRslt.length === 0">Aucun commentaire de {{ searchUserValueComment }} </span>
+    <div *ngFor="let comment of listSearchRslt let index = index" >
+      <div class="commentaire">
+        <div class="profil" style="top:0 !important;">
+            <ion-avatar *ngIf="comment.profilImgUrl == null" (click)="goToProfilFriend(comment.nom, comment.prenom)">
+              <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+            </ion-avatar>
 
-  <div *ngIf="!activeFieldRslt">
-      <div>
+            <ion-avatar *ngIf="comment.profilImgUrl != null" (click)="goToProfilFriend(comment.nom, comment.prenom)">
+              <img alt="Silhouette of a person's head" [src]="comment.profilImgUrl"/>
+            </ion-avatar>
+        </div>
+          <ion-card (click)="actionSheet(comment.id_users, comment.id_commentaire, index, comment.date_comment , comment.libelle, true)" style="width: 90%; height: fit-content; margin-right: 2px !important;top:0 !important;">
+              <ion-card-title style="font-size: 15px; margin-top: 8px; margin-left: 10px;">
+                  {{ comment.nom }} {{ comment.prenom }}
+                <ion-badge style="float: right; margin-top: 1px;"> {{ comment.date_comment }} </ion-badge>
+              </ion-card-title>
+              <ion-card-content>
+                  <span style="font-size: 20px;">
+                      {{ comment.libelle }}
+                  </span>
+              </ion-card-content>
+                <div class="reaction" style="float: right; margin-right: 8px; margin-top: 5px;">
+                  <ion-buttons slot="end">
+                    <span style="margin-right: 5px;" *ngIf="comment.nbrLike > 0"><ion-icon name="heart" class="heart" [color]="comment.nbrLike > 0 ? 'red':''"></ion-icon> {{ comment.nbrLike }} </span>
+
+                      <ion-button *ngIf="comment.alreadyLike === 0" >
+                        J'aime
+                      </ion-button>
+                      <ion-button *ngIf="comment.alreadyLike > 0" >
+                        J'aime plus
+                      </ion-button>
+                  </ion-buttons>
+              </div>
+          </ion-card>
+      </div>
+     </div>
+   </div>
+
+  <div *ngIf="!activeFieldRslt" class="cment">
+      <div *ngFor="let comment of commentaires; let index=index" >
         <div class="commentaire">
           <div class="profil" style="top:0 !important;">
-              <ion-avatar>
+              <ion-avatar *ngIf="comment.profilImgUrl == null" (click)="goToProfilFriend(comment.nom, comment.prenom)" >
                 <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
               </ion-avatar>
+
+              <ion-avatar *ngIf="comment.profilImgUrl != null" (click)="goToProfilFriend(comment.nom, comment.prenom)">
+                <img alt="Silhouette of a person's head" [src]="comment.profilImgUrl"/>
+              </ion-avatar>
           </div>
-            <ion-card style="margin-right: 2px !important;top:0 !important;">
+            <ion-card  style="width: 90%; height: fit-content; margin-right: 2px !important;top:0 !important;">
                 <ion-card-title style="font-size: 15px; margin-top: 8px; margin-left: 10px;">
-                  Nom Prenom
-                  <ion-badge style="float: right; margin-top: 1px;">19/2/2003 18h30</ion-badge>
+                    {{ comment.nom }} {{ comment.prenom }}
+                  <ion-badge style="float: right; margin-top: 1px;"> {{ comment.date_comment }} </ion-badge>
                 </ion-card-title>
-                <ion-card-content>
+                <ion-card-content (click)="actionSheet(comment.id_users, comment.id_commentaire, index, comment.date_comment, comment.PID, comment.libelle)">
                     <span style="font-size: 20px;">
-                      Le contenur ici Lorem ipsum dolor sit amet consectetur adipisicing elit. Laudantium non eveniet, qui voluptates hic natus mollitia. Tempore enim possimus, quas minima accusamus consequuntur consequatur, numquam nostrum unde delectus suscipit autem!
+                        {{ comment.libelle }}
                     </span>
                 </ion-card-content>
                   <div class="reaction" style="float: right; margin-right: 8px; margin-top: 5px;">
-                    <ion-buttons slot="end">
-                      <span style="margin-right: 5px;">1</span>
+                    <ion-buttons slot="end" style="margin-right: 10px;">
+                      <span style="margin-right: 5px;" *ngIf="comment.nbrLike > 0"><ion-icon name="heart" class="heart" color="danger" ></ion-icon> {{ comment.nbrLike }} </span>
 
-                        <ion-button>
+                        <ion-button *ngIf="comment.alreadyLike == 0" (click)="doLike(comment.id_commentaire, comment.PID, index)" >
                           J'aime
+                        </ion-button>
+                        <ion-button *ngIf="comment.alreadyLike > 0" (click)="doUnLike(comment.id_commentaire, comment.PID, index)">
+                          J'aime plus
                         </ion-button>
                     </ion-buttons>
                 </div>
             </ion-card>
-            
         </div>
     </div>
   </div>
+</div>
+<div class="addComment">
+ <form>
+  <div class="chat-input">
+    <div id="chat-input" >
+      <ion-textarea [inputmode]="'text'" [(ngModel)]="commentaire" name="commentaire" placeholder="Votre commentaire ici" [autofocus]="true"></ion-textarea>
+      <ion-button (click)="sendComment()"  class="chat-submit" ><ion-icon name="send-outline"></ion-icon></ion-button>
+    </div>  
+  </div>
+  <div>
+ </div>
+</form>      
 </div>
 </ion-content>

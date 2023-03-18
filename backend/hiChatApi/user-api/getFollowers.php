@@ -1,9 +1,8 @@
 <?php
     require('../connectDB.php');
 
-function getFollowers($id_F){
+function getFollowers($id_F): array{
         global $conn;
-        global $id_F;
         $query = $conn->prepare('SELECT USERS.nom,
                                         USERS.prenom,
                                         USERS.id_users,

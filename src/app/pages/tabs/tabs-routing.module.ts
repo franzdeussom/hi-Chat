@@ -50,6 +50,15 @@ const routes: Routes = [
             loadChildren: ()=> import('../actualite/actualite.module').then(m => m.ActualitePageModule)
           }
         ]
+      },
+      {
+        path: 'notifications',
+        children: [
+          {
+            path: '',
+            loadChildren: ()=> import('../notifications/notifications.module').then(m => m.NotificationsPageModule)
+          }
+        ]
       }
     ]
   },

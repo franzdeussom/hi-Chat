@@ -10,6 +10,13 @@
       <ion-icon name="apps"></ion-icon>
       <ion-label>Actualite</ion-label>
     </ion-tab-button>
+    
+    <ion-tab-button tab="notifications">
+      <ion-icon name="notifications"> 
+        <ion-badge id="notifications-badge" color="danger">5</ion-badge> 
+      </ion-icon>
+      <ion-label>Notifications</ion-label>
+    </ion-tab-button>
 
     <ion-tab-button tab="search">
       <ion-icon name="search"></ion-icon>
@@ -20,6 +27,8 @@
       <ion-icon name="person-circle-outline"></ion-icon>
       <ion-label>Profil</ion-label>
     </ion-tab-button>
+
+    
     
     <ion-tab-button tab="" *ngIf="isAdmin" >
       <ion-icon name="person-circle-outline"></ion-icon>

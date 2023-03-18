@@ -33,6 +33,7 @@
                                  PUBLICATION.url_file,
                                  PUBLICATION.is_public,
                                  PUBLICATION.colorBg,
+                                 PUBLICATION.PID,
                                  USERS.nom, 
                                  USERS.prenom, 
                                  USERS.profilImgUrl, 
@@ -48,7 +49,13 @@
                                                 PUB_LIKE.id_users = :idOder
                                                 AND
                                                 PUB_LIKE.id_pub = PUBLICATION.id_pub
-                                        ) as 'alreadyLike' 
+                                        ) as 'alreadyLike',
+                                        (SELECT COUNT(*) 
+                                            FROM HiChat.COMMENTAIRE
+                                            WHERE 
+                                                COMMENTAIRE.id_publication = PUBLICATION.id_pub
+                    
+                                        ) as 'nbrCommentaire' 
 
                                  FROM HiChat.PUBLICATION,
                                       HiChat.USERS

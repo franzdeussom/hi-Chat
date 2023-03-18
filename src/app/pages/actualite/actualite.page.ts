@@ -1,14 +1,17 @@
 import { ToastAppService } from './../../services/Toast/toast-app.service';
 import { AccountApiService } from './../../services/account-api.service';
-import { IonModal, NavController } from '@ionic/angular';
+import { IonModal, NavController, ActionSheetController, AlertController } from '@ionic/angular';
 import { User } from './../signup/users.model';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { DataUserService } from '../data-user.service';
 import { OverlayEventDetail } from '@ionic/core/components';
 import { Publication } from './publicatin.model';
 import { ListBgColorService } from './list-bg-color.service';
 import { SearchService } from '../search/search.service';
+import { Clipboard } from '@ionic-native/clipboard/ngx';
 import { SaveResultSearchService } from '../search/save-result-search.service';
+import { GetNotificationService } from 'src/app/pages/notifications/get-notification.service';
+import { TypeNotification } from 'src/app/pages/notifications/typeNotif.enum';
 @Component({
   selector: 'app-actualite',
   templateUrl: './actualite.page.html',
@@ -30,14 +33,20 @@ export class ActualitePage implements OnInit {
   showApercu: boolean = false;
   colorBgApercu: string = '';
   Color: Array<any>;
+  typeNotif!: TypeNotification;
   
   constructor(private dataUserServ: DataUserService,
+              private cdRef:ChangeDetectorRef,
               private navCtrl: NavController ,
               private accountApi: AccountApiService,
               private toast: ToastAppService,
+              private wsNotif: GetNotificationService,
               private listColor: ListBgColorService,
               private search : SearchService,
-              private saveSearch: SaveResultSearchService
+              private actionSheet: ActionSheetController,
+              private alertController: AlertController,
+              private saveSearch: SaveResultSearchService,
+              private copyCliboard: Clipboard
               ) { this.publication = new Publication();
                   this.Color = new Array();
                   this.Color = this.listColor.Color;
@@ -51,7 +60,31 @@ export class ActualitePage implements OnInit {
     this.loadFriendPublications();
 
   }
+  ngAfterViewChecked() {
+    this.onPubLikeListenner();
+    this.cdRef.detectChanges();
+  }
 
+  onPubLikeListenner(){
+    const PID = this.wsNotif.addLikeOnPublication.PID; 
+    if(typeof PID !== 'undefined'){
+        let index = this.listPublication.findIndex((pub =>  pub.PID === PID));
+        
+        if(index != -1){
+          if(this.wsNotif.addLikeOnPublication.type === TypeNotification.LIKE){
+            this.listPublication[index].nbrLike = this.listPublication[index].nbrLike +1;
+            this.wsNotif.addLikeOnPublication.PID = undefined;
+          }else{
+            this.listPublication[index].nbrLike = this.listPublication[index].nbrLike - 1;
+            this.wsNotif.addLikeOnPublication.PID = undefined;
+            this.wsNotif.addLikeOnPublication.type = '';
+          }
+            
+        }
+
+    }
+  }
+ 
   cancel() {
     this.renit();
     this.modal.dismiss(null, 'cancel');
@@ -75,34 +108,44 @@ export class ActualitePage implements OnInit {
   }
 
   createPub(pub: Publication){
-    if(pub.libelle?.length === 0 || pub.libelle === ''){
+    if(!this.isPubConform(pub)){
+        console.log(pub);
         this.toast.makeToast('impossible de publier. Veuillez ecrire un statut !')
     }else{
       let PubToSend = this.setParamPub(pub);
+      console.log('pub to send', PubToSend);
           this.accountApi.post('user-api/postPublication.php', PubToSend).subscribe((data)=>{
               if(Object.keys(data).length > 0 ? true:false){
-                  this.toast.makeToast('Votre publication a été publiée avec success!')
+                  this.toast.makeToast('Votre publication a été publiée avec success!');
                   this.listPublication.unshift(JSON.parse(PubToSend));
-                  console.log(this.listPublication);
+                  this.wsNotif.sendNotification(TypeNotification.NEW_PUBLICATION, this.dataUser, JSON.parse(PubToSend))
                 }else{
                 this.toast.makeToast('Erreur interne du serveur');
               }
           });
       }   
   }
-
+  isPubConform(pub: Publication): boolean{
+      return (pub.libelle !== '' && pub.libelle?.length != 0);
+  }
+  isPubColorBgSet(pub: Publication): boolean{
+    return (pub.colorBg !== '' && pub.colorBg?.length != 0);
+  }
   setParamPub(tmpPub: Publication): any{
     let Pub = new Publication();
       Pub.id_user = this.dataUser.id_users;
+      Pub.PID = " "+ (Math.random() * 1).toFixed(2) + this.dataUser.id_users;
       Pub.is_public = this.isPublic ? 1:0;
       Pub.libelle = tmpPub.libelle;
-      Pub.colorBg  = tmpPub.colorBg;
+      Pub.alreadyLike = 0;
+      Pub.colorBg  = this.isPubColorBgSet(tmpPub) ? tmpPub.colorBg : this.Color[0].value; //when the user hat don't a color choose, set the default color
       let min = new Date().getMinutes() < 10 ? '0'+new Date().getMinutes():new Date().getMinutes();
       Pub.date_pub = '' + new Date().getHours().toString() + ':' +  min.toString() + ' | ' + new Date().toString().split(' ')[1]  + ' - ' + new Date().toString().split(' ')[0];
       //this.publication.url_file = null;
       Pub.nom = this.dataUser.nom;
       Pub.prenom = this.dataUser.prenom;
       Pub.profilImgUrl = this.dataUser.profilImgUrl;
+
       this.renit();
 
       return JSON.stringify(Pub);
@@ -115,20 +158,24 @@ export class ActualitePage implements OnInit {
     this.renitAp();
   }
 
-  doLike(idPublication: any, index:number){
+  doLike(idPublication: any, index:number, pub: any){
     let data: {
       id_users: any,
-      id_pub: number
+      id_pub: number,
+      PID: any
     } = { 
       id_users: this.dataUser.id_users,
-      id_pub: idPublication
+      id_pub: idPublication,
+      PID: pub.PID
     }
+
     if(this.listPublication[index].alreadyLike == 0 ){
+      this.addLike(index, this.listPublication[index].nbrLike);
         this.accountApi.post('user-api/addLike.php', JSON.stringify(data)).subscribe((response)=>{
             if(Object.keys(response).length > 0){
-                this.addLike(index, this.listPublication[index].nbrLike)
-            }else{
-              console.log('erreur');
+              if(this.listPublication[index].id_user !== this.dataUser.id_users){
+                  this.wsNotif.sendNotification(TypeNotification.LIKE, this.dataUser, pub);
+              }
             }
         }, (err)=>{
             this.toast.makeToast(''+ err.getMessage());
@@ -146,21 +193,25 @@ export class ActualitePage implements OnInit {
     this.listPublication[index].alreadyLike = 0; 
   }
 
-  doUnLike(idPublication: any, index:number){
+  doUnLike(idPublication: any, index:number, pub: Publication){
     let data: {
       id_users: any,
       id_pub: number
+      PID: any
     } = { 
       id_users: this.dataUser.id_users,
-      id_pub: idPublication
+      id_pub: idPublication,
+      PID: pub.PID
     }
+    this.delLike(index, this.listPublication[index].nbrLike);
+
     this.accountApi.post('user-api/unLike.php', JSON.stringify(data)).subscribe((response)=>{
-           if(Object.keys(response).length > 0){
-                this.delLike(index, this.listPublication[index].nbrLike);
+           if(Object.keys(response).length === 0){
+                this.toast.makeToast('Erreur !');     
             }else{
-              console.log('erreur');
+              this.wsNotif.sendNotification(TypeNotification.UNLIKE, this.dataUser, pub)
             }
-    })
+    });
   }
 
   setOrUnsetPub(){
@@ -174,7 +225,6 @@ export class ActualitePage implements OnInit {
   loadFriendPublications(){
         this.accountApi.post('user-api/getFriendPub.php', JSON.stringify(this.dataUser)).subscribe((data)=>{
             let response = JSON.parse(data);
-            console.log(response);
             this.addOnListPub(response);
         });
   }
@@ -184,7 +234,6 @@ export class ActualitePage implements OnInit {
           dataToAdd.concat(this.listPublication);
           this.listPublication.length = 0;
           this.listPublication = dataToAdd;
-          console.log(this.listPublication)
       }else{
         this.listPublication = dataToAdd;
 
@@ -220,7 +269,8 @@ export class ActualitePage implements OnInit {
       }
       event.target.complete();
     }, 2100);
-  };
+  }
+
   searchUserListLike(){
     this.activeFieldListLikeRslt = this.searchValueListLike.length > 0;
     let execSearch = (user: User)=>{
@@ -229,6 +279,141 @@ export class ActualitePage implements OnInit {
       this.listUserLikeRslt = this.listUsersLike.filter(execSearch);
       this.searchValueListLike ='';
   }
+
+  async actionSheetPub(idUserWhoCommented: any, id_pub: any, PID:any, index:number,  prevText?:any, isFromSeachList?: boolean){
+    if(idUserWhoCommented === this.dataUser.id_users){
+      const actionSheet = await this.actionSheet.create({
+        header: 'Quelle action pour cette publication ?',
+        buttons: [
+          {
+            text: 'Modifier le text',
+            role: 'confirm',
+            handler: ()=>{
+              this.showAlertNewValuePub(id_pub, idUserWhoCommented, prevText, index, isFromSeachList);
+            }
+          },
+          {
+            text: 'Copier le text',
+            role: 'confirm',
+            handler: ()=>{
+              console.log('Copier');
+            }
+          },
+          {
+            text:'Supprimer',
+            role: 'confirm',
+            handler: ()=>{
+              this.deletePub(index, id_pub, PID, isFromSeachList);
+            }
+          },
+          {
+            text:'Annuler',
+            role:'cancel'
+          }
+        ],
+      });
+  
+      actionSheet.present();
+      const { role } = await actionSheet.onWillDismiss();
+  
+      return role === 'confirm';
+    }else{
+      const actionSheet = await this.actionSheet.create({
+        header: 'Quelle action pour cette publication ?',
+        buttons: [
+          {
+            text: 'Copier le text',
+            role: 'confirm',
+            handler: ()=>{
+              this.copiedText(prevText);
+            }
+          },
+          {
+            text:'Annuler',
+            role:'cancel'
+          }
+        ],
+      });
+  
+      actionSheet.present();
+      const { role } = await actionSheet.onWillDismiss();
+  
+      return role === 'confirm';
+    }
+    
+  }
+  copiedText(textToCopy: string){
+    this.copyCliboard.copy(textToCopy);
+}
+  async showAlertNewValuePub(idPublication:any, id_users:any,  prevValue:string, index:number, isFromSeachList?:boolean){
+    const alert = await this.alertController.create({
+      header: 'Nouveau text :',
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+          {
+            text: 'Modifier',
+            role: 'confirm',
+            handler: (data)=>{
+                  if(data.newValue !== ''){
+                        this.updatePubText(idPublication, index, data.newValue, isFromSeachList);
+                  }else{
+                    this.toast.makeToast('Aucune Entrée !')
+                  }
+            }
+          },
+      ],
+      inputs: [
+        {
+          type: 'text',
+          name: 'newValue',
+          value: prevValue
+          
+        }
+      ],
+    });
+
+    await alert.present();
+  }
+
+  updatePubText(idPub: number, index: any, newValue:string, isFromSeachList?: any){
+     const data : { 
+          id_pub: number,
+          newValue: string
+     } = {
+      id_pub : idPub,
+      newValue : newValue
+     };
+
+      this.accountApi.post('user-api/updateTextPublication.php', JSON.stringify(data)).subscribe((response)=>{
+            if(Object.keys(response).length > 0){
+                this.listPublication[index].libelle = data.newValue;
+            }
+      });
+  }
+
+  deletePub(index:any, idPublication:any, PID : any, isFromSeachList?: boolean){
+    console.log('PID', PID);   
+    const data : { 
+          id_pub: number,
+          id_users: any,
+          PID: any
+     } = {
+      id_pub : idPublication,
+      id_users : this.dataUser.id_users,
+      PID: PID
+     };
+
+      this.accountApi.post('user-api/deletePub.php', JSON.stringify(data)).subscribe((response)=>{
+            if(Object.keys(response).length > 0){
+                this.listPublication.splice(index, 1);
+                console.log(data);
+            }
+      });
+  }
+
 
   goToProfilFriend(nom: any, prenom:any){
     if(nom === this.dataUser.nom){

@@ -11,6 +11,7 @@
   </ion-searchbar>
   <div class="resultSearch" *ngIf="activFieldResults">
     <div>
+      <span *ngIf="listOfSearchBar.length === 0" style="margin-left: 10px; font-size: 18px;"> Aucune discussion avec {{ search.value }} </span>
       <ion-list>
         <div *ngFor="let item of listOfSearchBar; let index = index">
           <ion-item-sliding>
@@ -62,8 +63,6 @@
     </div>
   </div>
 </ion-header>
-
-
 
 
 
