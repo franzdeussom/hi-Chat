@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Mar 18, 2023 at 09:36 PM
+-- Generation Time: Mar 31, 2023 at 06:41 PM
 -- Server version: 10.4.27-MariaDB
 -- PHP Version: 8.1.12
 
@@ -73,7 +73,9 @@ CREATE TABLE `MESSAGE` (
   `statut` tinyint(1) DEFAULT 0,
   `received` tinyint(1) DEFAULT NULL,
   `id_destinateur_user` int(11) NOT NULL,
-  `id_sender` int(11) NOT NULL
+  `id_sender` int(11) NOT NULL,
+  `id_discussion` varchar(30) NOT NULL,
+  `idUser` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -87,7 +89,7 @@ CREATE TABLE `PUBLICATION` (
   `id_user` int(11) NOT NULL,
   `libelle` text DEFAULT NULL,
   `date_pub` varchar(40) NOT NULL,
-  `url_file` text DEFAULT NULL,
+  `url_file` mediumtext DEFAULT NULL,
   `is_public` tinyint(1) DEFAULT 0,
   `colorBg` text DEFAULT NULL,
   `PID` varchar(7) NOT NULL
@@ -174,8 +176,8 @@ ALTER TABLE `PUBLICATION`
 --
 ALTER TABLE `PUB_LIKE`
   ADD PRIMARY KEY (`id_like`),
-  ADD KEY `fk_id_userLike` (`id_users`),
-  ADD KEY `fk_id_publication` (`id_pub`);
+  ADD KEY `fk_id_publication` (`id_pub`),
+  ADD KEY `fk_id_userLike` (`id_users`);
 
 --
 -- Indexes for table `USERS`
@@ -274,7 +276,7 @@ ALTER TABLE `PUBLICATION`
 --
 ALTER TABLE `PUB_LIKE`
   ADD CONSTRAINT `fk_id_publication` FOREIGN KEY (`id_pub`) REFERENCES `PUBLICATION` (`id_pub`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_id_userLike` FOREIGN KEY (`id_users`) REFERENCES `USERS` (`id_users`);
+  ADD CONSTRAINT `fk_id_userLike` FOREIGN KEY (`id_users`) REFERENCES `USERS` (`id_users`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -13,6 +13,7 @@ export class MessageApiService {
   ws!: WebSocket;
  public wsAllMsg: Array<Message>;
  public wsSender: Array<Message>;
+ public connectionState: number = 200;
 
   constructor(private host : EnvironementService, private http: HttpClient, 
              ) {
@@ -29,8 +30,15 @@ export class MessageApiService {
   }
 
   webSocketInit(id_users : any){
-      this.ws = new WebSocket(this.host.webSocketServer+id_users); 
-      console.log('connecter');  
+      this.ws = new WebSocket(this.host.webSocketServer+id_users);
+      this.checkConnectionStatement();
+
+    }
+
+    checkConnectionStatement(){
+        this.ws.onerror =(evt)=>{
+              this.connectionState = 500;
+        }
     }
 
   webSocketOnMessage(){

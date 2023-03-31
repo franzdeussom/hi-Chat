@@ -2,7 +2,7 @@ import { ToastAppService } from './../../services/Toast/toast-app.service';
 import { AccountApiService } from './../../services/account-api.service';
 import { IonModal, NavController, ActionSheetController, AlertController } from '@ionic/angular';
 import { User } from './../signup/users.model';
-import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { DataUserService } from '../data-user.service';
 import { OverlayEventDetail } from '@ionic/core/components';
 import { Publication } from './publicatin.model';
@@ -18,6 +18,9 @@ import { TypeNotification } from 'src/app/pages/notifications/typeNotif.enum';
   styleUrls: ['./actualite.page.scss'],
 }) 
 export class ActualitePage implements OnInit {
+  @ViewChild('filechoose', { static: true}) public FileChooserElementRef!: ElementRef;
+
+  items: File[] = [];
   type: string = 'home';
   dataUser: User = new User();
   @ViewChild(IonModal) modal!: IonModal;
@@ -29,12 +32,15 @@ export class ActualitePage implements OnInit {
   name!: string;
   publication: Publication;
   listPublication: Array<Publication>;
+  listPublicationGLobe: Array<Publication>;
   isPublic: boolean = false;
   showApercu: boolean = false;
   colorBgApercu: string = '';
   Color: Array<any>;
   typeNotif!: TypeNotification;
-  
+  num: number = 0;
+  fullScreenBgUrl: any = '';
+  showFullScreenImg: boolean = false;
   constructor(private dataUserServ: DataUserService,
               private cdRef:ChangeDetectorRef,
               private navCtrl: NavController ,
@@ -51,6 +57,7 @@ export class ActualitePage implements OnInit {
                   this.Color = new Array();
                   this.Color = this.listColor.Color;
                   this.listPublication = new Array<Publication>();
+                  this.listPublicationGLobe = new Array<Publication>();
                   this.listUserLikeRslt = new Array<User>(); 
                   this.listUsersLike = new Array<User>(); 
               }
@@ -58,13 +65,23 @@ export class ActualitePage implements OnInit {
   ngOnInit() {
     this.loadUserData();
     this.loadFriendPublications();
-
+    this.init();
   }
   ngAfterViewChecked() {
     this.onPubLikeListenner();
     this.cdRef.detectChanges();
   }
+  
+  ionViewWillEnter(){
+    this.loadUserData();
+  }
 
+  init(){
+    this.publication.libelle = '';
+    this.isPublic = false;
+    this.publication.colorBg = '';
+    this.publication.url_file = null;
+  }
   onPubLikeListenner(){
     const PID = this.wsNotif.addLikeOnPublication.PID; 
     if(typeof PID !== 'undefined'){
@@ -103,17 +120,15 @@ export class ActualitePage implements OnInit {
 
   segmentChanged(event:any){
         if(this.type === 'globe'){
-          console.log('load globe publications');
+         this.getPubGlobalOnListPub();
         }
   }
 
   createPub(pub: Publication){
     if(!this.isPubConform(pub)){
-        console.log(pub);
         this.toast.makeToast('impossible de publier. Veuillez ecrire un statut !')
     }else{
       let PubToSend = this.setParamPub(pub);
-      console.log('pub to send', PubToSend);
           this.accountApi.post('user-api/postPublication.php', PubToSend).subscribe((data)=>{
               if(Object.keys(data).length > 0 ? true:false){
                   this.toast.makeToast('Votre publication a été publiée avec success!');
@@ -125,12 +140,71 @@ export class ActualitePage implements OnInit {
           });
       }   
   }
+  listenerInputChange(evt: any) {
+    const wireUpFileChooser = (e:any) => {
+            const files = e.target.files as File[];
+            for (let i = 0; i < files.length; i++) {
+                this.items.push(files[i]);
+            }
+            this.items.forEach(() => {
+               const checking = this.isFileValid(this.items[0]);
+               if(checking.isValid){
+                   this.convertInBase64AndSendIt(this.items[0], checking.extension);
+               }else{
+                  this.toast.makeToast('Format de fichier pas pris en charge');
+                  this.items.length = 0;
+               }
+          });
+    };
+    wireUpFileChooser(evt);
+    
+ }
+ isFileValid(file: File): any{
+  let response : {
+    isValid: boolean,
+    extension: string
+  } = {
+    isValid : false,
+    extension: ''
+  };
+  const extensionSupportList = ['JPG', 'PNG', 'JPEG', 'SVG', 'TIF', 'GIF']
+  let extension = file.type.split('/')[1].toUpperCase();
+  let index = extensionSupportList.indexOf(extension);
+
+  if(index != -1){
+      response.isValid  = true;
+      response.extension = extensionSupportList[index];
+  }else{
+    response.isValid  = false;
+    response.extension = '';
+  }
+
+  return response; 
+}
+
+convertInBase64AndSendIt(image: any, extension: string): any{
+const file = image;
+const reader = new FileReader();
+let base64Url;
+
+  reader.addEventListener("load", () => {
+      // Base64 Data URL  👇
+     base64Url = reader.result;
+     this.publication.url_file = base64Url;
+  });
+
+  reader.readAsDataURL(file);
+  this.items.length = 0;
+  return base64Url;
+}
+
   isPubConform(pub: Publication): boolean{
       return (pub.libelle !== '' && pub.libelle?.length != 0);
   }
   isPubColorBgSet(pub: Publication): boolean{
     return (pub.colorBg !== '' && pub.colorBg?.length != 0);
   }
+
   setParamPub(tmpPub: Publication): any{
     let Pub = new Publication();
       Pub.id_user = this.dataUser.id_users;
@@ -138,10 +212,10 @@ export class ActualitePage implements OnInit {
       Pub.is_public = this.isPublic ? 1:0;
       Pub.libelle = tmpPub.libelle;
       Pub.alreadyLike = 0;
-      Pub.colorBg  = this.isPubColorBgSet(tmpPub) ? tmpPub.colorBg : this.Color[0].value; //when the user hat don't a color choose, set the default color
+      Pub.colorBg  = this.isPubColorBgSet(tmpPub) ? tmpPub.colorBg : this.Color[0].value; //when the user hat don't a color choose, set the default colorBg
       let min = new Date().getMinutes() < 10 ? '0'+new Date().getMinutes():new Date().getMinutes();
       Pub.date_pub = '' + new Date().getHours().toString() + ':' +  min.toString() + ' | ' + new Date().toString().split(' ')[1]  + ' - ' + new Date().toString().split(' ')[0];
-      //this.publication.url_file = null;
+      Pub.url_file = typeof tmpPub.url_file !== 'undefined' ? tmpPub.url_file: null;
       Pub.nom = this.dataUser.nom;
       Pub.prenom = this.dataUser.prenom;
       Pub.profilImgUrl = this.dataUser.profilImgUrl;
@@ -158,7 +232,7 @@ export class ActualitePage implements OnInit {
     this.renitAp();
   }
 
-  doLike(idPublication: any, index:number, pub: any){
+  doLike(idPublication: any, index:number, pub: any, isFromGlobe?: boolean){
     let data: {
       id_users: any,
       id_pub: number,
@@ -168,32 +242,59 @@ export class ActualitePage implements OnInit {
       id_pub: idPublication,
       PID: pub.PID
     }
+    this.playSoundOnLike();
 
-    if(this.listPublication[index].alreadyLike == 0 ){
-      this.addLike(index, this.listPublication[index].nbrLike);
-        this.accountApi.post('user-api/addLike.php', JSON.stringify(data)).subscribe((response)=>{
-            if(Object.keys(response).length > 0){
-              if(this.listPublication[index].id_user !== this.dataUser.id_users){
-                  this.wsNotif.sendNotification(TypeNotification.LIKE, this.dataUser, pub);
+      if(isFromGlobe){
+        if(this.listPublicationGLobe[index].alreadyLike === 0){
+             this.addLike(index, this.listPublicationGLobe[index].nbrLike, isFromGlobe);
+                  this.accountApi.post('user-api/addLike.php', JSON.stringify(data)).subscribe((response)=>{
+              if(Object.keys(response).length > 0){
+                if(this.listPublicationGLobe[index].id_user !== this.dataUser.id_users){
+                    this.wsNotif.sendNotification(TypeNotification.LIKE, this.dataUser, pub);
+                }
               }
-            }
-        }, (err)=>{
-            this.toast.makeToast(''+ err.getMessage());
-        });
+          }, (err)=>{
+              this.toast.makeToast(''+ err.getMessage());
+          });
+        }
+      }else{
+        if(this.listPublication[index].alreadyLike === 0){
+           this.addLike(index, this.listPublication[index].nbrLike);
+            this.accountApi.post('user-api/addLike.php', JSON.stringify(data)).subscribe((response)=>{
+              if(Object.keys(response).length > 0){
+                if(this.listPublication[index].id_user !== this.dataUser.id_users){
+                    this.wsNotif.sendNotification(TypeNotification.LIKE, this.dataUser, pub);
+                }
+              }
+          }, (err)=>{
+              this.toast.makeToast(''+ err.getMessage());
+          });
+        }
+
+      }
+              
+  }
+
+  addLike(index: number, nbrLike:any, isFromGlobe?: boolean){
+    if(isFromGlobe){
+      this.listPublicationGLobe[index].nbrLike = nbrLike+1; 
+      this.listPublicationGLobe[index].alreadyLike = 1;
+    }else{
+      this.listPublication[index].nbrLike = nbrLike+1; 
+      this.listPublication[index].alreadyLike = 1;  
     }
-        
+  }
+  delLike(index: number, nbrLike:any, isFromGlobe?:boolean){
+    if(isFromGlobe){
+      this.listPublicationGLobe[index].nbrLike = nbrLike-1; 
+      this.listPublicationGLobe[index].alreadyLike = 0;
+    }else{
+      this.listPublication[index].nbrLike = nbrLike-1; 
+      this.listPublication[index].alreadyLike = 0;  
+    }
   }
 
-  addLike(index: number, nbrLike:any){
-    this.listPublication[index].nbrLike = nbrLike+1; 
-    this.listPublication[index].alreadyLike = 1;
-  }
-  delLike(index: number, nbrLike:any){
-    this.listPublication[index].nbrLike = nbrLike-1; 
-    this.listPublication[index].alreadyLike = 0; 
-  }
-
-  doUnLike(idPublication: any, index:number, pub: Publication){
+  doUnLike(idPublication: any, index:number, pub: Publication, isFromGlobe?: boolean){
     let data: {
       id_users: any,
       id_pub: number
@@ -203,8 +304,11 @@ export class ActualitePage implements OnInit {
       id_pub: idPublication,
       PID: pub.PID
     }
-    this.delLike(index, this.listPublication[index].nbrLike);
-
+    if(isFromGlobe){
+        this.delLike(index, this.listPublicationGLobe[index].nbrLike, isFromGlobe);  
+    }else{
+         this.delLike(index, this.listPublication[index].nbrLike);     
+    }
     this.accountApi.post('user-api/unLike.php', JSON.stringify(data)).subscribe((response)=>{
            if(Object.keys(response).length === 0){
                 this.toast.makeToast('Erreur !');     
@@ -212,6 +316,10 @@ export class ActualitePage implements OnInit {
               this.wsNotif.sendNotification(TypeNotification.UNLIKE, this.dataUser, pub)
             }
     });
+  }
+
+  playSoundOnLike(){
+
   }
 
   setOrUnsetPub(){
@@ -229,19 +337,32 @@ export class ActualitePage implements OnInit {
         });
   }
 
-  addOnListPub(dataToAdd: Publication[]){
+  async addOnListPub(dataToAdd: Publication[]){
       if(this.listPublication.length > 0){
           dataToAdd.concat(this.listPublication);
           this.listPublication.length = 0;
           this.listPublication = dataToAdd;
       }else{
         this.listPublication = dataToAdd;
-
       }
   }
 
-  loadGlobePublication(){
+  loadGlobePublication(): Promise<any>{
+     return new Promise((resole, reject)=>{
+          this.accountApi.post('user-api/getGlobePub.php', JSON.stringify(this.dataUser)).subscribe((data)=>{
+          if(Object.keys(data).length > 0){
+            this.listPublicationGLobe = JSON.parse(data);
 
+              resole(this.listPublicationGLobe);
+            }
+      }, (err)=> reject(err));
+    }) 
+  }
+     
+  async getPubGlobalOnListPub(){
+    if(this.listPublicationGLobe.length === 0){
+          this.listPublicationGLobe = await this.loadGlobePublication();
+    }
   }
 
   loadUserData(){
@@ -262,10 +383,9 @@ export class ActualitePage implements OnInit {
     setTimeout(() => {
       // Any calls to load data go here
       if(this.type === 'home'){
-        console.log('isHome');
+        this.loadFriendPublications();
       }else{
-        console.log('isGlobe');
-
+        this.loadGlobePublication();
       }
       event.target.complete();
     }, 2100);
@@ -296,7 +416,7 @@ export class ActualitePage implements OnInit {
             text: 'Copier le text',
             role: 'confirm',
             handler: ()=>{
-              console.log('Copier');
+              this.copiedText(prevText);
             }
           },
           {
@@ -395,7 +515,6 @@ export class ActualitePage implements OnInit {
   }
 
   deletePub(index:any, idPublication:any, PID : any, isFromSeachList?: boolean){
-    console.log('PID', PID);   
     const data : { 
           id_pub: number,
           id_users: any,
@@ -409,7 +528,6 @@ export class ActualitePage implements OnInit {
       this.accountApi.post('user-api/deletePub.php', JSON.stringify(data)).subscribe((response)=>{
             if(Object.keys(response).length > 0){
                 this.listPublication.splice(index, 1);
-                console.log(data);
             }
       });
   }
@@ -429,7 +547,6 @@ export class ActualitePage implements OnInit {
 
       this.search.simpleSearch('user-api/search.php', JSON.stringify(simpleSearchValues)).subscribe((data)=>{
         if(Object.keys(data).length === 0 ? false : true ){
-              console.log(data);
                this.loadDataFriend(data);
             }else{
             }
@@ -450,13 +567,24 @@ export class ActualitePage implements OnInit {
       this.accountApi.post('user-api/getLikeList.php', JSON.stringify(param)).subscribe((data)=>{
           if(Object.keys(data).length > 0){
               this.listUsersLike = JSON.parse(data);
-              console.log(this.listUsersLike);
           }else{
               this.listUsersLike = [];
           }
       });
   }
 
+  showFullScreen(imgBase64Url?: any){
+    if(!this.showFullScreenImg){
+      this.fullScreenBgUrl = imgBase64Url;
+      this.showFullScreenImg = true;
+  
+    }else{
+      this.fullScreenBgUrl = '';
+      this.showFullScreenImg = false;
+    }
+  
+  }
+  
   goToDetail(pub: Publication, index: number){
       this.dataUserServ.publication = pub;
       this.dataUserServ.indexPub = index;

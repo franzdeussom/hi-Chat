@@ -7,13 +7,15 @@
    require 'vendor/autoload.php';
    
     global $Chat;
+    global $Notification;
+
    $server = IoServer::factory(
     new HttpServer(
         new WsServer(
             new Chat()
         )
     ),
-    8084
-);
-$server->run();
+     8084
+    );
+ $server->run();
 ?>

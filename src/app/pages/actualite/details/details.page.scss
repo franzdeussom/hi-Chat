@@ -121,7 +121,25 @@ ion-content {
             padding: 5px;
             
         }
+        
     }
+
+    .pubImg {
+        height: fit-content;
+        .message{
+            margin: auto;
+            font-size: 18px;
+            padding: 5px;
+            margin-left: 5px;
+            margin-right: 5px;
+        } 
+        div{
+            img{
+                max-height: 350px;
+                width: 100%;
+            }
+        }
+    } 
 
 .reaction{
     position: relative;
@@ -169,12 +187,15 @@ ion-content {
     top: 0;
     margin-top: 0px !important;
     height: 100%;
-    margin-bottom: 15%;
-
+    margin-bottom: 25%;
+  
 }
 .commentContener{
     position: relative;
     height: fit-content;
+    ion-avatar{
+        font-size: 15px;
+     }
     .commentaire{
         flex-flow: row;
         display: flex;
@@ -222,5 +243,13 @@ ion-content {
             height: 10vh;
           }
       }
-      
+      .displayImg{
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        .imgToDisplay{
+            width: 100%;
+            height: 100%;
+        }
+      }
       

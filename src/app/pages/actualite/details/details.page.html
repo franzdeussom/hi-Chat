@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header [hidden]="showFullScreenImg">
   <ion-toolbar>
     <ion-back-button slot="start"></ion-back-button>
     <ion-title>Publication de {{pub.prenom}} </ion-title>
@@ -15,7 +15,7 @@
       <div>
         <ion-card style="width: 100% !important; margin-left: 0; margin-top: 2px;">
               <ion-list class="head">
-                      <ion-item>
+                      <ion-item lines="none">
                               <ion-avatar slot="start" *ngIf="pub.profilImgUrl != null">
                                 <img alt="" [src]="pub.profilImgUrl" />
                               </ion-avatar>
@@ -42,9 +42,25 @@
                               </ion-label>
                       </ion-item>
                 </ion-list>  
-              <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
-                  <span class="message"> {{ pub.libelle }} </span>
-              </div>
+
+                <div *ngIf="pub.url_file == null">  
+
+                  <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
+                      <span class="message"> {{ pub.libelle }} </span>
+                  </div>
+
+                 </div>
+                 
+                 <div *ngIf="pub.url_file != null">   
+
+                  <div class="pubImg">   
+                      <span class="message"> {{ pub.libelle }} </span>
+                      <div>
+                        <img [src]="pub.url_file" alt="" (click)="showFullScreen(pub.url_file)">
+                      </div>
+                  </div>
+                  
+                 </div>
 
               <div class="reaction">
                   <span *ngIf="pub.nbrLike > 0 ? true:false" > <ion-icon name="heart" class="heart" style="color: red;"></ion-icon> {{ pub.nbrLike }}  </span>
@@ -70,8 +86,11 @@
     </div>
 </div>
 
-<div *ngIf="commentaires.length == 0 " style="text-align: center; margin: auto !important;;">
+<div *ngIf="!hideSpinnear && commentaires.length == 0" style="text-align: center; margin: auto !important;;">
   <ion-spinner name="dots" style="margin: auto;"></ion-spinner>
+</div>
+<div *ngIf="hideSpinnear && commentaires.length == 0" style="opacity: 0.6; margin-left: 15px;">
+      <span> Soyez le premier à commenter </span>
 </div>
 
 <div class="commentContener"  *ngIf="commentaires.length > 0">
@@ -170,3 +189,7 @@
 </form>      
 </div>
 </ion-content>
+<div class="displayImg" *ngIf="showFullScreenImg">
+  <img [src]="fullScreenBgUrl" alt=""  class="imgToDisplay" (click)="showFullScreen()">
+</div>
+

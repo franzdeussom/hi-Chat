@@ -21,14 +21,16 @@
     //get Message 
     $query = $conn->prepare('SELECT DISTINCT USERS.nom,
                                             USERS.prenom,
-                                            USERS.profilImgUrl,
+                                            USERS.profilImgUrl AS imageEnvoyeur,
                                             USERS.id_users,
                                              MESSAGE.libelle,
                                              MESSAGE.date_envoie,
                                              MESSAGE.id_sender,
                                              MESSAGE.id_destinateur_user,
                                              MESSAGE.received AS isReceived,
-                                             MESSAGE.statut
+                                             MESSAGE.statut,
+                                             MESSAGE.id_discussion,
+                                             MESSAGE.idUser
                             FROM HiChat.USERS, HiChat.MESSAGE
                             WHERE MESSAGE.id_destinateur_user = :id 
                             AND MESSAGE.id_sender = USERS.id_users

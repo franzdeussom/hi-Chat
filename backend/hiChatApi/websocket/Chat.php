@@ -11,10 +11,12 @@ class Chat implements MessageComponentInterface{
     protected $user;
     protected $currentUsers;
     protected $tab_usersOnline;
+    protected $msgMissed;
 
     public function __construct(){
         $this->user = new \SplObjectStorage;
         $this->tab_usersOnline = array();
+        $this->msgMissed = array();
     }
 
     //implementations of method for the parent Interface
@@ -58,11 +60,18 @@ class Chat implements MessageComponentInterface{
                 }
             }else{
                 try{
-                    if(saveMessageDB($msg)){
+                   /* if(saveMessageDB($msg)){
                         echo 'Message Save Tmp in Database\n';
                     }else{
                         echo 'Error on save\n';
-                    };
+                    };*/
+                    $formatNotif = [
+                        'idUser' => $id_users,
+                        'message' => $msg
+                    ];
+                    array_push($this->msgMissed, json_encode($formatNotif));
+                    echo "User {$id_users} pas connecté \n";
+                    
                 }catch(Exception $e){
                    echo $e->getMessage();
                 }
@@ -92,11 +101,7 @@ class Chat implements MessageComponentInterface{
     }
 
     private function getParamOfUserLogOut($conn){
-        foreach($this->tab_usersOnline as $key => $user){
-            if($user == $conn){
-                $this->currentUsers = $key;
-            }
-        }
+                $this->currentUsers = array_search($conn, $this->tab_usersOnline);
     }
 
  /*private function sendNotifOnline($id_users, $conn){
@@ -116,7 +121,7 @@ class Chat implements MessageComponentInterface{
                 $this->tab_usersOnline[strval($id_users)] = $conn;
                 $a = $this->tab_usersOnline[strval($id_users)];
                 $this->currentUsers = strval($id_users);
-
+                $this->checkOfNotifMissedAndSendIt($id_users, $conn);
                 echo "************************\nUsers add in online list ({$a->resourceId})\n";
 
             }else{
@@ -136,6 +141,30 @@ class Chat implements MessageComponentInterface{
     private function isMessageValid($msgData){
         return isset($msgData) && !empty($msgData) ? true : false;
     }
-  
+
+    private function checkOfNotifMissedAndSendIt($idUser, $conn){
+        if(count($this->msgMissed) > 0){
+            foreach($this->msgMissed as $msg){
+                $msgDecode = json_decode($msg);
+                if($msgDecode->idUser === $idUser){
+                    $conn->send($msgDecode->message);
+                }
+                
+            }
+            $this->deleteMsgOfUserAlreadySend($idUser, count($this->msgMissed));
+        }     
+    }
+
+    private function deleteMsgOfUserAlreadySend($idUser, $size){
+        $tmp = array();
+        for($i = 0; $i < $size; $i++){
+            $msgDecode = json_decode($this->msgMissed[$i]);
+            if($msgDecode->idUser !== $idUser){
+                 array_push($tmp, json_encode($msgDecode));
+            }
+        }
+        $this->msgMissed = $tmp;
+           
+    }
  }
 ?>

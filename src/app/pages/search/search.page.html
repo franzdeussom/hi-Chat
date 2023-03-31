@@ -22,7 +22,7 @@
 
 </div>
 <ion-content [fullscreen]="true">
-  <div *ngIf="isNotFound">
+  <div *ngIf="isNotFound && value.length != 0">
     <div id="container">
       <strong><h3>Aucun Utilisateur pour ce nom <em>" {{ value }} " </em></h3></strong>
     </div>

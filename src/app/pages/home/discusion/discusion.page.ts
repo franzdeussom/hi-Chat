@@ -1,3 +1,6 @@
+import { SheetControllerService } from './../../../services/Toast/sheet-controller.service';
+import { TypeMessage } from './typeMessage.enum';
+import { GetNotificationService } from 'src/app/pages/notifications/get-notification.service';
 import { ToastAppService } from './../../../services/Toast/toast-app.service';
 import { NavController, ToastController, AlertController, IonContent } from '@ionic/angular';
 import { SearchService } from './../../search/search.service';
@@ -17,6 +20,9 @@ import { DataUserService } from '../../data-user.service';
 })
 export class DiscusionPage implements OnInit {
   @ViewChild(IonContent) private myscroll!: IonContent;
+  @ViewChild('filechooser', { static: true }) private fileChooserElementRef!: ElementRef;
+
+  items: File[] = [];
   receivData!: any;
   currentUserData!: any;
   isMsgSend: boolean = true;
@@ -26,9 +32,13 @@ export class DiscusionPage implements OnInit {
   stopInterval: boolean = false;
   messageToSend : Message;
   value: string = '';
+  fullScreenBgUrl: any = '';
+  showFullScreenImg: boolean = false;
+  typeMsg = TypeMessage;
   constructor(private receiverData: ReceiverDataService, 
               private apiMessage: MessageApiService,
               private apisearch: SearchService,
+              public wsNotif : GetNotificationService,
               private route: NavController,
               private toast: ToastAppService,
               private dataUser: DataUserService,
@@ -36,6 +46,7 @@ export class DiscusionPage implements OnInit {
               private saveResltSearch: SaveResultSearchService,
               private rangeMessage: RangeMessageService,
               private globalSearch: SaveResultSearchService,
+              private sheetCtrl : SheetControllerService,
               private alertController: AlertController,
               private navContrl: NavController
               ) {this.messageToSend = new Message(); }
@@ -49,39 +60,41 @@ export class DiscusionPage implements OnInit {
     this.webSocketOnMessage();
     this.setTheDatOfMsg();
     this.checkNewMsg();
+    this.listenerInputChange();
     this.colorSendBtn = 'Dark';
   }
 
   ngOnDestroy() {
       this.stopInterval = true;
-      this.checkNewMsg();
   }
 
   ionViewDidEnter(){
     this.scrollToBottom();
-    this.checkNewMsg();
+    this.loadUsersData();
   }
-  
+  ngAfterViewChecked() {
+    this.checkNewMsg();
+    
+  }
+
 showDetailmsg(msg: Message){
   console.log('message click :', msg)
 }
  checkNewMsg(){
-  let startLookForNewMsg;
-  
-  if(this.stopInterval){
-    clearInterval(startLookForNewMsg);
-  }
-       startLookForNewMsg = setInterval(()=>{
+
         if(typeof this.apiMessage.newMsg !== 'undefined' ? true : false){
-         if(this.isForThisUser(this.apiMessage.newMsg)){
+          this.wsNotif.countMsgNotRead = this.wsNotif.countMsgNotRead--;
+          if(this.isForThisUser(this.apiMessage.newMsg)){
              this.apiMessage.newMsg.statut = true;
-             this.message.push(
+             if(typeof this.message !== 'undefined'){
+              this.message.push(
                 this.apiMessage.newMsg
               );
+             }    
+             
              this.apiMessage.newMsg = undefined;
            }
       }
-      }, 100);
     
   }
  //sound To Play when the message come in
@@ -138,17 +151,39 @@ showDetailmsg(msg: Message){
     return isSenderKey ? msg.id_sender : msg.id_destinateur_user;
   }  
 
-  async sendMessage(){
-    if(!this.isFieldMessageEmpty()){
-      this.setMessageParam();
-      this.storeOutgoingMessage();
+  async sendMessage(isImage?: boolean, imgBase64?: any, extension?:string){
+    const sendMsg = (isImg?: boolean, imgeBase64?:any, ext?:string )=>{
+      if(isImg){
+        this.setParamImgMessage(imgeBase64, ext);
+        this.storeOutgoingMessage();
+        this.send();
+      }else{
+        if(!this.isFieldMessageEmpty()){
+          this.setMessageParam();
+          this.storeOutgoingMessage();
+          this.send();
+        }
+      }
+    }
+    if(this.apiMessage.connectionState === 200){
+      sendMsg(isImage, imgBase64, extension);
+    }else{
+        this.sheetCtrl.makeSimpleAlertController("Echec lors de l'envoie du message, Connexion pas etablie !", this.currentUserData[0].id_users);   
+    }
+      
+  }
+
+  send(){
       //post message on User interface
         if(typeof this.message !== 'undefined'){
           this.message.push(
             {
+              type: this.messageToSend.type,
               libelle: this.messageToSend.libelle,
+              imgBase64Url : this.messageToSend.imgBase64Url,
               id_sender: this.messageToSend.id_sender,
-              id_destinateur_user: this.messageToSend.id_destinateur_user
+              id_destinateur_user: this.messageToSend.id_destinateur_user,
+              id_discussion : this.messageToSend.id_discussion
             }
           );
           try{
@@ -161,9 +196,12 @@ showDetailmsg(msg: Message){
           this.message = [];
           this.message.push(
             {
+              type: this.messageToSend.type,
               libelle: this.messageToSend.libelle,
+              imgBase64Url : this.messageToSend.imgBase64Url,
               id_sender: this.messageToSend.id_sender,
-              id_destinateur_user: this.messageToSend.id_destinateur_user
+              id_destinateur_user: this.messageToSend.id_destinateur_user,
+              id_discussion : this.messageToSend.id_discussion
             } 
           )
           try{
@@ -174,11 +212,72 @@ showDetailmsg(msg: Message){
 
         }
         this.apiMessage.webSocketSendMessage(this.messageToSend);
-        this.rangeMessage.LastMessage = this.messageToSend;
-     }
-    
+        this.messageToSend.idUser = this.messageToSend.id_destinateur_user;
+        this.rangeMessage.LastMessage = this.messageToSend;  
   }
-  
+
+  listenerInputChange() {
+    const wireUpFileChooser = () => {
+        const elementRef = this.fileChooserElementRef.nativeElement as HTMLInputElement;
+        elementRef.addEventListener('change', (evt: any) => {
+            const files = evt.target.files as File[];
+            for (let i = 0; i < files.length; i++) {
+                this.items.push(files[i]);
+            }
+            this.items.forEach(() => {
+               const checking = this.isFileValid(this.items[0]);
+               if(checking.isValid){
+                   this.convertInBase64AndSendIt(this.items[0], checking.extension);
+               }else{
+                  this.toast.makeToast('Format de fichier pas pris en charge');
+                  this.items.length = 0;
+               }
+          });
+        }, false);
+    };
+    wireUpFileChooser();
+    
+ }
+
+isFileValid(file: File): any{
+    let response : {
+      isValid: boolean,
+      extension: string
+    } = {
+      isValid : false,
+      extension: ''
+    };
+    const extensionSupportList = ['JPG', 'PNG', 'JPEG', 'SVG', 'TIF', 'GIF']
+    let extension = file.type.split('/')[1].toUpperCase();
+    let index = extensionSupportList.indexOf(extension);
+
+    if(index != -1){
+        response.isValid  = true;
+        response.extension = extensionSupportList[index];
+    }else{
+      response.isValid  = false;
+      response.extension = '';
+    }
+
+    return response; 
+}
+
+ convertInBase64AndSendIt(image: any, extension: string): any{
+  const file = image;
+  const reader = new FileReader();
+  let base64Url;
+
+    reader.addEventListener("load", () => {
+        // Base64 Data URL  👇
+       base64Url = reader.result;
+       this.sendMessage(true, base64Url, extension);
+    });
+
+    reader.readAsDataURL(file);
+    this.items.length = 0;
+    return base64Url;
+ }
+
   webSocketOnMessage(){
    /* this.apiMessage.ws.onmessage = (msg)=>{
         let msgReceived = JSON.parse(msg.data);
@@ -213,7 +312,6 @@ showDetailmsg(msg: Message){
     } catch (error) {
 
     }
-    
 
   }
 
@@ -230,40 +328,80 @@ showDetailmsg(msg: Message){
     }
   }
 
+  setPIDdisc(){
+    if(Array.isArray(this.message)){
+      let index = this.message.length;
+      if(index != 0){  
+        if(typeof this.message[index-1].id_discussion !== 'undefined' ){
+            this.messageToSend.id_discussion = this.message[index-1].id_discussion;
+        }else{
+            this.messageToSend.id_discussion = '' +(Math.random() * 2).toFixed(3)+'' + this.currentUserData[0].id_users +''+this.receivData.id_users;
+        }
+      }else{
+        this.messageToSend.id_discussion = '' +(Math.random() * 2).toFixed(3)+'' + this.currentUserData[0].id_users +''+this.receivData.id_users;
+      }
+    }else{
+      this.messageToSend.id_discussion = '' +(Math.random() * 2).toFixed(3)+'' + this.currentUserData[0].id_users +''+this.receivData.id_users;
+    }
+  }
+
   setMessageParam(){
+    this.setPIDdisc();
+    this.defineReceiver();
+    this.messageToSend.type = TypeMessage.TEXT;
+
     this.messageToSend.libelle = this.value;
     this.value = '';
-    if(typeof this.receivData.id_users !== 'undefined'){
-      this.messageToSend.id_destinateur_user = this.receivData.id_users;
-      this.messageToSend.id_discussion = this.currentUserData[0].id_users + this.receivData.id_users;
-      
-    }else{
-      if(this.receivData.id_sender === this.getCurrentUserID()){
-        this.messageToSend.id_destinateur_user = this.receivData.id_destinateur_user;  
-        this.messageToSend.id_discussion = this.currentUserData[0].id_users + this.receivData.id_sender;    
-      }else{
-          this.messageToSend.id_destinateur_user = this.receivData.id_sender;
-          this.messageToSend.id_discussion = this.currentUserData[0].id_users + this.receivData.id_sender;    
-      }
-    }
-     let min = new Date().getMinutes() < 10 ? '0'+new Date().getMinutes() : new Date().getMinutes();
+    this.messageToSend.idUser = this.currentUserData[0].id_users;
+    let min = new Date().getMinutes() < 10 ? '0'+new Date().getMinutes() : new Date().getMinutes();
     this.messageToSend.date_envoie = '' + new Date().getHours().toString() + ':' +  min.toString() + ' | ' + new Date().toString().split(' ')[1]  + ' - ' + new Date().toString().split(' ')[0];
     this.messageToSend.id_sender = this.currentUserData[0].id_users;
     this.messageToSend.nom = this.currentUserData[0].nom;
     this.messageToSend.prenom = this.currentUserData[0].prenom;
+    
+    this.messageToSend.imageEnvoyeur = this.currentUserData[0].profilImgUrl;
+    this.messageToSend.statut = false;
+  }
+
+  defineReceiver(){
+    if(typeof this.receivData.id_users !== 'undefined'){
+      this.messageToSend.id_destinateur_user = this.receivData.id_users;
+   
+    }else{
+      if(this.receivData.id_sender === this.getCurrentUserID()){
+        this.messageToSend.id_destinateur_user = this.receivData.id_destinateur_user;  
+      }else{
+          this.messageToSend.id_destinateur_user = this.receivData.id_sender;
+      }
+    }
+  }
+
+  setParamImgMessage(imgaBase64: any, extension:any){
+      this.setPIDdisc();
+      this.defineReceiver();
+      this.messageToSend.idUser = this.currentUserData[0].id_users;
+
+    this.messageToSend.type = TypeMessage.IMAGE;
+    this.messageToSend.imgBase64Url = imgaBase64;
+
+    let min = new Date().getMinutes() < 10 ? '0'+new Date().getMinutes() : new Date().getMinutes();
+    this.messageToSend.date_envoie = '' + new Date().getHours().toString() + ':' +  min.toString() + ' | ' + new Date().toString().split(' ')[1]  + ' - ' + new Date().toString().split(' ')[0];
+    this.messageToSend.id_sender = this.currentUserData[0].id_users;
+    this.messageToSend.nom = this.currentUserData[0].nom;
+    this.messageToSend.prenom = this.currentUserData[0].prenom;
+    
     this.messageToSend.imageEnvoyeur = this.currentUserData[0].profilImgUrl;
     this.messageToSend.statut = false;
   }
 
   async storeOutgoingMessage(){
-    let id_destinataire = 0;
     let key = 'SENDER_ID';
     let keyTab = Array();
     let isSenderKey = false;
     let isReceiverKey = false;
 
     keyTab = await this.localSave.getData(key);
-    this.messageToSend.isReceived = false;
+    this.messageToSend.isReceived = 0;
     this.messageToSend.nom = this.receivData.nom;
     this.messageToSend.prenom  = this.receivData.prenom;
     this.messageToSend.imageEnvoyeur = this.receivData.profilImgUrl == null ?  this.receivData.imageEnvoyeur:this.receivData.profilImgUrl;
@@ -288,8 +426,8 @@ showDetailmsg(msg: Message){
     if(isReceiverKey){
       this.rangeMessage.saveMsgSend(this.messageToSend, this.messageToSend.id_destinateur_user);
     }
-   
    }
+
   goToProfil(){
       this.apisearch.simpleSearch('user-api/search.php', JSON.stringify(this.receivData)).subscribe((data)=>{
         //this.saveResltSearch.dataUserFound = JSON.parse(data);
@@ -341,7 +479,17 @@ showDetailmsg(msg: Message){
     let C_DAY = new Date().getDay();
     //let da = this.message[this.message.length-1].date_envoie.split('-');
  
-    console.log('msg date:', C_MONTH, C_DAY, C_YEAR);
+  }
+  showFullScreen(imgBase64Url?: any){
+    if(!this.showFullScreenImg){
+      this.fullScreenBgUrl = imgBase64Url;
+      this.showFullScreenImg = true;
+
+    }else{
+      this.fullScreenBgUrl = '';
+      this.showFullScreenImg = false;
+    }
+
   }
   backToHome(){
       this.navContrl.navigateRoot('tabs/home');

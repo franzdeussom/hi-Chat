@@ -2,9 +2,41 @@
     <span class="title"> Centre de Notifications </span>
 </p>
 <ion-content>
-     <div>
-        <div>
-          
+    <ion-list lines="none" style="display: flex; flex-direction: row; flex-wrap: wrap;">
+        <div *ngFor="let notif of wsNotif.tmpNotif; let index=index" >
+            <div *ngIf="notif.type !==  typeNotif " >
+            <ion-item (click)="goToDetails(notif.publication, index, notif.isRead)" >
+                <ion-avatar slot="start" *ngIf="notif.profilImgUrlSender != null ">
+                    <img alt="" [src]="notif.profilImgUrlSender" />
+                  </ion-avatar>
+                  <ion-avatar slot="start" *ngIf="notif.profilImgUrlSender == null" >
+                      <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+                  </ion-avatar>
+                <ion-label>
+                    <span style="display: flex; flex-direction: row; flex-wrap: wrap; width: 100%;"> <b class="name"> {{ notif.nomSender }} {{ notif.prenom }}</b> &nbsp;{{ notif.message }} : </span>
+                    <span> "{{ notif.publication?.libelle }}" </span>
+                    <ion-badge color="primary" *ngIf="notif.isRead" style="float:right"> Lu </ion-badge>
+                </ion-label>
+                
+            </ion-item>
+          </div>
+
+          <div *ngIf="notif.type ===  typeNotif " >
+            <ion-item (click)="goToDetailsSignal()" >
+                <ion-avatar slot="start" *ngIf="notif.profilImgUrlSender != null ">
+                    <img alt="" [src]="notif.profilImgUrlSender" />
+                  </ion-avatar>
+                  <ion-avatar slot="start" *ngIf="notif.profilImgUrlSender == null" >
+                      <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+                  </ion-avatar>
+                <ion-label>
+                    <span style="display: flex; flex-direction: row; flex-wrap: wrap; width: 100%;"> <b class="name"> {{ notif.nomSender }} {{ notif.prenom }}</b> &nbsp;{{ notif.message }} </span>
+                    <ion-badge color="primary" *ngIf="notif.isRead" style="float:right"> Lu </ion-badge>
+                </ion-label>
+                
+            </ion-item>
+          </div>
         </div>
-     </div>
+    </ion-list>
+     
 </ion-content>

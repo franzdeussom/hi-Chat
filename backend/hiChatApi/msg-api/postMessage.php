@@ -14,9 +14,9 @@
                 $msgLibele = $data->libelle;
                 $msgStatut = 0;
             if(!isset($data->isReceived) && empty($data->isReceived)){
-                $msgIsReceived = true;
+                $msgIsReceived = 1;
             }
-            $msgIsReceived = true;
+            $msgIsReceived = 1;
             
             $msgIdDestinataire =(int) $data->id_destinateur_user;
             $msgIdSender =(int) $data->id_sender;
@@ -34,15 +34,19 @@
                                     statut,
                                     received,
                                     id_destinateur_user,
-                                    id_sender
-                                    )VALUES(:libelle, :dateEnvoie, :statut, :received, :idReceiver, :idSender) ");
+                                    id_sender,
+                                    id_discussion,
+                                    idUser
+                                    )VALUES(:libelle, :dateEnvoie, :statut, :received, :idReceiver, :idSender, :idDisc, :idUser) ");
             $query->execute([
                 ':libelle' => $msgLibele,
                 ':dateEnvoie' => $data->date_envoie,
                 ':statut' => $msgStatut,
                 ':received' => $msgIsReceived,
                 ':idReceiver' => $msgIdDestinataire,
-                ':idSender' => $msgIdSender
+                ':idSender' => $msgIdSender,
+                ':idDisc' => $data->id_discussion,
+                ':idUser' =>$data->idUser
             ]);
 
             return $query;

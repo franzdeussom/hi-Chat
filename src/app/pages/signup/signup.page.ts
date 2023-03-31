@@ -1,3 +1,4 @@
+import { ToastAppService } from './../../services/Toast/toast-app.service';
 import { GlobalStorageService } from './../../services/localStorage/global-storage.service';
 import { DataUserService } from './../data-user.service';
 import { AccountApiService } from './../../services/account-api.service';
@@ -44,6 +45,7 @@ export class SignupPage implements OnInit {
   constructor(private apiAccount: AccountApiService, 
               private dataUser : DataUserService,
               private globalStorage: GlobalStorageService,
+              private toast: ToastAppService,
               private navController: NavController) 
   { }
 
@@ -82,12 +84,13 @@ export class SignupPage implements OnInit {
     this.apiAccount.post('user-api/register.php', JSON.stringify(this.account)).subscribe((response: any)=>{
       this.responseUser = response;
  
-      if(response.length > 0 || Object.keys(response).length === 0 ? false:true){
+      if(Object.keys(response).length > 0 ? true:false){
         //data inser t
         this.dataUser.userData = this.responseUser;
         this.globalStorage.currentUser = this.responseUser;
         console.log('id current user:', this.globalStorage.currentUser.id_users);
-        this.navController.navigateForward('/set-profil-img')
+        this.toast.makeToast('Cration de compte reussie ! Veuillez vous connecter. Hi-Chat')
+        this.navController.navigateForward('/login');
       }else{
           this.errorMessage = 'Echec ! Un utilisateur possede deja ces identifiants(Nom ou email) !';
           hideError();

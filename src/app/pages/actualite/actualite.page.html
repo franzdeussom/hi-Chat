@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header [hidden]="showFullScreenImg">
   <ion-toolbar>
     <ion-title>Actualite</ion-title>
 
@@ -15,7 +15,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content  *ngIf=" showFullScreen ? true:false">
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
@@ -23,13 +23,17 @@
     <div *ngSwitchCase="'home'">
 
        <div class="createPub">
+        
           <ion-avatar slot="start" *ngIf="dataUser.profilImgUrl != null" (click)="goToProfil()" >
             <img alt="" [src]="dataUser.profilImgUrl" />
           </ion-avatar>
           <ion-avatar slot="start" (click)="goToProfil()" *ngIf="dataUser.profilImgUrl == null">
             <img alt="" src="/assets/icon/avatar.svg" />
           </ion-avatar>
-          <ion-input id="open-modal1" [placeholder]="'Quoi de neuf ? ' + dataUser.prenom" disabled></ion-input>
+          <ion-input id="open-modal1" [placeholder]="'Quoi de neuf ? ' + dataUser.prenom" disabled>
+           
+          </ion-input>
+          
        </div>
        <ion-modal trigger="open-modal1" (willDismiss)="onWillDismiss($event)">
         <ng-template>
@@ -50,6 +54,18 @@
                 <ion-label>Publication publique:</ion-label>
                 <ion-toggle name="public" (click)="setOrUnsetPub()"></ion-toggle>
               </ion-item>
+                <ion-item id="ion-margin">
+                  <span class="camera">
+                    <ion-buttons>
+                      <span style="font-size: 20px;"> Ajouter une photo</span> 
+                      <label for="file" class="label-file">
+                        <ion-icon name="camera" style="font-size: 25px; float: right;">  
+                        </ion-icon>
+                      </label>
+                      <input type="file" id="file" class="input-file" (change)="listenerInputChange($event)" camera>
+                    </ion-buttons>
+                  </span>
+               </ion-item>
               
                   <div *ngIf="!showApercu" >
                     <ion-item>
@@ -77,6 +93,9 @@
                           <span class="message"> {{ publication.libelle }} </span>
                       </div>
                 </div>
+                <div *ngIf="publication.url_file!= null" class="apercuImg" style="margin-top: 15px;">
+                  <img [src]="publication.url_file" alt="" width="100%">
+                </div>
 
                     <div class="choiceColor">
                           <div  *ngFor="let color of Color">
@@ -97,10 +116,10 @@
       </ion-modal>
 
       <div class="pub">
-            <div *ngFor="let pub of listPublication; let index = index" >
+            <div *ngFor="let pub of listPublication; let index = index" >                
                 <ion-card style="width: 100% !important; margin-left: 0; margin-top: 2px;">
                       <ion-list class="head">
-                              <ion-item>
+                              <ion-item lines="none">
                                       <ion-avatar slot="start" *ngIf="pub.profilImgUrl != null" (click)="goToProfilFriend(pub.nom, pub.prenom)" >
                                         <img alt="" [src]="pub.profilImgUrl" />
                                       </ion-avatar>
@@ -123,9 +142,25 @@
                                       </ion-label>
                               </ion-item>
                         </ion-list>  
-                      <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
-                          <span class="message"> {{ pub.libelle }} </span>
-                      </div>
+
+                         <div *ngIf="pub.url_file == null">  
+
+                          <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
+                              <span class="message"> {{ pub.libelle }} </span>
+                          </div>
+
+                         </div>
+                         
+                         <div *ngIf="pub.url_file != null">   
+
+                          <div class="pubImg">   
+                              <span class="message"> {{ pub.libelle }} </span>
+                              <div>
+                                <img [src]="pub.url_file" width="100%" alt="" (click)="showFullScreen(pub.url_file)">
+                              </div>
+                          </div>
+
+                         </div>
 
                       <div class="reaction">
                                 <span (click)="getListUsersLike(pub.id_pub, pub.id_user)" *ngIf="pub.nbrLike > 0 ? true:false" > <ion-icon name="heart" class="heart"></ion-icon> {{ pub.nbrLike }}</span>
@@ -135,65 +170,8 @@
                       <div class="action">
                           <div class="like">
                               <ion-buttons slot="start" >
-                                  <span *ngIf="pub.alreadyLike === 0"><ion-button (click)="doLike(pub.id_pub, index, pub)" >Jaime</ion-button></span>
-                                  <span *ngIf="pub.alreadyLike !== 0" ><ion-button (click)="doUnLike(pub.id_pub, index, pub)" >Jaime plus</ion-button></span>
-                              </ion-buttons>
-                          </div>
-                        
-                          <div class="comment">
-                            <ion-buttons slot="end">
-                              <ion-button (click)="goToDetail(pub, index)" >Commenter</ion-button>
-                          </ion-buttons>
-                          </div>
-                      </div>
-                    </ion-card>
-              </div>
-      </div>
-    </div>
-
-    <div *ngSwitchCase="'globe'">
-        <div class="pub">
-            <div *ngFor="let pub of listPublication; let index = index">
-              <div *ngIf="pub.is_public === 0" >
-                <ion-card style="width: 100% !important; margin-left: 0; margin-top: 2px;">
-                      <ion-list class="head">
-                              <ion-item>
-                                      <ion-avatar slot="start" *ngIf="pub.profilImgUrl != null" (click)="goToProfilFriend(pub.nom, pub.prenom)" >
-                                        <img alt="" [src]="pub.profilImgUrl" />
-                                      </ion-avatar>
-                                      <ion-avatar slot="start" *ngIf="pub.profilImgUrl == null" (click)="goToProfilFriend(pub.nom, pub.prenom)">
-                                          <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
-                                      </ion-avatar>
-                                    <ion-label>
-                                       <span class="name" (click)="goToProfilFriend(pub.nom, pub.prenom)">{{ pub.nom }} {{ pub.prenom }}</span><br>
-                                       <span class="datePub"> {{ pub.date_pub }} </span> 
-
-                                       <span class="isPublic" *ngIf="pub.is_public === 0" >
-                                        <ion-icon name="globe"  style="margin-left: 8px; font-size: 13px;"></ion-icon>
-                                       </span>
-
-                                       <span class="isPublic" *ngIf="pub.is_public === 1" >
-                                        <ion-icon name="home" style="margin-left: 8px; font-size: 13px;"></ion-icon>
-                                       </span>
-
-                                        <span style="float: right; font-size: 12px;" (click)="actionSheetPub(pub.id_user, pub.id_pub, pub.PID, index, pub.libelle, false)"><sup class="menu">...</sup> </span>
-                                      </ion-label>
-                              </ion-item>
-                        </ion-list>  
-                      <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
-                          <span class="message"> {{ pub.libelle }} </span>
-                      </div>
-
-                      <div class="reaction">
-                                <span (click)="getListUsersLike(pub.id_pub, pub.id_user)" *ngIf="pub.nbrLike > 0 ? true:false" > <ion-icon name="heart" class="heart"></ion-icon> {{ pub.nbrLike }}</span>
-                                <ion-badge slot="end" style="float: right; margin-right: 5px;" *ngIf="pub.nbrCommentaire > 0" > {{ pub.nbrCommentaire }} Commentaires </ion-badge>
-                      </div>
-
-                      <div class="action">
-                          <div class="like">
-                              <ion-buttons slot="start" >
-                                  <span *ngIf="pub.alreadyLike === 0"><ion-button (click)="doLike(pub.id_pub, index, pub)" >Jaime</ion-button></span>
-                                  <span *ngIf="pub.alreadyLike !== 0" ><ion-button (click)="doUnLike(pub.id_pub, index, pub)" >Jaime plus</ion-button></span>
+                                  <span *ngIf="pub.alreadyLike === 0"><ion-button (click)="doLike(pub.id_pub, index, pub)" >J'aime</ion-button></span>
+                                  <span *ngIf="pub.alreadyLike !== 0" ><ion-button (click)="doUnLike(pub.id_pub, index, pub)" >J'aime plus</ion-button></span>
                               </ion-buttons>
                           </div>
                         
@@ -206,7 +184,80 @@
                     </ion-card>
               </div>
             </div>
+    </div>
+
+    <div *ngSwitchCase="'globe'">
+        <div class="globePub">
+            <div *ngFor="let pub of listPublicationGLobe; let index = index">
+                <ion-card style="width: 100% !important; margin-left: 0; margin-top: 2px;">
+                      <ion-list class="head">
+                              <ion-item>
+                                      <ion-avatar slot="start" *ngIf="pub.profilImgUrl != null" (click)="goToProfilFriend(pub.nom, pub.prenom)" >
+                                        <img alt="" [src]="pub.profilImgUrl" />
+                                      </ion-avatar>
+                                      <ion-avatar slot="start" *ngIf="pub.profilImgUrl == null" (click)="goToProfilFriend(pub.nom, pub.prenom)">
+                                          <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+                                      </ion-avatar>
+                                    <ion-label>
+                                       <span class="name" (click)="goToProfilFriend(pub.nom, pub.prenom)">{{ pub.nom }} {{ pub.prenom }}</span><br>
+                                       <span class="datePub"> {{ pub.date_pub }} </span> 
+
+                                       <span class="isPublic" *ngIf="pub.is_public === 0" >
+                                        <ion-icon name="globe"  style="margin-left: 8px; font-size: 13px;"></ion-icon>
+                                       </span>
+
+                                       <span class="isPublic" *ngIf="pub.is_public === 1" >
+                                        <ion-icon name="home" style="margin-left: 8px; font-size: 13px;"></ion-icon>
+                                       </span>
+
+                                        <span style="float: right; font-size: 12px;" (click)="actionSheetPub(pub.id_user, pub.id_pub, pub.PID, index, pub.libelle, false)"><sup class="menu">...</sup> </span>
+                                      </ion-label>
+                              </ion-item>
+                        </ion-list>  
+                        <div *ngIf="pub.url_file == null">  
+
+                          <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
+                              <span class="message"> {{ pub.libelle }} </span>
+                          </div>
+
+                         </div>
+                         
+                         <div *ngIf="pub.url_file != null">   
+
+                          <div class="pubImg">   
+                              <span class="message"> {{ pub.libelle }} </span>
+                              <div>
+                                <img [src]="pub.url_file" width="100%" alt="" (click)="showFullScreen(pub.url_file)">
+                              </div>
+                          </div>
+
+                         </div>
+
+                      <div class="reaction">
+                                <span (click)="getListUsersLike(pub.id_pub, pub.id_user)" *ngIf="pub.nbrLike > 0" > <ion-icon name="heart" class="heart"></ion-icon> {{ pub.nbrLike }}</span>
+                                <ion-badge slot="end" style="float: right; margin-right: 5px;" *ngIf="pub.nbrCommentaire > 0" > {{ pub.nbrCommentaire }} Commentaires </ion-badge>
+                      </div>
+
+                      <div class="action">
+                          <div class="like">
+                              <ion-buttons slot="start" >
+                                  <span *ngIf="pub.alreadyLike === 0"><ion-button (click)="doLike(pub.id_pub, index, pub, true)" >J'aime</ion-button></span>
+                                  <span *ngIf="pub.alreadyLike !== 0" ><ion-button (click)="doUnLike(pub.id_pub, index, pub, true)" >J'aime plus</ion-button></span>
+                              </ion-buttons>
+                          </div>
+                        
+                          <div class="comment">
+                            <ion-buttons slot="end">
+                              <ion-button (click)="goToDetail(pub, index)" >Commenter</ion-button>
+                          </ion-buttons>
+                          </div>
+                      </div>
+                    </ion-card>
+              </div>
          </div>
       </div>
  </div>
 </ion-content>
+<div class="displayImg" *ngIf="showFullScreenImg">
+  <img [src]="fullScreenBgUrl" alt=""  class="imgToDisplay" (click)="showFullScreen()">
+</div>

@@ -1,3 +1,4 @@
+import { SecurityMsg } from './../home/securitymsg.model';
 import { TypeNotification } from './../notifications/typeNotif.enum';
 import { GetNotificationService } from 'src/app/pages/notifications/get-notification.service';
 import { MessageApiService } from './../../services/message-api.service';
@@ -22,7 +23,8 @@ import { Clipboard } from '@ionic-native/clipboard/ngx';
 })
 export class AccountProfilsPage implements OnInit {
   @ViewChild(IonModal) modal!: IonModal;
-
+  @ViewChild(IonModal) modal1!: IonModal;
+  
   actived!: boolean;
   typeList: string = 'girl';
   searchValueListLike: string = '';
@@ -39,8 +41,13 @@ export class AccountProfilsPage implements OnInit {
   listSearchFollowers: Array<User>;
   activeFieldSearchResult: boolean = false;
   listSearchAbm: Array<User>;
+  listIdAbm: Array<number> = [];
   activeFieldSearchResultAbm: boolean = false;
-  
+  dataUpdate : User = new User();
+  listDiscSecur: SecurityMsg = new SecurityMsg();
+  discKey: any;
+  fullScreenBgUrl: any = '';
+  showFullScreenImg: boolean = false;
   constructor(private globalStorage: GlobalStorageService,
               private navController: NavController,
               private dataUsers: DataUserService,
@@ -67,15 +74,21 @@ export class AccountProfilsPage implements OnInit {
   ngOnInit() {
       this.loadDataCurrentUser();
       this.loadFwAbmPubThisUsers();
-
+      this.init();
   }
 
   handleRefresh(event:any) {
     setTimeout(() => {
       // Any calls to load data go here
-      this.loadFwAbmPubThisUsers();      
       event.target.complete();
     }, 2100);
+    this.loadFwAbmPubThisUsers();
+
+  }
+
+  init(){
+    Object.assign(this.dataUpdate, this.dataUser);
+    this.loadSecurityDisc();
   }
 
   cancel() {
@@ -87,9 +100,19 @@ export class AccountProfilsPage implements OnInit {
     this.dataUser = JSON.parse(this.dataUsers.userData)[0];
   }
 
-  UpdateProfil(){
-
+  async loadSecurityDisc(){
+    let key = 'SECURITY_DISC_KEY'+this.dataUser.id_users;
+  
+    if(await this.globalStorage.isAlreadyData(key) ? true:false){
+      this.listDiscSecur.pass_key = await this.rangeMessage.getPassMsgKey();
+      this.listDiscSecur.discussion_list = await this.rangeMessage.getListMsgSecure();
+    }else{
+        this.listDiscSecur.discussion_list = [];
+    }
+    this.discKey = this.listDiscSecur.pass_key;   
   }
+
+  
 
   updatePp(){
     
@@ -125,12 +148,29 @@ export class AccountProfilsPage implements OnInit {
     this.accountApi.post('user-api/getFwAbmPub.php', this.getParamQuery()).subscribe((response: any)=>{
         if(Object.keys(response).length > 0 ? true:false){
               this.setValuelist(JSON.parse(response));
+              this.buildTabIdAbmnt(); 
+
           }else{
           this.toast.makeToast('Erreur interne du serveur');
         }
     });
 
-}
+ }
+
+ async buildTabIdAbmnt(){
+     this.listIdAbm = await this.getTabAbmId();
+ }
+ getTabAbmId(): Promise<number[]>{
+  let tab = Array();
+    return new Promise((resolve, reject)=>{
+            this.listAbonnement.forEach(user=>{
+                tab.push(user.id_users);
+            });
+
+            resolve(tab);
+            reject('Error on loading abmt');
+    })
+ }
 
 setValuelist(data: any){
   this.listPublication = data[0].length === 0 ? [] : data[0];
@@ -147,6 +187,60 @@ getParamQuery(): any{
     nom: this.dataUser.nom
   };
   return JSON.stringify(dataUser);
+}
+
+addFollower(idUser:any, dataUser:any){
+        const getParamQuery = ()=>{
+          const queryParam : {
+            id_WF: any,
+            id_F: any
+        } = {
+          id_WF: this.dataUser.id_users,
+          id_F: idUser
+        };
+        return JSON.stringify(queryParam);
+      }
+      this.accountApi.post('user-api/addFollowers.php', getParamQuery()).subscribe((response)=>{
+        if(Object.keys(response).length > 0 ? true:false){
+            this.toast.makeToast('Vous suivez desormais ' + dataUser.prenom);
+            this.listAbonnement.push(dataUser);
+            this.listIdAbm.push(idUser);
+            this.wsNotif.sendNotification(TypeNotification.NEW_FOLLOWER, this.dataUser, 0, dataUser);
+        }else{
+            this.toast.makeToast('Erreur interne du serveur');
+      }
+  });
+}
+
+unFollow(idUser: any, dataUser: any, index:number, isFromSeachList?:boolean){
+  const getParamQuery = ()=>{
+        const queryParam : {
+          id_WF: any,
+          id_F: any
+      } = {
+        id_WF: this.dataUser.id_users,
+        id_F: idUser
+      };
+      return JSON.stringify(queryParam);
+   }
+   
+  this.accountApi.post('user-api/delFollowers.php', getParamQuery()).subscribe((response)=>{
+    if(Object.keys(response).length > 0 ? true:false){
+        this.toast.makeToast("Vous n'ètes plus abonné(e) à " + dataUser.prenom);
+          if(isFromSeachList){
+                const index = this.listSearchAbm.findIndex((user=> user.id_users === idUser));
+                this.listSearchAbm.splice(index, 1);
+                const indexMainList = this.listAbonnement.findIndex((user => user.id_users === idUser));
+                this.listAbonnement.splice(indexMainList, 1);
+            }else{
+              this.listAbonnement.splice(index, 1);
+              const tmpIndex = this.listIdAbm.indexOf(idUser);
+              this.listIdAbm.splice(tmpIndex, 1);
+            }
+      }else{
+        this.toast.makeToast('Erreur interne du serveur');
+    }
+  });
 }
 searchUserListLike(){
   this.activeFieldListLikeRslt = this.searchValueListLike.length > 0;
@@ -167,7 +261,6 @@ searchAbm(){
           }
 
           this.listSearchAbm = this.listAbonnement.filter(execAbm);
-          console.log(this.listSearchAbm);
           this.searchValueAbm = '';
 }
 
@@ -265,7 +358,6 @@ getListUsersLike(idPub: any, idUsersPub: any){
             text:'Supprimer',
             role: 'confirm',
             handler: ()=>{
-              console.log('id:', id_pub);
               this.deletePub(id_pub, index, isFromSeachList);
             }
           },
@@ -342,7 +434,6 @@ getListUsersLike(idPub: any, idUsersPub: any){
       id_pub : idPublication,
       id_users : this.dataUser.id_users
      };
-     console.log(idPublication)
       this.accountApi.post('user-api/deletePub.php', JSON.stringify(data)).subscribe((response)=>{
             if(Object.keys(response).length > 0){
                 this.listPublication.splice(index, 1);
@@ -358,13 +449,177 @@ getListUsersLike(idPub: any, idUsersPub: any){
     this.navController.navigateForward('details');
 }
 
+async actionSheetDeleteAccount(){
+  const actionSheet = await this.actionSheetCtrl.create({
+    header: "Après cette action votre compte sera Supprimer definitivement\n Continuer ?",
+    buttons: [
+      {
+        text: 'Annuler',
+        role: 'cancel',
+        handler: ()=>{
+          this.toast.makeToast("Content de vous avoir encore avec nous. Hi-Chat !")
+        }
+      },
+      {
+        text: 'Continuer',
+        role: 'confirm',
+        handler: ()=>{
+          this.confrimationToUpdateActionCtrl(true);
+        }
+      }
+    ],
+  });
+
+  actionSheet.present();
+  const { role } = await actionSheet.onWillDismiss();
+
+  return role === 'confirm';
+}
+
+
+deleteAccount(){
+        this.accountApi.post('user-api/deleteAccount.php', JSON.stringify(this.dataUser)).subscribe((data)=>{
+            if(Object.keys(data).length > 0 ){
+                 this.globalStorage.deleteData('userAccountData');
+
+                 window.location.href = '/';               
+            }
+        });
+}
+setAge(){
+    
+  let currentYear = new Date().getFullYear();
+   var usersBDY = Number.parseInt(this.dataUpdate.date_naiss?.split('-')[0]);
+    if(usersBDY > 2015){
+      return;
+    }
+    this.dataUpdate.age = currentYear - usersBDY;
+
+}
+
+async confrimationToUpdateActionCtrl(isDeleteAccount?:boolean){
+  if(isDeleteAccount){
+    const alert = await this.alertController.create({
+      header: 'Entrer le mot de passe de votre compte pour confirmer votre identité :',
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel',
+          handler: ()=>{
+            this.toast.makeToast("Content de vous avoir encore avec nous. Hi-Chat !")
+          }
+        },
+          {
+            text: 'Supprimer',
+            role: 'confirm',
+            handler: (data)=>{
+                  if(data.mdp === this.dataUser.mdp){
+                        this.deleteAccount();
+                  }else{
+                    this.toast.makeToast('Mot de passe incorrect !')
+                  }
+            }
+          },
+      ],
+      inputs: [
+        {
+          type: 'text',
+          name: 'mdp',        
+        }
+      ],
+    });
+  
+    await alert.present();
+  }else{
+    const alert = await this.alertController.create({
+      header: 'Entrer le mot de passe de votre compte pour confirmer votre identité :',
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+          {
+            text: 'Modifier',
+            role: 'confirm',
+            handler: (data)=>{
+                  if(data.mdp === this.dataUser.mdp){
+                        this.UpdateProfil();
+                  }else{
+                    this.toast.makeToast('Mot de passe incorrect !')
+                  }
+            }
+          },
+      ],
+      inputs: [
+        {
+          type: 'text',
+          name: 'mdp',        
+        }
+      ],
+    });
+  
+    await alert.present();
+  }
+  
+}
+
+UpdateProfil(){
+  if(!this.checkDataUserChanged()){
+    //dataUser hat change,check data before launch updating process
+    if(this.isDataToUpdateCorrect()){
+      this.accountApi.post('user-api/updateProfile.php', JSON.stringify(this.dataUpdate)).subscribe((response)=>{
+            if(Object.keys(response).length>0){
+              this.updatePasswordDiscu(true);
+              this.toast.makeToast('Mise à jour effectué avec succes');
+              Object.assign(this.dataUser, this.dataUpdate);
+              this.dataUsers.userData = JSON.stringify([this.dataUpdate]);
+            }
+      });
+    }
+  }else{
+      if( this.listDiscSecur.pass_key !== this.discKey){
+        this.updatePasswordDiscu();
+      }
+  }
+     
+}
+
+updatePasswordDiscu(check?:boolean){
+  if(check){  
+    if( this.listDiscSecur.pass_key !== this.discKey){
+      this.updatePasswordDiscu();
+    }
+  }else{
+    this.rangeMessage.updatePasswordDiscu(this.listDiscSecur.pass_key);
+    this.toast.makeToast('Mot de passe des discussions changé !');  
+  }
+}
+
+checkDataUserChanged(): boolean{
+  return Object.is(this.dataUpdate, this.dataUser);
+
+}
+
+isDataToUpdateCorrect(){
+  return this.dataUpdate.age !== '' && this.dataUpdate.nom !== '' && this.dataUpdate.prenom !=='' && this.dataUpdate.date_naiss !=='' && this.dataUpdate.mdp !=='' && this.dataUpdate.pays !== '' && this.dataUpdate.ville !=='' && this.dataUpdate.sexe !== '';
+}
+showFullScreen(imgBase64Url?: any){
+  if(!this.showFullScreenImg){
+    this.fullScreenBgUrl = imgBase64Url;
+    this.showFullScreenImg = true;
+
+  }else{
+    this.fullScreenBgUrl = '';
+    this.showFullScreenImg = false;
+  }
+
+}
+
   logout(){
     this.rangeMessage.AllMessage.length = 0;
     this.rangeMessage.listOfSender.length = 0; 
     this.websocket.webSocketOnClose();
     this.globalStorage.deleteData('userAccountData');
-    window.location.reload()
-    this.navController.navigateForward('login');
-    
+    window.location.href = '/?id=' + new Date().getTime();    
   }
 }

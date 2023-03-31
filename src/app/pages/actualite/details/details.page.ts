@@ -28,7 +28,9 @@ export class DetailsPage implements OnInit {
   activeFieldRslt: boolean = false;
   commentaire: string = '';
   confirm: boolean = false;
-
+  hideSpinnear: boolean = false;
+  fullScreenBgUrl: any = '';
+  showFullScreenImg: boolean = false;
   constructor(
               private dataUserServ: DataUserService,
               private accountApi: AccountApiService,
@@ -82,7 +84,7 @@ export class DetailsPage implements OnInit {
       }
      
     }else{
-          this.loadComment();
+        this.loadComment();
     }
   }
 
@@ -96,12 +98,19 @@ export class DetailsPage implements OnInit {
   }
 
   loadComment(){
+    const time = 1800;
           this.accountApi.post('user-api/getCommentOfPubID.php', JSON.stringify(this.pub)).subscribe((data)=>{
                 this.commentaires = JSON.parse(data);
                 this.tmpComment.Comment = JSON.parse(data);
           }, (err)=>{
               this.toast.makeToast(''+err.getMessage());
           });
+        //set time out to hide spinner after 5s if comment list is null 
+          setTimeout(() => {
+              if(this.commentaires.length === 0){
+                this.hideSpinnear = true;
+              } 
+          }, time);
   }
 
   doLike(idCommentaire: any, PID:any, index: number){
@@ -208,6 +217,7 @@ export class DetailsPage implements OnInit {
   }
   renit(){
     this.commentaire ='';
+    this.hideSpinnear = false;
   }
 
   hideConfirmation(){
@@ -397,6 +407,18 @@ export class DetailsPage implements OnInit {
       });
     }
       
+  }
+
+  showFullScreen(imgBase64Url?: any){
+    if(!this.showFullScreenImg){
+      this.fullScreenBgUrl = imgBase64Url;
+      this.showFullScreenImg = true;
+  
+    }else{
+      this.fullScreenBgUrl = '';
+      this.showFullScreenImg = false;
+    }
+  
   }
 
   loadDataFriend(profil: any){

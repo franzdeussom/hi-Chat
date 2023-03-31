@@ -33,6 +33,8 @@ export class ProfilsPage implements OnInit {
   activeFieldSearchResult: boolean = false;
   listSearchAbm: Array<User>;
   activeFieldSearchResultAbm: boolean = false;
+  fullScreenBgUrl: any = '';
+  showFullScreenImg: boolean = false;
 
   constructor(private searchResltService: SaveResultSearchService,
               private navCtrl : NavController,
@@ -74,7 +76,8 @@ ionViewWillEnter(){
    }
 
   signal(){
-    console.log('e');
+      this.wsNotif.kontoMelden(this.dataUserFound.id_users);
+      this.toast.makeToast('Compte Signalé ! Merci de signaler des activités supectes ! Hi-Chat ')
   }
   
   checkTheData(){
@@ -84,7 +87,9 @@ ionViewWillEnter(){
     }else{
       this.dataUserFound = this.searchResltService.dataUserFound[0];
     }
+    console.log('data get', this.dataUserFound);
   }
+
   async presentEntryPassword(){
     const alert = await this.alertController.create({
       header: 'Entrer le mot de passe pour acceder à la discussion',
@@ -318,6 +323,18 @@ ionViewWillEnter(){
               console.log('erreur');
             }
     })
+  }
+  
+  showFullScreen(imgBase64Url?: any){
+    if(!this.showFullScreenImg){
+      this.fullScreenBgUrl = imgBase64Url;
+      this.showFullScreenImg = true;
+
+    }else{
+      this.fullScreenBgUrl = '';
+      this.showFullScreenImg = false;
+    }
+
   }
 
   goToDetail(pub: Publication, index: number){

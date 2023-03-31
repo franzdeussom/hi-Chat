@@ -1,7 +1,12 @@
-<ion-header>
+<ion-header [hidden]="showFullScreenImg">
   <ion-toolbar>
     <div *ngIf="actived" ><ion-back-button slot="start"></ion-back-button></div>
-    <ion-title>Mon Profils</ion-title>
+    <ion-title>Mon Profil</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()" color="danger">
+            Deconnexion
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -64,11 +69,90 @@
 
    <ion-row class="ion-padding">
     <ion-col>
-      <ion-button color="primary" expand="block">
+      <ion-button color="primary" expand="block" id="open-modal-update">
        <span> Modifier mon profil <ion-icon name="create" slot="end"></ion-icon> </span>
       </ion-button>
     </ion-col>
    </ion-row>
+        <ion-modal #modal1 trigger="open-modal-update" [canDismiss]="">
+          <ng-template>
+            <ion-header>
+              <ion-toolbar>
+                <ion-title>Mise à jour de mon Profil</ion-title>
+                <ion-buttons slot="end">
+                  <ion-button (click)="modal1.dismiss()">Annuler</ion-button>
+                </ion-buttons>
+              </ion-toolbar>
+            </ion-header>
+            <ion-content class="ion-padding">
+                <div class="img-pp" style="text-align: center; margin-top: 5%;">
+                    <span *ngIf="dataUser.profilImgUrl != null">
+                      <img [src]="dataUser.profilImgUrl" style="border-radius: 100px; height: 85px;">
+                    </span>
+                    <span *ngIf="dataUser.profilImgUrl == null">
+                      <img src="/assets/icon/avatar.svg" style="border-radius: 100px;  height: 85px;">
+                    </span>
+                </div>
+
+                <form (submit)="confrimationToUpdateActionCtrl()">
+                  <ion-list class="ion-padding">
+                    <ion-item class="ion-margin">
+                      <ion-label position="floating">Nom :</ion-label>
+                      <ion-input type="text" class="input" [(ngModel)]="dataUpdate.nom" name="nom" max="90"></ion-input>
+                    </ion-item>
+                
+                    <ion-item class="ion-margin">
+                      <ion-label position="floating">Prenom :</ion-label>
+                      <ion-input type="text" class="input" [(ngModel)]="dataUpdate.prenom" name="prenom" max="90"></ion-input>
+                    </ion-item>
+
+                    <ion-item class="ion-margin">
+                      <ion-label position="">Date Naissance :</ion-label>
+                      <ion-input type="date" (ionChange)="setAge()" [(ngModel)]="dataUpdate.date_naiss" name="date_naiss"></ion-input>
+                    </ion-item>
+
+                    <ion-item class="ion-margin">
+                      <ion-label position="floating">Age:</ion-label>
+                      <ion-input type="number" class="input" [(ngModel)]="dataUpdate.age" name="age" max="90" disabled></ion-input>
+                    </ion-item>
+                
+                
+                    <ion-item class="ion-margin">
+                      <ion-label position="floating">Sexe :</ion-label>
+                      <ion-input type="text" class="input" [(ngModel)]="dataUpdate.sexe" maxlength="1" name="sexe"></ion-input> 
+                    </ion-item>
+                
+                    <ion-item class="ion-margin">
+                      <ion-label position="floating">Pays :</ion-label>
+                      <ion-input type="text" class="input" [(ngModel)]="dataUpdate.pays" name="pays"></ion-input>
+                    </ion-item>
+        
+                    <ion-item class="ion-margin">
+                      <ion-label position="floating">Ville :</ion-label>
+                      <ion-input type="text" class="input" [(ngModel)]="dataUpdate.ville" name="ville" ></ion-input>
+                    </ion-item>
+
+                    <ion-item class="ion-margin">
+                      <ion-label position="floating">Mot de passe du compte :</ion-label>
+                      <ion-input type="password" class="input" [(ngModel)]="dataUpdate.mdp" name="mdp"></ion-input>
+                    </ion-item>
+
+                    <ion-item class="ion-margin">
+                      <ion-label position="floating">Mot de passe des discussions :</ion-label>
+                      <ion-input type="password" class="input" [(ngModel)]="listDiscSecur.pass_key" name="pass"></ion-input>
+                    </ion-item>
+                    
+        
+                    <ion-row class="ion-padding">
+                      <ion-col>
+                        <ion-button type="submit" expand="block" color="tertiary" id="search">Confirmer les modifications</ion-button>
+                      </ion-col>
+                    </ion-row>
+                  </ion-list>
+                </form>
+            </ion-content>
+          </ng-template>
+        </ion-modal>
   </div>
 
 
@@ -92,13 +176,19 @@
 
 
 
-        <div [ngSwitch]="type">
+      <div [ngSwitch]="type">
               <div *ngSwitchCase="'publications'">
+                <div *ngIf="listPublication.length === 0">
+                  <p>
+                    <ion-text> Vous n'avez aucune publication...</ion-text>
+                  </p>
+                </div>
                 <div class="pub">
+                  
                   <div *ngFor="let pub of listPublication; let index = index" >
                       <ion-card style="width: 100% !important; margin-left: 0; margin-top: 2px;">
                             <ion-list class="head">
-                                    <ion-item>
+                                    <ion-item lines="none">
                                             <ion-avatar slot="start" *ngIf="pub.profilImgUrl != null">
                                               <img alt="" [src]="pub.profilImgUrl" />
                                             </ion-avatar>
@@ -125,9 +215,24 @@
                                             </ion-label>
                                     </ion-item>
                               </ion-list>  
-                            <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
-                                <span class="message"> {{ pub.libelle }} </span>
-                            </div>
+                              <div *ngIf="pub.url_file == null">  
+
+                                <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
+                                    <span class="message"> {{ pub.libelle }} </span>
+                                </div>
+      
+                               </div>
+                               
+                               <div *ngIf="pub.url_file != null">   
+      
+                                <div class="pubImg">   
+                                    <span class="message"> {{ pub.libelle }} </span>
+                                    <div>
+                                      <img [src]="pub.url_file" alt="" width="100%" (click)="showFullScreen(pub.url_file)">
+                                    </div>
+                                </div>
+      
+                               </div>
       
                             <div class="reaction" [id]="'open' + pub.id_pub">
                                 <span (click)="getListUsersLike(pub.id_pub, pub.id_user)" *ngIf="pub.nbrLike > 0 ? true:false"> {{ pub.nbrLike }} <ion-icon name="heart" class="heart"></ion-icon></span>
@@ -248,6 +353,14 @@
                               <img alt="" src="/assets/icon/avatar.svg" />
                           </ion-avatar>
                           <ion-label> {{ follower.nom }} {{ follower.prenom }} </ion-label>
+                          <ion-buttons slot="end">
+                            <div *ngIf=" listIdAbm.includes(follower.id_users) ? false:true">
+                              <ion-button color="primary" (click)="addFollower(follower.id_users, follower)" >S'abonner</ion-button>
+                            </div>
+                            <div *ngIf=" listIdAbm.includes(follower.id_users) ? true:false">
+                              <ion-button color="primary" disabled>Déja abonné</ion-button>
+                            </div>
+                          </ion-buttons> 
                       </ion-item>
                     </ion-list>
                 </div>
@@ -262,7 +375,15 @@
                               <img alt="" src="/assets/icon/avatar.svg" />
                           </ion-avatar>
                           <ion-label> {{ follower.nom }} {{ follower.prenom }} </ion-label>
-                      </ion-item>
+                          <ion-buttons slot="end">
+                            <div *ngIf=" listIdAbm.includes(follower.id_users) ? false:true">
+                              <ion-button color="primary" (click)="addFollower(follower.id_users, follower)" >S'abonner</ion-button>
+                            </div>
+                            <div *ngIf=" listIdAbm.includes(follower.id_users) ? true:false">
+                              <ion-button color="primary" disabled>Déja abonné</ion-button>
+                            </div>
+                          </ion-buttons> 
+                        </ion-item>
                     </ion-list>
                 </div>
           
@@ -277,7 +398,7 @@
             <p *ngIf="listAbonnement.length === 0">Aucun abonnement</p>
             
             <div *ngIf="activeFieldSearchResultAbm" >
-              <ion-list *ngFor="let item of listSearchAbm"  class="ion-margin">
+              <ion-list *ngFor="let item of listSearchAbm; let index=index"  class="ion-margin">
                 <ion-item>
                   <ion-avatar slot="start" *ngIf="item.profilImgUrl != null">
                     <img alt="" [src]="item.profilImgUrl " />
@@ -286,12 +407,17 @@
                       <img alt="" src="/assets/icon/avatar.svg" />
                   </ion-avatar>
                     <ion-label> {{ item.nom }} {{ item.prenom }} </ion-label>
-                </ion-item>
+                    <ion-buttons slot="end">
+                      <div>
+                        <ion-button color="primary" (click)="unFollow(item.id_users, item, index, true)" >Se desabonner</ion-button>
+                      </div>
+                    </ion-buttons> 
+                 </ion-item>
               </ion-list>
             </div>
       
             <div *ngIf="!activeFieldSearchResultAbm">
-              <ion-list *ngFor="let item of listAbonnement" class="ion-padding">
+              <ion-list *ngFor="let item of listAbonnement; let index=index" class="ion-padding">
                 <ion-item>
                   <ion-avatar slot="start" *ngIf="item.profilImgUrl != null">
                     <img alt="" [src]="item.profilImgUrl " />
@@ -300,24 +426,118 @@
                       <img alt="" src="/assets/icon/avatar.svg" />
                   </ion-avatar>
                     <ion-label> {{ item.nom }} {{ item.prenom }} </ion-label>
+                    <ion-buttons slot="end">
+                      <div>
+                        <ion-button color="primary" (click)="unFollow(item.id_users, item, index, false)" >Se desabonner</ion-button>
+                      </div>
+                    </ion-buttons> 
                 </ion-item>
               </ion-list>
             </div>
               </div>
           
-            <ion-list *ngSwitchCase="'infos'">
-              <ion-item>
-                <ion-item>
-                  <ion-label>Info</ion-label>
+           <div *ngSwitchCase="'infos'">
+              <ion-card class="ion-padding" style="margin-left: 0; margin-right: 0;">
+                  <ion-card-title>
+                     <span style="font-size: 20px;"> A propos de vous :</span>
+                      
+                  </ion-card-title>
+                  <ion-card-content>
+                      <ion-item class="ion-margin">
+                          <ion-label>
+                              <span>Nom :</span>
+                              <span style="float: right">{{ dataUser.nom }} </span>
+                          </ion-label>
+                      </ion-item>
+
+                      <ion-item class="ion-margin">
+                        <ion-label>
+                            <span>Prenom :</span>
+                            <span style="float: right">{{ dataUser.prenom }} </span>
+                        </ion-label>
+                    </ion-item>
+
+                    <ion-item class="ion-margin">
+                      <ion-label>
+                          <span>Age :</span>
+                          <span  style="float: right">{{ dataUser.age }} </span>
+                      </ion-label>
+                  </ion-item>
+
+                  <ion-item class="ion-margin">
+                    <ion-label>
+                        <span>Sexe :</span>
+                        <span  style="float: right">{{ dataUser.sexe }} </span>
+                    </ion-label>
+                </ion-item>
+
+                <ion-item class="ion-margin">
+                  <ion-label>
+                      <span>Date de naissance :</span>
+                      <span  style="float: right">{{ dataUser.date_naiss }} </span>
+                  </ion-label>
               </ion-item>
-              </ion-item>
-            </ion-list>
+                  </ion-card-content>
+              </ion-card>
+
+
+              <ion-card class="ion-padding" style="margin-left: 0; margin-right: 0;">
+                <ion-card-title>
+                   <span style="font-size: 20px;"> Coordonées :</span>
+                    
+                </ion-card-title>
+                <ion-card-content >
+                    <ion-item class="ion-margin">
+                        <ion-label>
+                            <span>Adresse mail :</span>
+                            <span style="float: right">{{ dataUser.email }} </span>
+                        </ion-label>
+                    </ion-item>
+
+                    <ion-item class="ion-margin">
+                      <ion-label>
+                          <span> Pays :</span>
+                          <span style="float: right">{{ dataUser.pays }} </span>
+                      </ion-label>
+                  </ion-item>
+
+                  <ion-item class="ion-margin">
+                    <ion-label>
+                        <span>Ville:</span>
+                        <span  style="float: right">{{ dataUser.ville }} </span>
+                    </ion-label>
+                </ion-item>
+                </ion-card-content>
+            </ion-card>
+
+              <ion-card class="ion-padding" style="margin-left: 0; margin-right: 0;">
+                <ion-card-title>
+                   <span style="font-size: 20px;"> Compte :</span>
+                    
+                </ion-card-title>
+                <ion-card-content>
+                    <ion-item class="ion-margin">
+                        <ion-label>
+                            <span>Followers :</span>
+                            <span style="float: right">{{ listAbonne.length }} </span>
+                        </ion-label>
+                    </ion-item>
+
+                    <ion-item lines="none">
+                      <ion-label>
+                          <span> Date Creation :</span>
+                          <span style="float: right">{{ dataUser.date_creationAccount }} </span>
+                      </ion-label>
+                  </ion-item>
+                </ion-card-content>
+                <div class="ion-margin" style="text-align: center;">
+                  <ion-button color="danger" (click)="actionSheetDeleteAccount()">Supprimer mon compte</ion-button>
+                </div>
+            </ion-card>
+              
+           </div>
         </div>
-
-
-  <ion-row class="ion-padding">
-    <ion-col>
-      <ion-button expand="block" type="reset" (click)="logout()" color="danger" id="login">Se Deconnecter</ion-button>
-    </ion-col>
-  </ion-row>
 </ion-content>
+<div class="displayImg" *ngIf="showFullScreenImg">
+  <img [src]="fullScreenBgUrl" alt=""  class="imgToDisplay" (click)="showFullScreen()">
+</div>

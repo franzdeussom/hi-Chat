@@ -4,7 +4,7 @@
       Messages
     </ion-title>
     <ion-buttons slot="end">
-      <span>{{ dataUser[0].nom }} <span style="color: yellowgreen; font-size: 35px;">°</span></span>
+      <span>{{ dataUser[0].nom }} <span class="connectionState" [ngStyle]="{'color': webSocket.connectionState === 200 ? 'yellowgreen': 'red'}">°</span></span>
     </ion-buttons>
   </ion-toolbar>
   <ion-searchbar color="medium" placeholder="search" [(ngModel)]="search.value" (ionChange)="searchUser()" (ionFocus)="enableResultField()">
@@ -25,18 +25,38 @@
             <ion-item (click)="goToDiscusion(item.id_destinateur_user, item, index)">
                   <ion-avatar slot="start" *ngIf="item.imageEnvoyeur != null && item.id_sender != dataUser[0].id_users">
                     <img alt="" [src]="item.imageEnvoyeur" />
+                    <div *ngIf="wsNotif.tabAbment.includes(item.idUser)" >
+                      <ion-icon name="" style="background-color: greenyellow; border-radius: 35px;position: fixed; z-index: 1; margin-left: -25px;"> 
+                      </ion-icon>
+                     </div>
                   </ion-avatar>
                   <ion-avatar slot="start" *ngIf="item.imageEnvoyeur != null && item.id_sender == dataUser[0].id_users">
                     <img alt="" src="/assets/icon/avatar.svg" />
+                    <div *ngIf="wsNotif.tabAbment.includes(item.idUser)" >
+                      <ion-icon name="" style="background-color: greenyellow; border-radius: 35px;position: fixed; z-index: 1; margin-left: -25px;"> 
+                      </ion-icon>
+                     </div>
                   </ion-avatar>
                   <ion-avatar slot="start" *ngIf="item.imageEnvoyeur == null" >
                       <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
-                   </ion-avatar>
-             
+                      <div *ngIf="wsNotif.tabAbment.includes(item.idUser)" >
+                        <ion-icon name="" style="background-color: greenyellow; border-radius: 35px;position: fixed; z-index: 1; margin-left: -25px;"> 
+                        </ion-icon>
+                       </div>
+                    </ion-avatar>
+                   
               <ion-label>
                <h3><p><span [ngClass]="(item.statut === 0 || !item.statut) &&  item.id_sender != dataUser[0].id_users ? 'notRead':'none' ">{{ item.nom}} {{ item.prenom}}</span></p></h3>
-               <span style="color: gray;" [ngClass]="(item.statut == 0 || !item.statut) && item.id_sender != dataUser[0].id_users ? 'notRead':'none' "><span *ngIf="item.id_sender === dataUser[0].id_users"><em>vous:</em></span> {{ item.libelle }} </span>
-              <span style="float: right; font-size: 5px; z-index: 1; position: fixed; margin-left: 90%;"> 
+               <span style="color: gray;" [ngClass]="(item.statut == 0 || !item.statut) && item.id_sender != dataUser[0].id_users ? 'notRead':'none' ">
+                <span *ngIf="item.id_sender === dataUser[0].id_users">
+                  <em>vous:</em>
+                </span> 
+                <span *ngIf="item.type === typeMsg.TEXT " >{{ item.libelle }}</span>
+                <span *ngIf="item.type === typeMsg.IMAGE ">
+                    Photo <ion-icon name="camera"></ion-icon>
+               </span>
+             </span>
+             <span style="float: right; font-size: 5px; z-index: 1; position: fixed; margin-left: 90%;"> 
                 <ion-badge color="primary" mode="ios">{{ item.date_envoie }} </ion-badge>
               </span>
               </ion-label>
@@ -86,19 +106,33 @@
               </ion-item-options>
                 
               <ion-item (click)="goToDiscusion(item.id_destinateur_user, item, index)">
-                    <ion-avatar slot="start" *ngIf="item.imageEnvoyeur != null && item.id_sender != dataUser[0].id_users">
-                      <img alt="" [src]="item.imageEnvoyeur" />
+                   <ion-avatar slot="start" *ngIf="item.imageEnvoyeur != null && item.id_sender != dataUser[0].id_users">
+                    <img alt="" [src]="item.imageEnvoyeur" />
+              
+                  </ion-avatar>
+                  <ion-avatar slot="start" *ngIf="item.imageEnvoyeur != null && item.id_sender == dataUser[0].id_users">
+                    <img alt="" src="/assets/icon/avatar.svg" />
+                    
+                  </ion-avatar>
+                  <ion-avatar slot="start" *ngIf="item.imageEnvoyeur == null" >
+                      <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+                      
                     </ion-avatar>
-                    <ion-avatar slot="start" *ngIf="item.imageEnvoyeur != null && item.id_sender == dataUser[0].id_users">
-                      <img alt="" src="/assets/icon/avatar.svg" />
-                    </ion-avatar>
-                    <ion-avatar slot="start" *ngIf="item.imageEnvoyeur == null" >
-                        <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
-                     </ion-avatar>
-               
+                    <div *ngIf="wsNotif.tabAbment.includes(item.idUser)" >
+                      <ion-icon name="" style="background-color: greenyellow; border-radius: 35px;position: fixed; z-index: 1; margin-left: -25px;"> 
+                      </ion-icon>
+                     </div>
                 <ion-label>
                  <h3><p><span [ngClass]="(item.statut === 0 || !item.statut) &&  item.id_sender != dataUser[0].id_users ? 'notRead':'none' ">{{ item.nom}} {{ item.prenom}}</span></p></h3>
-                 <span style="color: gray;" [ngClass]="(item.statut == 0 || !item.statut) && item.id_sender != dataUser[0].id_users ? 'notRead':'none' "><span *ngIf="item.id_sender === dataUser[0].id_users"><em>vous:</em></span> {{ item.libelle }} </span>
+                 <span style="color: gray;" [ngClass]="(item.statut == 0 || !item.statut) && item.id_sender != dataUser[0].id_users ? 'notRead':'none' ">
+                    <span *ngIf="item.id_sender === dataUser[0].id_users">
+                      <em>vous:</em>
+                    </span> 
+                    <span *ngIf="item.type === typeMsg.TEXT " >{{ item.libelle }}</span>
+                    <span *ngIf="item.type === typeMsg.IMAGE ">
+                        Photo <ion-icon name="camera"></ion-icon>
+                   </span>
+                 </span>
                 <span style="float: right; font-size: 5px; z-index: 1;"> 
                   <ion-badge color="primary" mode="ios">{{ item.date_envoie }} </ion-badge>
                 </span>

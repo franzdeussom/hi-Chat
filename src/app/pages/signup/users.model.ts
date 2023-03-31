@@ -1,6 +1,6 @@
 export class User{
     constructor(
-        public id_users?: number,
+        public id_users?: any,
         public nom?: string,
         public prenom?: string,
         public email?: any,
@@ -16,6 +16,5 @@ export class User{
         public ville?: string,
         public NbrFollow?: number
     ){
-        
     }
 }

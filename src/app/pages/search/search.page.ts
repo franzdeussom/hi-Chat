@@ -58,7 +58,6 @@ export class SearchPage implements OnInit {
   simpleSearch(){
     this.devidedVal();
     this.enableSearchSpaceWithOption();
-    this.enableSearchWithOption();
     this.search.simpleSearch('user-api/search.php', JSON.stringify(this.simpleSearchValues)).subscribe((data)=>{
          this.isNotFound= false;
          this.isNotFoundOption = false;
@@ -93,7 +92,7 @@ export class SearchPage implements OnInit {
     this.disableSpaceOption = true;
   }
   enableSearchSpaceWithOption(){
-    if(this.value.length == 0 || this.value == ''){
+    if(this.value.length == 0 || this.value === ''){
        this.disableSpaceOption = false;
        this.GlobalSearchResult.length = 0;
     }

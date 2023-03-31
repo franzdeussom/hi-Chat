@@ -1,3 +1,6 @@
+import { Message } from './../home/discusion/message.model';
+import { RangeMessageService } from './../home/range-message.service';
+import { GlobalStorageService } from './../../services/localStorage/global-storage.service';
 import { TypeNotification } from 'src/app/pages/notifications/typeNotif.enum';
 import { ToastAppService } from './../../services/Toast/toast-app.service';
 import { MessageNotif } from './messageNotif.enum';
@@ -13,12 +16,23 @@ export class GetNotificationService {
    wsNotif!: WebSocket;
   typeNotif!: TypeNotification;
   notifToSend: NotificationApp;
-  globalNotification: Array<NotificationApp>;
-  listAbonneCurrentUser!:User[];
+  newNotification: boolean = false;
+  tabAbment: number[] = [];
+  
+ public globalNotification: Array<NotificationApp>;
+ public tmpNotif: any[] = [];
+ public countMsgNotRead: number = 0;
+ public connectionState: number = 200;
+ 
+
+  listAbonneCurrentUser!: any[];
+
   addLikeOnPublication: {PID: any, type:any}= {PID: undefined, type: ''};
   constructor(
               private host : EnvironementService,
-              private toast: ToastAppService
+              private toast: ToastAppService,
+              private localStore: GlobalStorageService,
+              private rangeMessage: RangeMessageService
     ) { 
       this.notifToSend = new NotificationApp();
       this.globalNotification = new Array<NotificationApp>();
@@ -36,13 +50,22 @@ export class GetNotificationService {
       }
   }
 
+  checkConnectionState(){
+      this.wsNotif.onerror = (evt)=>{
+          this.connectionState = 500;
+      }
+  }
+
   showToast(notificationGet: NotificationApp){
-    this.globalNotification.unshift(notificationGet);  
 
       switch(notificationGet.type){
           case TypeNotification.LIKE:
+            if(!this.isNotifPresentInMainList(notificationGet)){
+                this.globalNotification.unshift(notificationGet);
+                this.newNotification = true;
+                this.toast.makeToast(notificationGet.prenom + ' ' + MessageNotif.LIKE);
+            }
              this.addLikeOnPub(notificationGet, TypeNotification.LIKE);
-             this.toast.makeToast(notificationGet.prenom + '' + MessageNotif.LIKE);
             break;
 
           case TypeNotification.UNLIKE:
@@ -50,19 +73,54 @@ export class GetNotificationService {
             break;
 
           case TypeNotification.COMMENT:
-            this.toast.makeToast(notificationGet.prenom + '' + MessageNotif.COMMENT);
+            if(!this.isNotifPresentInMainList(notificationGet)){
+                this.globalNotification.unshift(notificationGet);
+                this.newNotification = true;
+                this.toast.makeToast(notificationGet.prenom + ' ' + MessageNotif.COMMENT);
+              }
             break;
 
           case TypeNotification.NEW_FOLLOWER:
-            this.toast.makeToast(notificationGet.prenom + '' + MessageNotif.NEW_FOLLOWER);
+           if(!this.isNotifPresentInMainList(notificationGet)){
+                this.globalNotification.unshift(notificationGet);
+                this.newNotification = true;
+                this.toast.makeToast(notificationGet.prenom + ' ' + MessageNotif.NEW_FOLLOWER);
+            }
             break;
 
           case TypeNotification.LIKE_COMMENT:
-            this.toast.makeToast(notificationGet.prenom + '' + MessageNotif.LIKE_COMMENT);
+            if(!this.isNotifPresentInMainList(notificationGet)){
+                this.globalNotification.unshift(notificationGet);
+                this.newNotification = true;
+
+                this.toast.makeToast(notificationGet.prenom + ' ' + MessageNotif.LIKE_COMMENT);
+            }
             break;
 
           case TypeNotification.NEW_PUBLICATION:
+           if(!this.isNotifPresentInMainList(notificationGet)){
+                this.globalNotification.unshift(notificationGet);
+                this.newNotification = true;
+            }
             this.checkFollow(notificationGet);
+            break;
+
+          case TypeNotification.ACCOUNT_SIGNAL:
+            this.globalNotification.unshift(notificationGet);
+            this.newNotification = true;
+            break;
+            //on connection listenner
+          case TypeNotification.LIST_USER_ONLINE:
+            setTimeout(() => {
+               this.showUsersOnline(notificationGet);
+            }, 500);
+            break;
+          case TypeNotification.NEW_USER_ONLINE: 
+            this.addInListOfUserOnline(notificationGet);
+          
+            break;
+          case TypeNotification.USER_LOGOUT:
+            this.deleteInlistOfUserOnline(notificationGet);
       }
 
   }
@@ -72,12 +130,17 @@ export class GetNotificationService {
     this.addLikeOnPublication.type = type; 
   }
 
+  isNotifPresentInMainList(notifGet: NotificationApp): boolean{
+    return this.globalNotification.findIndex((notif => 
+             ( notif.publication?.PID === notifGet.publication?.PID && notif.type === notifGet.type && notif.id_UsersSender === notifGet.id_UsersSender)
+      )) !== -1 ? true: false;
+  }
 
   checkFollow(notif: NotificationApp){
     //check if the user who send the notifPub is an followers of the current user 
       let index = this.listAbonneCurrentUser.findIndex((user => user.id_users === notif.id_UsersSender));
       if(index != -1){
-        this.toast.makeToast(notif.prenom + '' + MessageNotif.PUBLICATION);           
+        this.toast.makeToast(notif.prenom + ' ' + MessageNotif.PUBLICATION);           
       }
   }
 
@@ -85,7 +148,9 @@ export class GetNotificationService {
     this.notifToSend.id_UsersSender = dataUser.id_users;
     this.notifToSend.nomSender = dataUser.nom;
     this.notifToSend.prenom = dataUser.prenom;
+    this.notifToSend.isRead = false;
     this.notifToSend.profilImgUrlSender = dataUser.profilImgUrl;
+
       switch(type){
         case TypeNotification.LIKE:
           this.notifToSend.type = type;
@@ -130,8 +195,85 @@ export class GetNotificationService {
           this.notifToSend.id_destinataire = '*';//send to all friends
           this.notifToSend.message = MessageNotif.PUBLICATION;
           this.notifToSend.publication = pub;
+          break;
+        
       }
      
       this.wsNotif.send(JSON.stringify(this.notifToSend));
   }
+
+async loadNotifSave(idUser: number){
+    const KEY_NOTIFICATION = 'NOTIFICATIONS_USERS' + idUser;
+
+    if(await this.localStore.isAlreadyData(KEY_NOTIFICATION)){
+        this.tmpNotif = await this.localStore.getData(KEY_NOTIFICATION);
+  }
+} 
+addInListOfUserOnline(connectionData: any){
+  let idUser = Number.parseInt(connectionData.id.toString().split('=')[1]);
+  if(this.checkPresenceInListAbmnt(idUser)){
+      this.tabAbment.push(idUser);
+  }
+}
+deleteInlistOfUserOnline(connectionData: any){
+  let idUser = Number.parseInt(connectionData.id.toString().split('=')[1]);
+  if(this.tabAbment.includes(idUser)){
+    const index = this.tabAbment.indexOf(idUser);
+    this.tabAbment.splice(index, 1);
+  }
+}
+
+showUsersOnline(notifGet: any){
+  if(Array.isArray(notifGet.list)){
+    if(notifGet.list.length > 0){
+        notifGet.list.forEach((item:any) => {
+            let id = Number.parseInt(item.toString().split('=')[1]);
+            
+            if(this.checkPresenceInListAbmnt(id)){
+              this.tabAbment.push(id);
+            }
+        });
+
+    }
+  }
+}
+
+checkPresenceInListAbmnt(id: number): boolean{
+  const isInTabAbment = ()=>{
+    if(typeof  this.listAbonneCurrentUser[0] !== 'undefined' || Array.isArray(this.listAbonneCurrentUser[0])){
+      let index = this.listAbonneCurrentUser[0].findIndex(((user: { id_users: number; })=> user.id_users === id));
+      return index != -1;
+    }else{
+      this.listAbonneCurrentUser[0] = [];
+      return false;
+    }
+    
+  }
+  return isInTabAbment();
+}
+
+ getLocaSave(): Array<any>{
+   return this.tmpNotif.length > 0 ? this.tmpNotif: [];
+ }
+ 
+ kontoMelden(idDestinataire: any, motif?: string){
+    let Admin = new User();
+    let notifToSend = new NotificationApp();
+    Admin.id_users = 0;
+    Admin.nom = 'Hi'
+    Admin.prenom = 'Chat'
+    Admin.profilImgUrl = '/assets/icon/appIcon.png';
+
+    notifToSend.type = TypeNotification.ACCOUNT_SIGNAL;
+    notifToSend.profilImgUrlSender = Admin.profilImgUrl;
+    notifToSend.nomSender = Admin.nom;
+    notifToSend.prenom = Admin.prenom
+    notifToSend.id_UsersSender = Admin.id_users;
+    notifToSend.isRead = false;
+    notifToSend.id_destinataire = idDestinataire;
+    notifToSend.message = MessageNotif.ACCOUNT_SIGNAL;
+    notifToSend.commentContent = motif;
+
+    this.wsNotif.send(JSON.stringify(notifToSend));
+ }
 }

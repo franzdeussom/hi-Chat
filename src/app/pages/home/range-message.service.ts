@@ -53,7 +53,6 @@ export class RangeMessageService {
     const { value } = await Storage.get({ key });
     if(!value || value === '[]' || value.length === 0){
       //no data present, create the backup with this sender
-      console.log('pas de backup pour cette discusion');
       let backUp = [];
       backUp.push(msg);
       this.localSave.saveData(backUp, key);
@@ -83,7 +82,6 @@ export class RangeMessageService {
       const { value } = await Storage.get({ key });
       if(!value || value === '[]' || value.length === 0){
         //no data present, create the backup of sender
-        console.log('pas de backup de sender');
         let backupID = [];
         backupID.push(id_sender);
         this.localSave.saveData(backupID, key)
@@ -137,8 +135,6 @@ export class RangeMessageService {
             size = msg.length-1;
           }
           this.backupMessage.push(msg[size]);        
-        }else{
-          console.log('pas de backup...123')
         }
         
           //console.log('is already present present on the list')
@@ -171,30 +167,13 @@ export class RangeMessageService {
    
   }  
 
-  updateBackupMessage(msgToUpAdd: Message, id_sendr: number){
-      console.log('le backUp', this.backupMessage);
-  }
 
   async addInBackupMsgMissed(msgMissed: any){
     //ajout des messages pas recu directement dans le Backup des message Locaux
     if(Array.isArray(msgMissed)){
-        msgMissed.forEach(async (elemnt: Message, index:number)=> {
+        msgMissed.forEach(async (elemnt: Message)=> {
           let idToAdd = await this.checkDestinataireID(elemnt.id_destinateur_user, elemnt);
-          let keyDiscussion = 'MSG_BUP_WITDH='+idToAdd +'AND'+this.id_currentUser;
-        
-    const value = await this.localSave.getData(keyDiscussion);
-    if(!value || value === '[]' || value.length === 0){
-      let backUp = [];
-      backUp.push(elemnt);
-      this.localSave.saveData(backUp, keyDiscussion);    
-    }else{
-      let tmpBackUp;
-      tmpBackUp = await this.localSave.getData(keyDiscussion);
-      
-        tmpBackUp.push(elemnt);
-        this.localSave.deleteData(keyDiscussion);
-        this.localSave.saveData(tmpBackUp, keyDiscussion);
-    }
+                this.saveMsgSend(elemnt, idToAdd);
         });}
 
            let tpID = await this.localSave.getData('SENDER_ID');
@@ -203,9 +182,9 @@ export class RangeMessageService {
             }else{
                 this.localSave.saveData(this.tmpMissedID, 'SENDER_ID');  
             }
-
-            this.delMsgMissedDB();
-            this.getBackupMessage();
+        setTimeout(() => {
+          
+        }, 800);
   }
 
   delMsgMissedDB(){
@@ -329,11 +308,18 @@ export class RangeMessageService {
   createPasswordDiscu(password: string, id: number){
     let key = 'SECURITY_DISC_KEY'+this.id_currentUser;
     let disc_sec = new SecurityMsg();
-    console.log('password to create:', password);
     disc_sec.pass_key = password;
     disc_sec.discussion_list = [id];
     this.localSave.saveData([disc_sec], key);
+  }
 
+  async updatePasswordDiscu(password: any){
+    let key = 'SECURITY_DISC_KEY'+this.id_currentUser;
+    let list : SecurityMsg[] = await this.localSave.getData(key);
+    list[0].pass_key = password;
+
+    this.localSave.deleteData(key);
+    this.localSave.saveData(list, key);
   }
 
   async addPasswordOnDisc(id: number){

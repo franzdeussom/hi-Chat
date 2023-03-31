@@ -26,7 +26,10 @@ ion-content {
     }
     ion-input{
         color: rgb(248, 237, 237);
+        padding: 15px;
     }
+
+   
    
 }
 #ion-margin{
@@ -45,6 +48,24 @@ ion-content {
         --placeholder-color: #ddd;
         --placeholder-opacity: 0.9;
       }
+      .camera{
+        width: auto;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        margin-left: 10px;
+        font-size: 30px;
+          .label-file {
+            cursor: pointer;
+            color: #193c41;
+            font-weight: bold;
+           }
+        .label-file:hover {
+            color: #25a5c4;
+        }
+        .input-file {
+            display: none;
+          } 
+      }
 }
 .head{
     margin: auto;
@@ -57,8 +78,7 @@ ion-content {
         margin-left: 2px;
     }
     .name{
-        font-size: 20px;
-        font-weight: bold;
+        font-size: 15px;
         margin: auto;
     }
     .datePub{
@@ -85,6 +105,106 @@ ion-content {
         padding: 5px;
         
     }
+}
+.globePub{
+        
+    position: relative;
+    z-index: 0;
+    width: 100%;
+    
+    .head{
+    margin: auto;
+    width: 100%;
+    img{
+        position: relative;
+        border-radius: 100%;
+        margin-bottom: 5px;
+        float: left;
+        margin-left: 2px;
+    }
+    .name{
+        font-size: 20px;
+        margin: auto;
+    }
+    .menu{
+        position: relative;
+        top: 0;
+        float: right;
+        font-size: 25px;
+        padding: 3px;
+        font-weight: bold;
+    }
+    .datePub{
+        font-size: 12px;
+        margin-top: 2px;
+        margin-left: auto;
+    }
+ }
+    .apercu{
+        display: flex;
+        min-height: 25vh;
+        height: fit-content;
+        text-align: center;
+        margin:auto;
+        width: 100%;
+        color: white;
+        padding: 8px;
+        vertical-align: middle;
+        padding: 2px;
+        .message{
+            margin: auto;
+            text-align: center;
+            font-size: 20px;
+            padding: 5px;
+            
+        }
+    }
+    .pubImg {
+        height: fit-content;
+        .message{
+            margin: 5px;
+            font-size: 18px;
+            padding: 5px;
+            margin-bottom: 7px;
+        } 
+    }
+.reaction{
+    position: relative;
+    bottom: 0;
+    margin-top: 10px;
+    margin-left: 2px;
+    width: 100% !important;
+    .heart{
+        color: red;
+        font-size: 14px;
+    }
+}
+.action{
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: fit-content;
+    text-align: center;
+    margin: auto;
+    ion-button{
+        height: 6vh;
+        margin: auto;
+    }
+    .like{
+        margin: auto;
+        width: 25%;
+    }
+    .separator{
+        position: relative;
+        bottom: 0 !important;
+        font-size: 25px;
+        width: 2%;
+    }
+    .comment{
+        margin: auto;
+        width: auto;
+    }
+  }
 }
 .pub{
         position: relative;
@@ -139,6 +259,15 @@ ion-content {
                 
             }
         }
+        .pubImg {
+            height: fit-content;
+            .message{
+                margin: 5px;
+                font-size: 18px;
+                padding: 5px;
+                margin-bottom: 7px;
+            } 
+        }  
 
     .reaction{
         position: relative;
@@ -158,6 +287,7 @@ ion-content {
         height: fit-content;
         text-align: center;
         margin: auto;
+        z-index: 1;
         ion-button{
             height: 6vh;
             margin: auto;
@@ -196,3 +326,12 @@ ion-content {
         width: 5vh;
     }
 }
+.displayImg{
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    .imgToDisplay{
+        width: 100%;
+        height: 100%;
+    }
+  }

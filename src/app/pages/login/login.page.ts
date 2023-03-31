@@ -39,7 +39,6 @@ export class LoginPage implements OnInit {
   }
 
   doLogin(){
-    console.log(this.isDataComplete());
     if(this.isDataComplete()){
       this.setConformData();
       this.sendData();

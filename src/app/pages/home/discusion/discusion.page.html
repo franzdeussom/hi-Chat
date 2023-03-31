@@ -1,8 +1,12 @@
-<ion-header>
+<ion-header [hidden]="showFullScreenImg">
   <ion-toolbar color="light">
   <ion-back-button slot="start" (click)="renitListMessage()"></ion-back-button>
     <div (click)="goToProfil()">
-      <ion-title>{{ receivData.nom }} {{ receivData.prenom }} </ion-title>
+      <ion-title>{{ receivData.nom }} {{ receivData.prenom }} <br>
+        <span *ngIf="wsNotif.tabAbment.includes(receivData.idUser)" style="font-size: 14px; font-weight: normal;">
+          en ligne
+        </span>
+      </ion-title>
     </div>
     <ion-buttons slot="end" (click)="notAvailable()">
       <div style="font-size: 25px; margin-right: 20px;">
@@ -20,29 +24,25 @@
     <div *ngFor="let item of message" >
       <ion-row>
         <ion-col>
-          <div [ngClass]="item.isReceived ? 'received':'sending'" (click)="showDetailmsg(item)">
-                  <span class="msg">
-                     {{item.libelle}}                    
-                  </span><br>
-          </div> 
+          <div *ngIf="item.type === typeMsg.TEXT">
+            <div [ngClass]="item.isReceived === 1 || item.isReceived ? 'received':'sending'" (click)="showDetailmsg(item)">
+                      <span class="msg">
+                        {{item.libelle}}                    
+                      </span><br>
+            </div> 
+        </div>
+        <div *ngIf="item.type === typeMsg.IMAGE">
+          <div [ngClass]="item.isReceived === 1 || item.isReceived ? 'imgReceived':'imgSending'" >
+            <img [src]="item.imgBase64Url" alt="" class="imgMsg" (click)="showFullScreen(item.imgBase64Url)">
+          </div>
+        </div> 
         </ion-col> 
       </ion-row>
     </div>
-    <!--
-      <ion-row>
-      <ion-col>
-        <div>
-          <span class="received">Oui</span>
-        </div>
-      </ion-col> 
-    </ion-row>  
-    --> 
   </div>
 
 
-
-
-  <ion-footer class="field">
+  <ion-footer class="field" [hidden]="showFullScreenImg">
        
         <ion-input class="custom-textarea" (ionChange)="setColor('primary')" [(ngModel)]="value" [value]="value" [autocapitalize]="true" placeholder="Type something here"></ion-input>
           <span class="send">
@@ -50,6 +50,20 @@
                 <ion-icon name="send-outline" [color]="colorSendBtn"></ion-icon>
             </ion-buttons>
           </span>
+          <span class="camera">
+            <ion-buttons>
+              <label for="file" class="label-file"> 
+                <ion-icon name="camera">  
+                </ion-icon>
+              </label>
+             <input type="file" id="file" class="input-file" #filechooser camera>
+            </ion-buttons>
+          </span>
 
   </ion-footer>
+  
 </ion-content>
+
+<div class="displayImg" *ngIf="showFullScreenImg">
+  <img [src]="fullScreenBgUrl" alt=""  class="imgToDisplay" (click)="showFullScreen()">
+</div>

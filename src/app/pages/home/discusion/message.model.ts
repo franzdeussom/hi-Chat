@@ -1,5 +1,8 @@
 export class Message{  
     constructor(
+        public type?: string,
+        public idUser?:any,
+        public imgBase64Url?: string,
         public imageEnvoyeur?: any,
         public id_message?: any,
         public libelle?: any,
@@ -12,7 +15,7 @@ export class Message{
         public nom?: any,
         public prenom?: any,
         public toSend?: boolean,
-        public isReceived?: boolean,
+        public isReceived?: any,
         public id_discussion?: any
     ){}
 }

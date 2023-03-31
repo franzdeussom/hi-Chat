@@ -1,8 +1,9 @@
 <ion-content>
  <ion-tabs>
   <ion-tab-bar slot="bottom">
-    <ion-tab-button tab="home">
-      <ion-icon name="chatbubbles"></ion-icon>
+    <ion-tab-button tab="home" (click)="renit()">
+      <ion-icon name="chatbubbles" ></ion-icon>
+      <ion-badge id="notifications-badge" color="danger" *ngIf="nbrMessage > 0"> {{ nbrMessage }}</ion-badge> 
       <ion-label>Chats</ion-label>
     </ion-tab-button> 
 
@@ -12,9 +13,9 @@
     </ion-tab-button>
     
     <ion-tab-button tab="notifications">
-      <ion-icon name="notifications"> 
-        <ion-badge id="notifications-badge" color="danger">5</ion-badge> 
+      <ion-icon name="notifications" > 
       </ion-icon>
+      <ion-badge id="notifications-badge" color="danger" *ngIf="nbrNotif > 0" > {{ nbrNotif }}</ion-badge> 
       <ion-label>Notifications</ion-label>
     </ion-tab-button>
 

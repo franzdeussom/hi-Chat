@@ -16,7 +16,7 @@
     $id_users = $data->id_user;
     $libellePub = $data->libelle;
     $datePub = $data->date_pub;
-    $url_file  = null;
+    $url_file  = $data->url_file;
     $is_public = $data->is_public;
     $bgColor  = $data->colorBg;
 

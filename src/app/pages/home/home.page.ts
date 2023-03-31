@@ -1,3 +1,4 @@
+import { TypeMessage } from './discusion/typeMessage.enum';
 import { AccountApiService } from 'src/app/services/account-api.service';
 import { GetNotificationService } from './../notifications/get-notification.service';
 import { SecurityMsg } from './securitymsg.model';
@@ -32,14 +33,14 @@ export class HomePage implements OnInit {
   AllMessage: any;
   listDiscSecur : SecurityMsg;
   listOfSearchBar: Message[] = [];
-  
-  constructor(private webSocket : MessageApiService,
+  typeMsg = TypeMessage;
+  constructor(public webSocket : MessageApiService,
               private cdRef:ChangeDetectorRef,
               private loadDataUser: DataUserService,
               private api: MessageApiService,
               private accountServ: AccountApiService,
               private receiver: ReceiverDataService,
-              private wsNotif: GetNotificationService,
+              public wsNotif: GetNotificationService,
               private rangeMessage: RangeMessageService,
               private navController: NavController,
               private localSave: GlobalStorageService,
@@ -54,19 +55,18 @@ export class HomePage implements OnInit {
       this.getDataUser();
       this.connectWebSocket();
       this.onWebsocketMessage();
-      this.checkGetMessageMissed();
       this.loadMessage();
+      this.checkGetMessageMissed();
       this.checkUpdateListOfSenderHome();
       this.loadSecurityDisc();
       this.getFollowers();
-  
-      
   }
 
   ionViewDidEnter(){
     this.getDataUser();
     this.loadMessage();
     this.onWebsocketMessage();
+    this.loadSecurityDisc();
   }
   
   ngAfterViewChecked() {
@@ -80,7 +80,9 @@ export class HomePage implements OnInit {
   }
 
   async getFollowers(){
-    this.wsNotif.listAbonneCurrentUser = await this.loadAbonne();
+    let tmp, tm;
+    tmp = await this.loadAbonne();
+    this.wsNotif.listAbonneCurrentUser = tmp;
   }
 
   loadAbonne(): Promise<User[]>{
@@ -99,7 +101,7 @@ export class HomePage implements OnInit {
      // let tmp = setInterval(()=>{
       try{
         if( typeof this.rangeMessage.LastMessage !== 'undefined'){
-          this.loadMessage();
+          this.upDateSenderList(this.rangeMessage.LastMessage);
           this.rangeMessage.LastMessage = undefined;
           }
       }catch(err){
@@ -124,17 +126,15 @@ export class HomePage implements OnInit {
     let nom = '';
 
     this.webSocket.ws.onmessage = async (msg:any)=>{
-             msgReceived = JSON.parse(msg.data);             
+             msgReceived = JSON.parse(msg.data);
              prenom = msgReceived.prenom;
              nom = msgReceived.nom;
-              msgReceived.isReceived = true;
+              msgReceived.isReceived = 1;
              this.api.newMsg = msgReceived;
-      
+              this.wsNotif.countMsgNotRead++;
         this.rangeMessage.saveMsgSend(msgReceived, await this.checkDestinataireIDMsg(msgReceived.id_destinateur_user, msgReceived));
-        this.upDateSenderList(msgReceived, await this.checkDestinataireIDMsg(msgReceived.id_destinateur_user, msgReceived));
+        this.upDateSenderList(msgReceived);
         this.toast.makeToast('Vous avez recu un nouveau message de ' + prenom + ' ' + nom);
-       
-  
     }
 
   }
@@ -189,7 +189,6 @@ if(this.listOfSender.length > 0){
 }else{
   id =msg.id_sender;
 }
-  console.log('include:', id);
 
  return id;
 }  
@@ -200,46 +199,49 @@ if(this.listOfSender.length > 0){
         this.listOfSender.length = 0;
         this.rangeMessage.getBackupMessage();
         this.listOfSender = this.rangeMessage.backupMessage;
+        
       }
 
 
   handleRefresh(event:any) {
+    this.loadMessage();
     setTimeout(() => {
       // Any calls to load data go here
-      this.loadMessage();
       event.target.complete();
     }, 2100);
   };
 
-  upDateSenderList(msg: Message, id_sender: number){
-      this.rangeMessage.updateBackupMessage(msg, id_sender);
+  upDateSenderList(msg: Message){
       this.listOfSender = this.rangeMessage.backupMessage;
       let count = 0;
       let i = 0;
 
       if(this.listOfSender.length > 0){
-        this.listOfSender.forEach((message:any, index:any)=>{
-            if(message.nom === msg.nom){
+        
+        this.listOfSender.forEach((message: Message, index:any)=>{
+            if(message.id_discussion === msg.id_discussion){
                count++;
                i = index;
             }   
         });
-
         if(count > 0){
           let tmpValueOfListOfSender;
           this.listOfSender[i].id_discussion = msg.id_discussion;
           this.listOfSender[i].libelle = msg.libelle;
+          this.listOfSender[i].nom = msg.nom;
+          this.listOfSender[i].prenom = msg.prenom;
           this.listOfSender[i].date_envoie = msg.date_envoie; 
           this.listOfSender[i].id_sender = msg.id_sender;
           this.listOfSender[i].id_destinateur_user = msg.id_destinateur_user;
           this.listOfSender[i].isReceived = msg.isReceived;
           this.listOfSender[i].statut = false;
           this.listOfSender[i].imageEnvoyeur = msg.imageEnvoyeur;
+          this.listOfSender[i].idUser = this.getIdUsersMessage(msg.idUser, msg);
           //save tmp msg
           tmpValueOfListOfSender = this.listOfSender[i];
-          //delete it in the main list
+          //delete it, in the main list
           this.listOfSender.splice(i, 1);
-          //add it again in the main list, as first msg
+          //add it again in the main list, as first discussion msg
           this.listOfSender.unshift(tmpValueOfListOfSender);
           
         }else{
@@ -249,6 +251,10 @@ if(this.listOfSender.length > 0){
       }else{
         this.listOfSender.unshift(msg);
       }
+  }
+
+  getIdUsersMessage(idUserOfMessage: number, msg: Message): number{
+      return idUserOfMessage == this.dataUser[0].id_users ? msg.id_sender:idUserOfMessage;
   }
 
 
@@ -317,11 +323,30 @@ if(this.listOfSender.length > 0){
    checkGetMessageMissed(){
     this.api.post('msg-api/getAllMessageUser.php', this.dataUser).subscribe((data)=>{
       if(Object.keys(data).length === 0 ? false:true){
-          this.rangeMessage.addInBackupMsgMissed(data);
+            this.wsNotif.countMsgNotRead = Array.isArray(data) ? data.length: 0;
+            this.addInListSender(data);
+            this.rangeMessage.delMsgMissedDB(); 
       }
     });
    }
+   addInListSender(MsgMissed: Array<Message>){
+            MsgMissed.forEach(async (msg)=>{
+              this.rangeMessage.saveMsgSend(msg, await this.checkDestinataireID(msg.id_destinateur_user, msg));
+            });
 
+        setTimeout(() => {
+            
+            MsgMissed.forEach((msg)=>{
+               this.upDateSenderList(msg);
+            });
+
+        }, 1000);
+
+          setTimeout(() => {
+            this.loadMessage();
+          }, 1000);
+
+   }
 
    init(){
     this.rangeMessage.tabSenderMsg.length = 0;
@@ -464,6 +489,7 @@ async  forgotDiscKey(){
     
     this.updateSetMsgAsRead(indexMsg, ID_USERS_OF_DISCUSSION, receiverDATA);
     this.rangeMessage.setMessageOfDiscusion(await this.checkDestinataireID(ID_USERS_OF_DISCUSSION, receiverDATA, true));
+    this.wsNotif.countMsgNotRead = 0;
     this.navController.navigateForward('discusion');
   }
   

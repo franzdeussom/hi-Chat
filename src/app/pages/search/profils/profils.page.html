@@ -1,4 +1,4 @@
-<ion-header [translucent]="true">
+<ion-header [translucent]="true" [hidden]="showFullScreenImg">
   <ion-toolbar>
     <ion-back-button slot="start"></ion-back-button> 
     <ion-title>
@@ -77,12 +77,16 @@
 
   <div [ngSwitch]="type">
     <div *ngSwitchCase="'publications'">
-            <div *ngSwitchCase="'publications'">
+                <div *ngIf="listPublication.length === 0">
+                  <p>
+                    <ion-text> Aucune publication...</ion-text>
+                  </p>
+                </div>
                     <div class="pub">
                       <div *ngFor="let pub of listPublication; let index = index" >
                           <ion-card style="width: 100% !important; margin-left: 0; margin-top: 2px;">
                                 <ion-list class="head">
-                                        <ion-item>
+                                        <ion-item lines="none">
                                                 <ion-avatar slot="start" *ngIf="pub.profilImgUrl != null">
                                                   <img alt="" [src]="pub.profilImgUrl" />
                                                 </ion-avatar>
@@ -109,10 +113,24 @@
                                                 </ion-label>
                                         </ion-item>
                                   </ion-list>  
-                                <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
-                                    <span class="message"> {{ pub.libelle }} </span>
-                                </div>
+                                  <div *ngIf="pub.url_file == null">  
+
+                                    <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
+                                        <span class="message"> {{ pub.libelle }} </span>
+                                    </div>
           
+                                   </div>
+                                   
+                                   <div *ngIf="pub.url_file != null">   
+          
+                                    <div class="pubImg">   
+                                        <span class="message"> {{ pub.libelle }} </span>
+                                        <div>
+                                          <img [src]="pub.url_file" alt="" (click)="showFullScreen(pub.url_file)">
+                                        </div>
+                                    </div>
+          
+                                   </div>
                                 <div class="reaction">
                                     <span *ngIf="pub.nbrLike > 0 ? true:false" > {{ pub.nbrLike }} <ion-icon name="heart" class="heart"></ion-icon> </span>
                                     <ion-badge slot="end" style="float: right; margin-right: 5px;" *ngIf="pub.nbrCommentaire > 0" > {{ pub.nbrCommentaire }} Commentaires </ion-badge>
@@ -137,7 +155,6 @@
                       </div>
                 </div>
             </div>
-        </div>
 
    <div *ngSwitchCase="'followers'">
       <p *ngIf="listAbonne.length == 0" >Aucun Follower </p>
@@ -212,11 +229,105 @@
       </div>
     </div>
 
-      <ion-list *ngSwitchCase="'infos'">
-          <ion-item>
-              <ion-label>Mes Info</ion-label>
-          </ion-item>
-      </ion-list>
-  </div>
+    <div *ngSwitchCase="'infos'">
+      <ion-card class="ion-padding" style="margin-left: 0; margin-right: 0;">
+          <ion-card-title>
+             <span style="font-size: 20px;"> A propos de {{ dataUserFound.prenom}} :</span>
+              
+          </ion-card-title>
+          <ion-card-content>
+              <ion-item class="ion-margin">
+                  <ion-label>
+                      <span>Nom :</span>
+                      <span style="float: right">{{ dataUserFound.nom }} </span>
+                  </ion-label>
+              </ion-item>
 
+              <ion-item class="ion-margin">
+                <ion-label>
+                    <span>Prenom :</span>
+                    <span style="float: right">{{ dataUserFound.prenom }} </span>
+                </ion-label>
+            </ion-item>
+
+            <ion-item class="ion-margin">
+              <ion-label>
+                  <span>Age :</span>
+                  <span  style="float: right">{{ dataUserFound.age }} </span>
+              </ion-label>
+          </ion-item>
+
+          <ion-item class="ion-margin">
+            <ion-label>
+                <span>Sexe :</span>
+                <span  style="float: right">{{ dataUserFound.sexe }} </span>
+            </ion-label>
+        </ion-item>
+
+        <ion-item class="ion-margin">
+          <ion-label>
+              <span>Date de naissance :</span>
+              <span  style="float: right">{{ dataUserFound.date_naiss }} </span>
+          </ion-label>
+      </ion-item>
+          </ion-card-content>
+      </ion-card>
+
+
+      <ion-card class="ion-padding" style="margin-left: 0; margin-right: 0;">
+        <ion-card-title>
+           <span style="font-size: 20px;"> Coordonées :</span>
+            
+        </ion-card-title>
+        <ion-card-content >
+            <ion-item class="ion-margin">
+                <ion-label>
+                    <span>Adresse mail :</span>
+                    <span style="float: right">{{ dataUserFound.email }} </span>
+                </ion-label>
+            </ion-item>
+
+            <ion-item class="ion-margin">
+              <ion-label>
+                  <span> Pays :</span>
+                  <span style="float: right">{{ dataUserFound.pays }} </span>
+              </ion-label>
+          </ion-item>
+
+          <ion-item class="ion-margin">
+            <ion-label>
+                <span>Ville:</span>
+                <span  style="float: right">{{ dataUserFound.ville }} </span>
+            </ion-label>
+        </ion-item>
+        </ion-card-content>
+    </ion-card>
+
+      <ion-card class="ion-padding" style="margin-left: 0; margin-right: 0;">
+        <ion-card-title>
+           <span style="font-size: 20px;"> Compte :</span>
+            
+        </ion-card-title>
+        <ion-card-content>
+            <ion-item class="ion-margin">
+                <ion-label>
+                    <span>Followers :</span>
+                    <span style="float: right">{{ listAbonne.length }} </span>
+                </ion-label>
+            </ion-item>
+
+            <ion-item lines="none">
+              <ion-label>
+                  <span> Date Creation :</span>
+                  <span style="float: right">{{ dataUserFound.date_creationAccount }} </span>
+              </ion-label>
+          </ion-item>
+        </ion-card-content>
+    </ion-card>
+   </div>
+  </div>
 </ion-content>
+<div class="displayImg" *ngIf="showFullScreenImg">
+  <img [src]="fullScreenBgUrl" alt=""  class="imgToDisplay" (click)="showFullScreen()">
+</div>
+

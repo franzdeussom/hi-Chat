@@ -2,6 +2,7 @@
     require('../connectDB.php');
     require('../header.php');
     require('../user-api/getFollowers.php');
+    require('../user-api/getAbm.php');
 
     $data = file_get_contents('php://input');
 
@@ -10,7 +11,10 @@
     }else{
         return;
     }
-   
-    $result = json_encode(getFollowers($userData->id_users));
+    $response = array();
+    array_push($response,  getFollowers($userData->id_users), getAbm($userData->id_users));
+    $result = json_encode($response);
     echo $result;
+
+
 ?>
