@@ -77,7 +77,7 @@
                                         COMMENTAIRE.id_publication = :idPub
                                         AND 
                                         COMMENTAIRE.id_users = USERS.id_users 
-                                        ORDER BY COMMENTAIRE.id_commentaire DESC LIMIT 65;
+                                        ORDER BY nbrLike DESC LIMIT 65;
                                 ");
         $query->execute([
             ':id_users'=> $data->id_CurrentUsers,

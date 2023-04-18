@@ -20,16 +20,23 @@ export class LoginPage implements OnInit {
     currentUserData: any;
     rememberMe!: boolean;
     errorMessage!: string;
+    showSpinner: boolean = false;
   constructor(private apiAccount: AccountApiService, private navController: NavController,
-              private globalStorage : GlobalStorageService, private dataUser: DataUserService ) {  this.rememberMe = false; }
+              private globalStorage : GlobalStorageService, private dataUser: DataUserService ) {  
+                this.rememberMe = false; 
+                const checking = async ()=>{
+                  if(await this.checkLocalUserData()){
+                    //already account present
+                    this.loadPresentData();
+              
+                      this.navController.navigateRoot('tabs/home'); 
+                  }
+                }
+                checking();
+              }
 
    async ngOnInit() {
-    if(await this.checkLocalUserData()){
-      //already account present
-      this.loadPresentData();
-
-        this.navController.navigateRoot('tabs/home'); 
-    }
+  
   }
 
   hideMessage(){
@@ -58,6 +65,7 @@ export class LoginPage implements OnInit {
   }
 
   sendData(){
+    this.showSpinner = true;
     this.apiAccount.post('user-api/login.php', JSON.stringify(this.account)).subscribe((data)=>{
       this.init();
       if(data.length > 0 ){
@@ -65,6 +73,7 @@ export class LoginPage implements OnInit {
           this.currentUserData = JSON.stringify(JSON.parse(data)[0]);
           this.globalStorage.currentUser = this.currentUserData;
           this.globalStorage.listLike = JSON.parse(data)[1];
+          this.showSpinner = false;
          // console.log(JSON.parse(data)[2]);
 
           //localStorage.setItem('id_users', );
@@ -84,11 +93,16 @@ export class LoginPage implements OnInit {
         }
     },(error)=>{
         if(error.statut === 500){
+          this.showSpinner = false;
           this.errorMessage = 'Erreur Interne du Serveur.';
           this.hideMessage();
         }else if(error.statut === 404){
           //no connection
           this.errorMessage = 'Echec de connexion verifier votre connexion WIFI ou donnee mobile'
+        }else{
+          this.showSpinner = false;
+          this.errorMessage = 'Echec de connexion verifier votre connexion WIFI ou donnee mobile'
+          this.hideMessage();
         }
     }
     

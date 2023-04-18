@@ -3,6 +3,10 @@
   <div class="ion-margin">
     <span style="color:red;"> {{ errorMessage }} </span>
   </div>
+  <div *ngIf="showSpinner" style="text-align: center;">
+    <ion-spinner name="dots" style="margin: auto;">
+    </ion-spinner>
+  </div>
   <form (submit)="doLogin()">
     
   <ion-list class="ion-padding">

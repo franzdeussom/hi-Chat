@@ -123,15 +123,17 @@ ion-content {
         }
         
     }
-
     .pubImg {
         height: fit-content;
+        width: 98%;
+        min-height: 15px;
+        font-weight: bold;
         .message{
-            margin: auto;
+            float: left;
+            margin: 5px;
             font-size: 18px;
             padding: 5px;
-            margin-left: 5px;
-            margin-right: 5px;
+            margin-bottom: 7px;
         } 
         div{
             img{
@@ -139,7 +141,7 @@ ion-content {
                 width: 100%;
             }
         }
-    } 
+    }
 
 .reaction{
     position: relative;

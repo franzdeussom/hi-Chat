@@ -1,3 +1,4 @@
+import { NetworkService } from './../../services/network/network.service';
 import { ToastAppService } from './../../services/Toast/toast-app.service';
 import { AccountApiService } from './../../services/account-api.service';
 import { IonModal, NavController, ActionSheetController, AlertController } from '@ionic/angular';
@@ -44,6 +45,7 @@ export class ActualitePage implements OnInit {
   constructor(private dataUserServ: DataUserService,
               private cdRef:ChangeDetectorRef,
               private navCtrl: NavController ,
+              private saveSearch: SaveResultSearchService,
               private accountApi: AccountApiService,
               private toast: ToastAppService,
               private wsNotif: GetNotificationService,
@@ -51,8 +53,8 @@ export class ActualitePage implements OnInit {
               private search : SearchService,
               private actionSheet: ActionSheetController,
               private alertController: AlertController,
-              private saveSearch: SaveResultSearchService,
-              private copyCliboard: Clipboard
+              private copyCliboard: Clipboard,
+              private network: NetworkService
               ) { this.publication = new Publication();
                   this.Color = new Array();
                   this.Color = this.listColor.Color;
@@ -64,17 +66,19 @@ export class ActualitePage implements OnInit {
 
   ngOnInit() {
     this.loadUserData();
-    this.loadFriendPublications();
-    this.init();
+    setTimeout(() => {
+      this.loadFriendPublications();
+      this.init();
+    }, 800);
+    
   }
+
   ngAfterViewChecked() {
+    this.loadUserData();
     this.onPubLikeListenner();
     this.cdRef.detectChanges();
   }
-  
-  ionViewWillEnter(){
-    this.loadUserData();
-  }
+
 
   init(){
     this.publication.libelle = '';
@@ -82,6 +86,7 @@ export class ActualitePage implements OnInit {
     this.publication.colorBg = '';
     this.publication.url_file = null;
   }
+  
   onPubLikeListenner(){
     const PID = this.wsNotif.addLikeOnPublication.PID; 
     if(typeof PID !== 'undefined'){
@@ -159,6 +164,7 @@ export class ActualitePage implements OnInit {
     wireUpFileChooser(evt);
     
  }
+
  isFileValid(file: File): any{
   let response : {
     isValid: boolean,
@@ -209,7 +215,7 @@ let base64Url;
     let Pub = new Publication();
       Pub.id_user = this.dataUser.id_users;
       Pub.PID = " "+ (Math.random() * 1).toFixed(2) + this.dataUser.id_users;
-      Pub.is_public = this.isPublic ? 1:0;
+      Pub.is_public = this.isPublic ? 0:1;
       Pub.libelle = tmpPub.libelle;
       Pub.alreadyLike = 0;
       Pub.colorBg  = this.isPubColorBgSet(tmpPub) ? tmpPub.colorBg : this.Color[0].value; //when the user hat don't a color choose, set the default colorBg
@@ -334,6 +340,11 @@ let base64Url;
         this.accountApi.post('user-api/getFriendPub.php', JSON.stringify(this.dataUser)).subscribe((data)=>{
             let response = JSON.parse(data);
             this.addOnListPub(response);
+            this.network.CONNEXION_DB_STATE = 200;
+
+        }, (err)=>{
+            this.network.CONNEXION_DB_STATE = 500;
+            this.network.makeToastErrorConnection('Aucune connexion internet');
         });
   }
 
@@ -352,10 +363,14 @@ let base64Url;
           this.accountApi.post('user-api/getGlobePub.php', JSON.stringify(this.dataUser)).subscribe((data)=>{
           if(Object.keys(data).length > 0){
             this.listPublicationGLobe = JSON.parse(data);
-
+            this.network.CONNEXION_DB_STATE = 200;
               resole(this.listPublicationGLobe);
             }
-      }, (err)=> reject(err));
+      }, (err)=> {
+          reject(err);
+          this.network.CONNEXION_DB_STATE = 500;
+          this.network.makeToastErrorConnection('Aucune connexion internet');
+      });
     }) 
   }
      
@@ -380,13 +395,14 @@ let base64Url;
   }
 
   handleRefresh(event:any) {
+    if(this.type === 'home'){
+      this.loadFriendPublications();
+    }else{
+      this.loadGlobePublication();
+    }
     setTimeout(() => {
       // Any calls to load data go here
-      if(this.type === 'home'){
-        this.loadFriendPublications();
-      }else{
-        this.loadGlobePublication();
-      }
+     
       event.target.complete();
     }, 2100);
   }
@@ -462,6 +478,7 @@ let base64Url;
     }
     
   }
+  
   copiedText(textToCopy: string){
     this.copyCliboard.copy(textToCopy);
 }
@@ -510,7 +527,12 @@ let base64Url;
       this.accountApi.post('user-api/updateTextPublication.php', JSON.stringify(data)).subscribe((response)=>{
             if(Object.keys(response).length > 0){
                 this.listPublication[index].libelle = data.newValue;
+                
             }
+            this.network.CONNEXION_DB_STATE = 200;
+      }, (err)=>{
+          this.network.CONNEXION_DB_STATE = 500;
+          this.network.makeToastErrorConnection('Erreur de connexion');
       });
   }
 
@@ -529,11 +551,48 @@ let base64Url;
             if(Object.keys(response).length > 0){
                 this.listPublication.splice(index, 1);
             }
+          this.wsNotif.sendNotification(TypeNotification.DELETE_PUB, this.dataUser, this.listPublication[index]);
+          this.network.CONNEXION_DB_STATE = 200;
+
+      },  (err)=>{
+        this.network.CONNEXION_DB_STATE = 500;
+        this.network.makeToastErrorConnection('Erreur de connexion.');
+
       });
   }
 
+  getListUsersLike(idPub: any, idUsersPub: any){
+    //get list of users who have liked this current pub
+    let previousID_PUB_ = localStorage.getItem('ID_PUB_LIST');
 
+    if(typeof previousID_PUB_ !== 'undefined' &&  previousID_PUB_ != idPub ){
+      this.listUsersLike.length = 0;
+  
+      let param : { id_pub : any, id_user: any } = {id_pub: idPub , id_user: idUsersPub }
+        this.accountApi.post('user-api/getLikeList.php', JSON.stringify(param)).subscribe((data)=>{
+            if(Object.keys(data).length > 0){
+                this.listUsersLike = JSON.parse(data);
+                localStorage.setItem('ID_PUB_LIST', idPub);
+            }else{
+                this.listUsersLike = [];
+            }
+        });
+    }
+  }
+
+  showFullScreen(imgBase64Url?: any){
+    if(!this.showFullScreenImg){
+      this.fullScreenBgUrl = imgBase64Url;
+      this.showFullScreenImg = true;
+  
+    }else{
+      this.fullScreenBgUrl = '';
+      this.showFullScreenImg = false;
+    }
+  
+  }
   goToProfilFriend(nom: any, prenom:any){
+
     if(nom === this.dataUser.nom){
       this.navCtrl.navigateBack('tabs/account-profils');
     }else{
@@ -551,40 +610,17 @@ let base64Url;
             }else{
             }
       });
-    }
-      
-  }
-
-  loadDataFriend(profil: any){
-    this.saveSearch.dataUserFound = profil;
-    this.saveSearch.isOderUser = true;
-    this.navCtrl.navigateForward('search/profils');
-  }
-
-  getListUsersLike(idPub: any, idUsersPub: any){
-    this.listUsersLike.length = 0;
-    let param : { id_pub : any, id_user: any } = {id_pub: idPub , id_user: idUsersPub }
-      this.accountApi.post('user-api/getLikeList.php', JSON.stringify(param)).subscribe((data)=>{
-          if(Object.keys(data).length > 0){
-              this.listUsersLike = JSON.parse(data);
-          }else{
-              this.listUsersLike = [];
-          }
-      });
-  }
-
-  showFullScreen(imgBase64Url?: any){
-    if(!this.showFullScreenImg){
-      this.fullScreenBgUrl = imgBase64Url;
-      this.showFullScreenImg = true;
+ }
   
-    }else{
-      this.fullScreenBgUrl = '';
-      this.showFullScreenImg = false;
-    }
-  
-  }
-  
+    
+}
+
+loadDataFriend(profil: any){
+  this.saveSearch.dataUserFound = profil;
+  this.saveSearch.isOderUser = true;
+  this.navCtrl.navigateForward('search/profils');
+}
+
   goToDetail(pub: Publication, index: number){
       this.dataUserServ.publication = pub;
       this.dataUserServ.indexPub = index;

@@ -12,6 +12,7 @@ export class Commentaire{
         public nbrLike?: any,
         public alreadyLike?: any,
         public isSend?: boolean,
+        public pub_PID?: any,
         
     ){ this.isSend = false;}
 }

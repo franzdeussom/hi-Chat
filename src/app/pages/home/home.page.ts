@@ -1,12 +1,13 @@
+import { NetworkService } from './../../services/network/network.service';
 import { TypeMessage } from './discusion/typeMessage.enum';
-import { AccountApiService } from 'src/app/services/account-api.service';
 import { GetNotificationService } from './../notifications/get-notification.service';
+import { AccountApiService } from 'src/app/services/account-api.service';
 import { SecurityMsg } from './securitymsg.model';
 import { GlobalStorageService } from './../../services/localStorage/global-storage.service';
 import { DataUserService } from './../data-user.service';
 import { ReceiverDataService } from './receiver-data.service';
 import { RangeMessageService } from './range-message.service';
-import { AlertController, NavController } from '@ionic/angular';
+import { AlertController, NavController, Platform } from '@ionic/angular';
 import { GetAllMessageService } from './get-all-message.service';
 import { MessageApiService } from '../../services/message-api.service';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
@@ -45,8 +46,13 @@ export class HomePage implements OnInit {
               private navController: NavController,
               private localSave: GlobalStorageService,
               private toast: ToastAppService,
+              private network: NetworkService,
+              private plt: Platform,
               private alertController: AlertController
               ) {
+                this.plt.ready().then(()=>{
+                  
+                })
                 this.listDiscSecur = new SecurityMsg();
                 this.listOfSender = new Array<Message>(); this.listLastMesg = new Array<Message>()  
               }
@@ -79,8 +85,9 @@ export class HomePage implements OnInit {
 
   }
 
+  
   async getFollowers(){
-    let tmp, tm;
+    let tmp;
     tmp = await this.loadAbonne();
     this.wsNotif.listAbonneCurrentUser = tmp;
   }
@@ -115,8 +122,8 @@ export class HomePage implements OnInit {
     //connect to the websocket chat server
     this.webSocket.webSocketInit(JSON.parse(this.loadDataUser.userData)[0].id_users);
     
-    //connect to the websocket Notification server and start listenner
-    this.wsNotif.makeConnectionToWsNotif(JSON.parse(this.loadDataUser.userData)[0].id_users)
+    //connect to the websocket Notification server and start listenner on new Notification
+    this.wsNotif.makeConnectionToWsNotif(JSON.parse(this.loadDataUser.userData)[0].id_users, JSON.parse(this.loadDataUser.userData)[0])
     //console.log('message recu', this.webSocket.webSocketOnMessage()); 
   }
 
@@ -215,28 +222,19 @@ if(this.listOfSender.length > 0){
       this.listOfSender = this.rangeMessage.backupMessage;
       let count = 0;
       let i = 0;
-
       if(this.listOfSender.length > 0){
         
         this.listOfSender.forEach((message: Message, index:any)=>{
-            if(message.id_discussion === msg.id_discussion){
+            let idUsers = '' + message.id_destinateur_user + this.dataUser[0].id_users;
+            if(message.id_discussion === msg.id_discussion || idUsers === msg.idUser ){
                count++;
                i = index;
             }   
         });
         if(count > 0){
           let tmpValueOfListOfSender;
-          this.listOfSender[i].id_discussion = msg.id_discussion;
-          this.listOfSender[i].libelle = msg.libelle;
-          this.listOfSender[i].nom = msg.nom;
-          this.listOfSender[i].prenom = msg.prenom;
-          this.listOfSender[i].date_envoie = msg.date_envoie; 
-          this.listOfSender[i].id_sender = msg.id_sender;
-          this.listOfSender[i].id_destinateur_user = msg.id_destinateur_user;
-          this.listOfSender[i].isReceived = msg.isReceived;
+          this.listOfSender[i] = msg;
           this.listOfSender[i].statut = false;
-          this.listOfSender[i].imageEnvoyeur = msg.imageEnvoyeur;
-          this.listOfSender[i].idUser = this.getIdUsersMessage(msg.idUser, msg);
           //save tmp msg
           tmpValueOfListOfSender = this.listOfSender[i];
           //delete it, in the main list
@@ -327,6 +325,9 @@ if(this.listOfSender.length > 0){
             this.addInListSender(data);
             this.rangeMessage.delMsgMissedDB(); 
       }
+    }, (err)=>{
+          this.network.CONNEXION_DB_STATE = 500;
+          
     });
    }
    addInListSender(MsgMissed: Array<Message>){

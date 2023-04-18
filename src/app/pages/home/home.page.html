@@ -25,21 +25,21 @@
             <ion-item (click)="goToDiscusion(item.id_destinateur_user, item, index)">
                   <ion-avatar slot="start" *ngIf="item.imageEnvoyeur != null && item.id_sender != dataUser[0].id_users">
                     <img alt="" [src]="item.imageEnvoyeur" />
-                    <div *ngIf="wsNotif.tabAbment.includes(item.idUser)" >
+                    <div *ngIf="wsNotif.tabAbment.includes(item.id_user)" >
                       <ion-icon name="" style="background-color: greenyellow; border-radius: 35px;position: fixed; z-index: 1; margin-left: -25px;"> 
                       </ion-icon>
                      </div>
                   </ion-avatar>
                   <ion-avatar slot="start" *ngIf="item.imageEnvoyeur != null && item.id_sender == dataUser[0].id_users">
                     <img alt="" src="/assets/icon/avatar.svg" />
-                    <div *ngIf="wsNotif.tabAbment.includes(item.idUser)" >
+                    <div *ngIf="wsNotif.tabAbment.includes(item.id_user)" >
                       <ion-icon name="" style="background-color: greenyellow; border-radius: 35px;position: fixed; z-index: 1; margin-left: -25px;"> 
                       </ion-icon>
                      </div>
                   </ion-avatar>
                   <ion-avatar slot="start" *ngIf="item.imageEnvoyeur == null" >
                       <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
-                      <div *ngIf="wsNotif.tabAbment.includes(item.idUser)" >
+                      <div *ngIf="wsNotif.tabAbment.includes(item.id_user)" >
                         <ion-icon name="" style="background-color: greenyellow; border-radius: 35px;position: fixed; z-index: 1; margin-left: -25px;"> 
                         </ion-icon>
                        </div>
@@ -106,19 +106,16 @@
               </ion-item-options>
                 
               <ion-item (click)="goToDiscusion(item.id_destinateur_user, item, index)">
-                   <ion-avatar slot="start" *ngIf="item.imageEnvoyeur != null && item.id_sender != dataUser[0].id_users">
+                   <ion-avatar slot="start" *ngIf="item.imageEnvoyeur != null">
                     <img alt="" [src]="item.imageEnvoyeur" />
               
                   </ion-avatar>
-                  <ion-avatar slot="start" *ngIf="item.imageEnvoyeur != null && item.id_sender == dataUser[0].id_users">
-                    <img alt="" src="/assets/icon/avatar.svg" />
-                    
-                  </ion-avatar>
+                 
                   <ion-avatar slot="start" *ngIf="item.imageEnvoyeur == null" >
                       <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
                       
                     </ion-avatar>
-                    <div *ngIf="wsNotif.tabAbment.includes(item.idUser)" >
+                    <div *ngIf="wsNotif.tabAbment.includes(item.id_user)" >
                       <ion-icon name="" style="background-color: greenyellow; border-radius: 35px;position: fixed; z-index: 1; margin-left: -25px;"> 
                       </ion-icon>
                      </div>

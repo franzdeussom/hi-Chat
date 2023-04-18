@@ -50,6 +50,14 @@ const routes: Routes = [
   {
     path: 'notifications',
     loadChildren: () => import('./pages/notifications/notifications.module').then( m => m.NotificationsPageModule)
+  },
+  {
+    path: 'admin',
+    loadChildren: () => import('./pages/admin/admin.module').then( m => m.AdminPageModule)
+  },
+  {
+    path: 'UsersList',
+    loadChildren: () => import('./pages/admin/details-list/details-list.module').then( m => m.DetailsListPageModule)
   }
 ];
 

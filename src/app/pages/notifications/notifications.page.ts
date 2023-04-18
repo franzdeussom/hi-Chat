@@ -1,6 +1,5 @@
 import { TypeNotification } from 'src/app/pages/notifications/typeNotif.enum';
-import { NavController } from '@ionic/angular';
-import { Publication } from './../actualite/publicatin.model';
+import { NavController, ActionSheetController } from '@ionic/angular';
 import { User } from './../signup/users.model';
 import { DataUserService } from './../data-user.service';
 import { GlobalStorageService } from './../../services/localStorage/global-storage.service';
@@ -22,7 +21,8 @@ export class NotificationsPage implements OnInit {
                 public wsNotif: GetNotificationService,
                 private localStore: GlobalStorageService,
                 private dataUser: DataUserService,
-                private navCtrl: NavController
+                private navCtrl: NavController,
+                private actionSheetCtrl: ActionSheetController
              ) {
                   this.listOfNotifations = new Array<NotificationApp>();
               }
@@ -77,14 +77,60 @@ loadNotifSave(){
           this.listOfNotifations =  this.wsNotif.getLocaSave();
    }
 
-   goToDetails(publication: Publication, index:number, isRead?: boolean){
-    this.dataUser.publication = publication;
-    console.log('isRead', isRead);
+   async showActionSheetCtrl(deleteAll?: boolean, index?: any){
+    const msg = deleteAll ? 'Voulez vous vraiment supprimer toute vos notifications ?': 'Voulez vous vraiment Supprimer cette notification';
+
+    const action = await  this.actionSheetCtrl.create({
+      header: msg,
+      buttons: [
+        {
+          text:'Supprimer',
+          role: 'confirm',
+          handler: ()=>{
+           if(deleteAll){
+              this.deleteAllNotif();
+           } else{
+              this.deleteOneNotif(index as number);
+           }
+          }
+        },
+        {
+          text: 'Annuler',
+          role: 'cancel',
+        }
+      ]
+    });
+    await action.present();
+   }
+
+   deleteAllNotif(){
+    const KEY_NOTIFICATION = 'NOTIFICATIONS_USERS' + this.dataCurrentUser.id_users;
+    this.wsNotif.deleteAllNotif(KEY_NOTIFICATION);
+   }
+
+   deleteOneNotif(index: number){
+    const KEY_NOTIFICATION = 'NOTIFICATIONS_USERS' + this.dataCurrentUser.id_users;
+    this.wsNotif.deleteOneNotif(index, KEY_NOTIFICATION);
+   }
+
+   goToDetails(publication: any, index:number, isRead?: boolean, isAdmin?:boolean){
+      if(!isAdmin && typeof publication !== 'undefined'){
+        this.dataUser.publication = publication;
+        this.dataUser.isFromNotifList = true;
+        this.setNotifAsRead(index, isRead);
+        this.navCtrl.navigateForward('details');
+      }
+   
+   }
+
+   async setNotifAsRead(index: number, isRead?: boolean){
       if(!isRead){
           this.wsNotif.tmpNotif[index].isRead = true;
-          this.localSaveNotification();
+         await this.localSaveNotification();
+      }else{
+        this.wsNotif.tmpNotif[index].isRead = true;
+        await this.localSaveNotification();
       }
-    this.navCtrl.navigateForward('details');
    }
 
    goToDetailsSignal(){

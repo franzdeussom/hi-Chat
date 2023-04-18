@@ -28,8 +28,8 @@
 
         </div> 
                   <div class="img-box">
-                      <span *ngIf="dataUserFound.profilImgUrl != null" ><img [src]="dataUserFound.profilImgUrl"></span>
-                      <span *ngIf="dataUserFound.profilImgUrl == null" ><img src="/assets/icon/avatar.svg"></span>
+                      <span *ngIf="dataUserFound.profilImgUrl != null" ><img [src]="dataUserFound.profilImgUrl" class="urlImage"></span>
+                      <span *ngIf="dataUserFound.profilImgUrl == null" ><img src="/assets/icon/avatar.svg" class="urlImage"></span>
                   </div>
 
                     <div class="followings">
@@ -74,6 +74,11 @@
         A propos
       </ion-segment-button>
   </ion-segment>
+
+  <div style="text-align: center" *ngIf="listPublication.length === 0 || listAbonne.length === 0 || listAbonnenment.length === 0" >
+    <ion-spinner name="dots" style="margin: auto;">
+    </ion-spinner>
+  </div>
 
   <div [ngSwitch]="type">
     <div *ngSwitchCase="'publications'">
@@ -126,13 +131,95 @@
                                     <div class="pubImg">   
                                         <span class="message"> {{ pub.libelle }} </span>
                                         <div>
-                                          <img [src]="pub.url_file" alt="" (click)="showFullScreen(pub.url_file)">
+                                          <img [src]="pub.url_file" alt="" width="100%" (click)="showFullScreen(pub.url_file)">
                                         </div>
                                     </div>
           
                                    </div>
                                 <div class="reaction">
-                                    <span *ngIf="pub.nbrLike > 0 ? true:false" > {{ pub.nbrLike }} <ion-icon name="heart" class="heart"></ion-icon> </span>
+                                    <span (click)="getListUsersLike(pub.id_pub, pub.id_user)" *ngIf="pub.nbrLike > 0 ? true:false" [id]="'open' + pub.id_pub"> {{ pub.nbrLike }} <ion-icon name="heart" class="heart"></ion-icon> </span>
+                                    <ion-modal #modal [trigger]="'open' + pub.id_pub">
+                                      <ng-template>
+                                        <ion-header>
+                                          <ion-toolbar>
+                                            <ion-buttons slot="end">
+                                              <ion-button (click)="modal.dismiss()">Quitter</ion-button>
+                                            </ion-buttons>
+                                            <ion-title>Publication de {{ pub.prenom }} </ion-title>
+                              
+                                          </ion-toolbar>
+                                        </ion-header>
+                                        <ion-content class="ion-padding">
+                                          <ion-searchbar color="medium" placeholder="recherche" [(ngModel)]="searchValueListLike" (ionChange)="searchUserListLike()">
+                                          </ion-searchbar>
+                                            <div *ngIf="activeFieldListLikeRslt" >
+                                              <ion-card>
+                                                <ion-list id="ion-padding" *ngFor="let user of listUserLikeRslt" >
+                                                      <ion-item>
+                                                            <ion-avatar slot="start" *ngIf="user.profilImgUrl != null">
+                                                              <img [src]="user.profilImgUrl" alt="">
+                                                            </ion-avatar>  
+                                                            <ion-avatar slot="start" *ngIf="user.profilImgUrl == null">
+                                                                <img src="/assets/icon/avatar.svg" alt="">
+                                                            </ion-avatar>
+                                                            <ion-label *ngIf="user.nom === dataCurrentUser.nom" > Vous </ion-label>
+                                                            <ion-badge color="primary" slot="end"> {{ user.NbrFollow }} Abonnés </ion-badge>
+                                                      </ion-item>
+                                                </ion-list>
+                                              </ion-card>
+                                            </div>
+                                            <div *ngIf="!activeFieldListLikeRslt">
+                                                <ion-segment slot="end" [(ngModel)]="typeList">
+                                                  <ion-segment-button value="girl">
+                                                      Filles
+                                                  </ion-segment-button>
+                                                  
+                                                  <ion-segment-button value="boy">
+                                                      Garçons
+                                                  </ion-segment-button>
+                                          
+                                              </ion-segment>
+                                              
+                                              <div [ngSwitch]="typeList">
+                                                    <div *ngSwitchCase="'girl'">
+                                                        <ion-card>
+                                                          <ion-list id="ion-padding" *ngFor="let user of listUsersLike" >
+                                                                <ion-item *ngIf="user.sexe === 'f' || user.sexe === 'F'">
+                                                                        <ion-avatar slot="start" *ngIf="user.profilImgUrl != null">
+                                                                          <img [src]="user.profilImgUrl" alt="">
+                                                                        </ion-avatar>  
+                                                                      <ion-avatar slot="start" *ngIf="user.profilImgUrl == null">
+                                                                          <img src="/assets/icon/avatar.svg" alt="">
+                                                                      </ion-avatar>
+                                                                      <ion-label> {{user.nom}} {{ user.prenom }} </ion-label>
+                                                                      <ion-label *ngIf="user.nom === dataCurrentUser.nom" > Vous </ion-label>  
+                                                                      <ion-badge color="primary" slot="end"> {{ user.NbrFollow }} Abonnés </ion-badge>
+                                                                </ion-item>
+                                                          </ion-list>
+                                                        </ion-card>
+                                                    </div>
+                                                    <div *ngSwitchCase="'boy'">
+                                                      <ion-card style="margin-left: 0; margin-right: 0;">
+                                                        <ion-list id="ion-padding" *ngFor="let user of listUsersLike" >
+                                                              <ion-item *ngIf="user.sexe === 'm' || user.sexe === 'M' " >
+                                                                  <ion-avatar slot="start" *ngIf="user.profilImgUrl != null">
+                                                                        <img [src]="user.profilImgUrl" alt="">
+                                                                  </ion-avatar>  
+                                                                    <ion-avatar slot="start" *ngIf="user.profilImgUrl == null">
+                                                                        <img src="/assets/icon/avatar.svg" alt="">
+                                                                    </ion-avatar>
+                                                               
+                                                                    <ion-label> {{user.nom}} {{ user.prenom }} </ion-label>
+                                                                    <ion-badge color="primary" slot="end"> {{ user.NbrFollow }} Abonnés </ion-badge>
+                                                              </ion-item>
+                                                        </ion-list>
+                                                      </ion-card>
+                                                  </div>
+                                              </div>
+                                            </div>
+                                        </ion-content>
+                                      </ng-template>
+                                    </ion-modal>
                                     <ion-badge slot="end" style="float: right; margin-right: 5px;" *ngIf="pub.nbrCommentaire > 0" > {{ pub.nbrCommentaire }} Commentaires </ion-badge>
                                 </div>
           

@@ -1,9 +1,11 @@
 export class Message{  
     constructor(
         public type?: string,
-        public idUser?:any,
+        public id_user?: any, //id user who send the message
+        public idUser?:any,//id.. concatenation of the two users(sender and receiver)
         public imgBase64Url?: string,
         public imageEnvoyeur?: any,
+        public imgDisc?: any, 
         public id_message?: any,
         public libelle?: any,
         public myDateSend?: any,

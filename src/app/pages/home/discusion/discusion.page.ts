@@ -2,7 +2,7 @@ import { SheetControllerService } from './../../../services/Toast/sheet-controll
 import { TypeMessage } from './typeMessage.enum';
 import { GetNotificationService } from 'src/app/pages/notifications/get-notification.service';
 import { ToastAppService } from './../../../services/Toast/toast-app.service';
-import { NavController, ToastController, AlertController, IonContent } from '@ionic/angular';
+import { NavController, ToastController, AlertController, IonContent, ActionSheetController } from '@ionic/angular';
 import { SearchService } from './../../search/search.service';
 import { SaveResultSearchService } from './../../search/save-result-search.service';
 import { RangeMessageService } from './../range-message.service';
@@ -47,6 +47,7 @@ export class DiscusionPage implements OnInit {
               private rangeMessage: RangeMessageService,
               private globalSearch: SaveResultSearchService,
               private sheetCtrl : SheetControllerService,
+              private actionCtrl : ActionSheetController,
               private alertController: AlertController,
               private navContrl: NavController
               ) {this.messageToSend = new Message(); }
@@ -77,9 +78,28 @@ export class DiscusionPage implements OnInit {
     
   }
 
-showDetailmsg(msg: Message){
-  console.log('message click :', msg)
-}
+async showDetailmsg(msg: Message){
+  console.log(msg);
+    const action = await this.actionCtrl.create({
+      header: 'Message: ' + msg.libelle + ' Date reception/envoie: ' + msg.date_envoie,
+      buttons: [
+        {
+          text: 'Supprimer pour moi',
+          role: 'confirm',
+          handler: ()=>{
+            console.log('Message delete');
+          }
+        },
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        }
+      ]
+    });
+
+    await action.present();
+  }
+
  checkNewMsg(){
 
         if(typeof this.apiMessage.newMsg !== 'undefined' ? true : false){
@@ -109,6 +129,7 @@ showDetailmsg(msg: Message){
 
   refreshDisculist(){
     //this.rangeMessage.rangeMessage(this.getReceiverID());
+
   }
   
   isForThisUser(msgReceived: any): boolean{
@@ -176,16 +197,7 @@ showDetailmsg(msg: Message){
   send(){
       //post message on User interface
         if(typeof this.message !== 'undefined'){
-          this.message.push(
-            {
-              type: this.messageToSend.type,
-              libelle: this.messageToSend.libelle,
-              imgBase64Url : this.messageToSend.imgBase64Url,
-              id_sender: this.messageToSend.id_sender,
-              id_destinateur_user: this.messageToSend.id_destinateur_user,
-              id_discussion : this.messageToSend.id_discussion
-            }
-          );
+          this.message.push(this.messageToSend);
           try{
               this.myscroll.scrollToBottom();
           }catch(err){
@@ -194,16 +206,7 @@ showDetailmsg(msg: Message){
     
         }else{
           this.message = [];
-          this.message.push(
-            {
-              type: this.messageToSend.type,
-              libelle: this.messageToSend.libelle,
-              imgBase64Url : this.messageToSend.imgBase64Url,
-              id_sender: this.messageToSend.id_sender,
-              id_destinateur_user: this.messageToSend.id_destinateur_user,
-              id_discussion : this.messageToSend.id_discussion
-            } 
-          )
+          this.message.push(this.messageToSend);
           try{
             this.myscroll.scrollToBottom();
         }catch(err){
@@ -211,9 +214,12 @@ showDetailmsg(msg: Message){
         }
 
         }
+        this.messageToSend.id_user = this.currentUserData[0].id_users;
         this.apiMessage.webSocketSendMessage(this.messageToSend);
-        this.messageToSend.idUser = this.messageToSend.id_destinateur_user;
-        this.rangeMessage.LastMessage = this.messageToSend;  
+        
+        this.messageToSend.id_user = this.messageToSend.id_destinateur_user;
+        this.rangeMessage.LastMessage = this.messageToSend;
+
   }
 
   listenerInputChange() {
@@ -301,18 +307,14 @@ isFileValid(file: File): any{
   
   loadUsersData(){
     this.receivData = this.receiverData.ID_RECIVER_AND_DATA;
-    
     if(typeof this.receivData === 'undefined'){
       this.receivData = this.globalSearch.dataUserFound;
     }
-
     try {
-
       this.currentUserData = JSON.parse(this.dataUser.userData);
     } catch (error) {
 
     }
-
   }
 
   isFieldMessageEmpty(): boolean{
@@ -320,12 +322,13 @@ isFileValid(file: File): any{
   }
 
   setColor(color: string){
-  
+    
     if(this.value.trim() != '' && this.value.trim() != null && typeof this.value.trim() !== 'undefined'){
       this.colorSendBtn = color;
     }else{
       this.colorSendBtn = 'Dark';
     }
+
   }
 
   setPIDdisc(){
@@ -349,10 +352,8 @@ isFileValid(file: File): any{
     this.setPIDdisc();
     this.defineReceiver();
     this.messageToSend.type = TypeMessage.TEXT;
-
     this.messageToSend.libelle = this.value;
     this.value = '';
-    this.messageToSend.idUser = this.currentUserData[0].id_users;
     let min = new Date().getMinutes() < 10 ? '0'+new Date().getMinutes() : new Date().getMinutes();
     this.messageToSend.date_envoie = '' + new Date().getHours().toString() + ':' +  min.toString() + ' | ' + new Date().toString().split(' ')[1]  + ' - ' + new Date().toString().split(' ')[0];
     this.messageToSend.id_sender = this.currentUserData[0].id_users;
@@ -366,20 +367,24 @@ isFileValid(file: File): any{
   defineReceiver(){
     if(typeof this.receivData.id_users !== 'undefined'){
       this.messageToSend.id_destinateur_user = this.receivData.id_users;
-   
+      
     }else{
       if(this.receivData.id_sender === this.getCurrentUserID()){
         this.messageToSend.id_destinateur_user = this.receivData.id_destinateur_user;  
+        
       }else{
           this.messageToSend.id_destinateur_user = this.receivData.id_sender;
       }
+
     }
+    this.messageToSend.id_user = this.messageToSend.id_destinateur_user;
+    this.messageToSend.idUser = ''+ this.currentUserData[0].id_users + this.messageToSend.id_destinateur_user;
+    this.messageToSend.imgDisc = this.currentUserData[0].profilImgUrl;
   }
 
   setParamImgMessage(imgaBase64: any, extension:any){
       this.setPIDdisc();
       this.defineReceiver();
-      this.messageToSend.idUser = this.currentUserData[0].id_users;
 
     this.messageToSend.type = TypeMessage.IMAGE;
     this.messageToSend.imgBase64Url = imgaBase64;
@@ -392,8 +397,10 @@ isFileValid(file: File): any{
     
     this.messageToSend.imageEnvoyeur = this.currentUserData[0].profilImgUrl;
     this.messageToSend.statut = false;
+
   }
 
+  ///store in sqlite DB
   async storeOutgoingMessage(){
     let key = 'SENDER_ID';
     let keyTab = Array();
@@ -404,7 +411,7 @@ isFileValid(file: File): any{
     this.messageToSend.isReceived = 0;
     this.messageToSend.nom = this.receivData.nom;
     this.messageToSend.prenom  = this.receivData.prenom;
-    this.messageToSend.imageEnvoyeur = this.receivData.profilImgUrl == null ?  this.receivData.imageEnvoyeur:this.receivData.profilImgUrl;
+    this.messageToSend.imageEnvoyeur = typeof this.receivData.profilImgUrl !== 'undefined' ? this.receivData.profilImgUrl : this.receivData.imageEnvoyeur;
 
     if(typeof this.receivData.id_users === 'undefined'){
       if(keyTab.length > 0){
@@ -466,8 +473,10 @@ isFileValid(file: File): any{
     try{
       this.myscroll.scrollToBottom();
     }catch(err){
+    
     }
   }
+
   renit(){
     this.messageToSend.libelle = '';
     this.value  = '';
@@ -491,6 +500,7 @@ isFileValid(file: File): any{
     }
 
   }
+
   backToHome(){
       this.navContrl.navigateRoot('tabs/home');
   }

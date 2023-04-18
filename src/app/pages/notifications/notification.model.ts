@@ -15,6 +15,9 @@ export class NotificationApp{
         public nomSender?: any,
         public prenom?: any,
         public isRead?:any,
-        public PID?: any
+        public PID?: any,
+        public Admin_Notif_SEXE?: any,//for admin
+        public listID?: string[] //for admin
+
     ){}
 }

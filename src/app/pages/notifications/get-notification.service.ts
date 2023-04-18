@@ -18,11 +18,12 @@ export class GetNotificationService {
   notifToSend: NotificationApp;
   newNotification: boolean = false;
   tabAbment: number[] = [];
-  
+  dataCurrentUser: any;
+
  public globalNotification: Array<NotificationApp>;
  public tmpNotif: any[] = [];
  public countMsgNotRead: number = 0;
- public connectionState: number = 200;
+ public connectionState: number = 200 ;
  
 
   listAbonneCurrentUser!: any[];
@@ -32,14 +33,14 @@ export class GetNotificationService {
               private host : EnvironementService,
               private toast: ToastAppService,
               private localStore: GlobalStorageService,
-              private rangeMessage: RangeMessageService
     ) { 
       this.notifToSend = new NotificationApp();
       this.globalNotification = new Array<NotificationApp>();
     }
 
-  makeConnectionToWsNotif(id_CurrentUsers:any){
+  makeConnectionToWsNotif(id_CurrentUsers:any, dataCurrentUsers: User){
       this.wsNotif = new WebSocket(this.host.webSocketNotif+id_CurrentUsers);
+      this.dataCurrentUser = dataCurrentUsers as User;
       this.startListener();
   }
 
@@ -96,6 +97,12 @@ export class GetNotificationService {
                 this.toast.makeToast(notificationGet.prenom + ' ' + MessageNotif.LIKE_COMMENT);
             }
             break;
+            
+          case TypeNotification.ADMIN_NOTIF:
+            this.globalNotification.unshift(notificationGet);
+            this.newNotification = true;
+            this.toast.makeToast('Hi-Chat: ' + notificationGet.message);
+            break;
 
           case TypeNotification.NEW_PUBLICATION:
            if(!this.isNotifPresentInMainList(notificationGet)){
@@ -121,6 +128,10 @@ export class GetNotificationService {
             break;
           case TypeNotification.USER_LOGOUT:
             this.deleteInlistOfUserOnline(notificationGet);
+            break;
+          case TypeNotification.DELETE_PUB:
+            this.deletePubOnNotifList(notificationGet);
+            break;
       }
 
   }
@@ -142,6 +153,22 @@ export class GetNotificationService {
       if(index != -1){
         this.toast.makeToast(notif.prenom + ' ' + MessageNotif.PUBLICATION);           
       }
+  }
+
+  sendNotifAdmin(idDestinataire: number, message: string, type: string, to?: string, listID?: string[]){
+    this.notifToSend.message = message;
+    this.notifToSend.id_destinataire = idDestinataire;
+    this.notifToSend.listID = listID;
+    this.notifToSend.type = type;
+    this.notifToSend.Admin_Notif_SEXE = to;
+    this.notifToSend.nomSender ='Hi-Chat';
+    this.notifToSend.id_UsersSender = 0;
+    this.notifToSend.profilImgUrlSender = '/assets/icon/appIcon.png';
+    this.wsNotif.send(JSON.stringify(this.notifToSend));
+  }
+
+  sendMultiNotifAdmin(notifBuild: NotificationApp){
+      this.wsNotif.send(JSON.stringify(notifBuild));
   }
 
   sendNotification(type:any, dataUser: User, pub?: any, follower?: any, commentContent?: any){
@@ -192,11 +219,18 @@ export class GetNotificationService {
           
         case TypeNotification.NEW_PUBLICATION:
           this.notifToSend.type = type;
+          this.notifToSend.PID = pub.PID,
           this.notifToSend.id_destinataire = '*';//send to all friends
           this.notifToSend.message = MessageNotif.PUBLICATION;
           this.notifToSend.publication = pub;
           break;
-        
+        case TypeNotification.DELETE_PUB:
+          this.notifToSend.type = type;
+          this.notifToSend.PID = pub.PID,
+          this.notifToSend.id_destinataire = '*';//send to all friends
+          this.notifToSend.message = MessageNotif.PUBLICATION;
+          this.notifToSend.publication = pub;
+          break;
       }
      
       this.wsNotif.send(JSON.stringify(this.notifToSend));
@@ -209,12 +243,27 @@ async loadNotifSave(idUser: number){
         this.tmpNotif = await this.localStore.getData(KEY_NOTIFICATION);
   }
 } 
+
+deletePubOnNotifList(notifGet: NotificationApp){
+   const index = this.tmpNotif.findIndex(((notif: { PID: number; })=> notif.PID === notifGet.PID));
+    if(index != -1){
+      this.tmpNotif.splice(index, 1);
+        if(this.countMsgNotRead > 1){
+          this.countMsgNotRead--;
+        }else{
+          this.countMsgNotRead = 0;
+        }
+    }
+}
+
 addInListOfUserOnline(connectionData: any){
   let idUser = Number.parseInt(connectionData.id.toString().split('=')[1]);
   if(this.checkPresenceInListAbmnt(idUser)){
       this.tabAbment.push(idUser);
   }
+
 }
+
 deleteInlistOfUserOnline(connectionData: any){
   let idUser = Number.parseInt(connectionData.id.toString().split('=')[1]);
   if(this.tabAbment.includes(idUser)){
@@ -224,6 +273,7 @@ deleteInlistOfUserOnline(connectionData: any){
 }
 
 showUsersOnline(notifGet: any){
+  console.log('list user get online: ', notifGet.list);
   if(Array.isArray(notifGet.list)){
     if(notifGet.list.length > 0){
         notifGet.list.forEach((item:any) => {
@@ -235,7 +285,20 @@ showUsersOnline(notifGet: any){
         });
 
     }
+
   }
+  console.log('list of user online', this.tabAbment);
+}
+
+deleteAllNotif(key: string){
+    this.localStore.deleteData(key);
+    this.tmpNotif.length = 0;
+}
+
+deleteOneNotif(index: number, key: string){
+    this.localStore.deleteData(key);
+    this.tmpNotif.splice(index, 1);
+    this.localStore.saveData(this.tmpNotif, key);
 }
 
 checkPresenceInListAbmnt(id: number): boolean{
@@ -260,14 +323,14 @@ checkPresenceInListAbmnt(id: number): boolean{
     let Admin = new User();
     let notifToSend = new NotificationApp();
     Admin.id_users = 0;
-    Admin.nom = 'Hi'
-    Admin.prenom = 'Chat'
+    Admin.nom = 'Hi-Chat'
+    Admin.prenom = '';
     Admin.profilImgUrl = '/assets/icon/appIcon.png';
 
     notifToSend.type = TypeNotification.ACCOUNT_SIGNAL;
     notifToSend.profilImgUrlSender = Admin.profilImgUrl;
     notifToSend.nomSender = Admin.nom;
-    notifToSend.prenom = Admin.prenom
+    notifToSend.prenom = Admin.prenom;
     notifToSend.id_UsersSender = Admin.id_users;
     notifToSend.isRead = false;
     notifToSend.id_destinataire = idDestinataire;

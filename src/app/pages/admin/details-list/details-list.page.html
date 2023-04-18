@@ -1,0 +1,76 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Utilisateurs {{ listUser[0].sexe?.toUpperCase() === 'M' ? 'Hommes':'Femmes'}} </ion-title>
+    <ion-back-button slot="start"></ion-back-button>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-margin">
+      <div *ngIf="listUser.length > 1" >
+          <ion-searchbar [(ngModel)]="valueSearch" (ngModelChange)="doSearch()"></ion-searchbar>
+      </div>
+      <div class="resultSearchList" *ngIf="valueSearch !== ''">
+           <div>
+                <ion-list *ngFor="let user of listUserSearch" >
+                  <ion-item-sliding>
+                        <ion-item-options side="start">
+                            <ion-item-option color="danger" (click)="showActionSheetCtrlDelete(user.id_users, user.prenom)" >
+                              Supprimer {{ user.prenom }} <ion-icon name="trash"></ion-icon>
+                            </ion-item-option>
+                        </ion-item-options>
+          
+                              <ion-item>
+                                    <ion-avatar slot="start" *ngIf="user.profilImgUrl != null ">
+                                      <img alt="" [src]="user.profilImgUrl" />
+                                  </ion-avatar>
+                                  <ion-avatar slot="start" *ngIf="user.profilImgUrl == null" >
+                                      <img alt="" src="/assets/icon/avatar.svg" />
+                                  </ion-avatar>
+                                  <ion-label>
+                                        {{ user.nom }} {{ user.prenom }}
+                                  </ion-label>
+                                  <ion-badge color="primary"> {{ user.age }} ans </ion-badge>
+                              </ion-item>
+          
+                        <ion-item-options>
+                          <ion-item-option color="primary" (click)="showAlertControllerNotif(user.id_users)" >
+                              Env. Notification à {{ user.prenom }} <ion-icon name="notifications"></ion-icon>
+                          </ion-item-option>
+                      </ion-item-options>
+                  </ion-item-sliding>
+                </ion-list>
+              </div>
+         </div>
+
+
+    <div *ngIf="valueSearch === ''" >
+      <ion-list *ngFor="let user of listUser">
+        <ion-item-sliding>
+              <ion-item-options side="start">
+                  <ion-item-option color="danger" (click)="showActionSheetCtrlDelete(user.id_users, user.prenom)" >
+                    Supprimer {{ user.prenom }} <ion-icon name="trash"></ion-icon>
+                  </ion-item-option>
+              </ion-item-options>
+
+                    <ion-item>
+                          <ion-avatar slot="start" *ngIf="user.profilImgUrl != null ">
+                            <img alt="" [src]="user.profilImgUrl" />
+                        </ion-avatar>
+                        <ion-avatar slot="start" *ngIf="user.profilImgUrl == null" >
+                            <img alt="" src="/assets/icon/avatar.svg" />
+                        </ion-avatar>
+                        <ion-label>
+                              {{ user.nom }} {{ user.prenom }}
+                        </ion-label>
+                        <ion-badge color="primary"> {{ user.age }} ans </ion-badge>
+                    </ion-item>
+
+              <ion-item-options>
+                <ion-item-option color="primary" (click)="showAlertControllerNotif(user.id_users)" >
+                    Env. Notification à {{ user.prenom }} <ion-icon name="notifications"></ion-icon>
+                </ion-item-option>
+            </ion-item-options>
+        </ion-item-sliding>
+      </ion-list>
+    </div>
+</ion-content>

@@ -1,3 +1,5 @@
+import { SinalAccountService } from './sinal-account.service';
+import { NetworkService } from './../../../services/network/network.service';
 import { TypeNotification } from '../../notifications/typeNotif.enum';
 import { GetNotificationService } from '../../notifications/get-notification.service';
 import { Publication } from './../../actualite/publicatin.model';
@@ -35,6 +37,11 @@ export class ProfilsPage implements OnInit {
   activeFieldSearchResultAbm: boolean = false;
   fullScreenBgUrl: any = '';
   showFullScreenImg: boolean = false;
+  typeList: string = 'girl';
+  searchValueListLike: string = '';
+  activeFieldListLikeRslt: boolean = false;
+  listUserLikeRslt: Array<User> = [];
+  listUsersLike: Array<User> = [];
 
   constructor(private searchResltService: SaveResultSearchService,
               private navCtrl : NavController,
@@ -43,7 +50,9 @@ export class ProfilsPage implements OnInit {
               private accountApi: AccountApiService,
               private alertController: AlertController,
               private dataUser: DataUserService,
+              private network: NetworkService,
               private wsNotif: GetNotificationService,
+              private signalAccnt: SinalAccountService,
               private receiverData: ReceiverDataService)
               {
                 this.listDiscSecur = new SecurityMsg();
@@ -76,8 +85,13 @@ ionViewWillEnter(){
    }
 
   signal(){
-      this.wsNotif.kontoMelden(this.dataUserFound.id_users);
-      this.toast.makeToast('Compte Signalé ! Merci de signaler des activités supectes ! Hi-Chat ')
+      const isDone = this.signalAccnt.makeSignal(this.dataCurrentUser.id_users, this.dataUserFound.id_users);
+      if(isDone){
+        this.wsNotif.kontoMelden(this.dataUserFound.id_users);
+        this.toast.makeToast('Compte Signalé ! Merci de signaler des activités supectes ! Hi-Chat ')  
+      }else{
+        this.toast.makeToast('Erreur lors du singalement de ce profil !');
+      }
   }
   
   checkTheData(){
@@ -87,7 +101,6 @@ ionViewWillEnter(){
     }else{
       this.dataUserFound = this.searchResltService.dataUserFound[0];
     }
-    console.log('data get', this.dataUserFound);
   }
 
   async presentEntryPassword(){
@@ -238,9 +251,6 @@ ionViewWillEnter(){
   getDataCurrentUser(){
         this.dataCurrentUser = JSON.parse(this.dataUser.userData)[0];
   }
-  test(id:any){
-      console.log(id);
-  }
 
   searchFollowers(tokken: number){
     if(tokken == 1){
@@ -271,7 +281,6 @@ ionViewWillEnter(){
             }
 
             this.listSearchAbm = this.listAbonnenment.filter(execAbm);
-            console.log(this.listSearchAbm);
             this.searchValueAbm = '';
   }
 
@@ -324,7 +333,35 @@ ionViewWillEnter(){
             }
     })
   }
+
+  getListUsersLike(idPub: any, idUsersPub: any){
+    //get list of users who have liked this current pub
+    let previousID_PUB_ = localStorage.getItem('ID_PUB_LIST');
+
+    if(typeof previousID_PUB_ !== 'undefined' &&  previousID_PUB_ != idPub ){
+      this.listUsersLike.length = 0;
   
+      let param : { id_pub : any, id_user: any } = {id_pub: idPub , id_user: idUsersPub }
+        this.accountApi.post('user-api/getLikeList.php', JSON.stringify(param)).subscribe((data)=>{
+            if(Object.keys(data).length > 0){
+                this.listUsersLike = JSON.parse(data);
+                localStorage.setItem('ID_PUB_LIST', idPub);
+            }else{
+                this.listUsersLike = [];
+            }
+        });
+    }
+  }
+
+  searchUserListLike(){
+    this.activeFieldListLikeRslt = this.searchValueListLike.length > 0;
+    let execSearch = (user: User)=>{
+      return user.nom?.toLowerCase().substring(0, this.searchValueListLike.length) === this.searchValueListLike.toLowerCase();
+    }
+      this.listUserLikeRslt = this.listUsersLike.filter(execSearch);
+      this.searchValueListLike ='';
+  }
+
   showFullScreen(imgBase64Url?: any){
     if(!this.showFullScreenImg){
       this.fullScreenBgUrl = imgBase64Url;
@@ -354,4 +391,5 @@ ionViewWillEnter(){
       }
 
   }
+
 }

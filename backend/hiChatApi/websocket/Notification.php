@@ -1,26 +1,28 @@
 <?php
+
     use Ratchet\MessageComponentInterface;
     use Ratchet\ConnectionInterface;
     require('../connectDB.php');
     require('../header.php');
+    require('../API-ADMIN/admin.model.php');
+    require('../API-ADMIN/function/setSystem.data.php');
     require 'vendor/autoload.php';
 
     class Notification implements MessageComponentInterface{
         protected $user;
         protected $notifMissed;
-        protected $currentUsers;
         protected $tab_usersOnline;
         protected $tabNotificationSave;
-        protected $idCurrentUsers;
         protected $globalUserOnlineTab;
-
+        private $nbrNotifStore;
     
         public function __construct(){
             $this->user = new \SplObjectStorage;
             $this->tab_usersOnline = array();
             $this->tabNotificationSave = array();
             $this->notifMissed = array();
-            $this->globalUserOnlineTab = array();        
+            $this->globalUserOnlineTab = array();
+            $this->nbrNotifStore = 0;   
         } 
         
         public function onOpen(ConnectionInterface $conn)
@@ -28,7 +30,6 @@
             $querystring =$conn->httpRequest->getUri()->getQuery();
             $this->user->attach($conn);
             //add in list to send of users who are online
-            array_push($this->globalUserOnlineTab, strval($querystring));
             $this->addInOnlineList($conn, $querystring);
             echo "New Connection\n";
             //checkNotificationSave();
@@ -40,9 +41,18 @@
             if(isset($notifTmp) && !empty($notifTmp)){
                     $id_destinataire ='id='. strval($notifTmp->id_destinataire);
                 if($this->isPublicationNotif($id_destinataire)){
-                    //the notif is an publication, share notif to all friend
-                    $this->sendToAllFriend($msg, $id_destinataire, 'id='.$notifTmp->id_UsersSender);
+
+                    if(isset($notifTmp->listID) && !empty($notifTmp->listID)){
+                    // admin try to send notification to All user with special sexe
+                        $this->sendNotifSpecialSexe($msg, $notifTmp->listID);
+                        echo "notif to All user with sexe {$notifTmp->Admin_Notif_SEXE} \n";
+                        
+                    }else{
+                    //the notif is an publication, share notif to all friend who follow the current user who has shared the pub..
+                        $this->sendToAllFriend($msg, $id_destinataire, 'id='.$notifTmp->id_UsersSender);
+                    }
                 }else{
+                    //
                     if($this->isUserOnline($id_destinataire)){
                         $this->sendNotification($id_destinataire, $msg);
                     }else{
@@ -51,7 +61,8 @@
                                 'notif' => $msg
                             ];
                             array_push($this->notifMissed, json_encode($formatNotif));
-                            echo "User {$id_destinataire} pas connecté \n";
+                            setNbrNotif($this->nbrNotifStore++);
+                            echo "User {$id_destinataire} pas connecté  \n";
                     }
                 }
                     
@@ -89,11 +100,13 @@
                         $this->tab_usersOnline[strval($clef)] = $conn;
                         $this->getListUserOnline($conn);
                         $this->notifOnNewConnection($clef, $conn);
+                       array_push($this->globalUserOnlineTab, strval($clef));
                         $this->checkOfNotifMissedAndSendIt($clef, $conn);
                         echo "**********************\n Add in websocket notif list \n";
                     }
                 }else{
                     $this->tab_usersOnline[strval($clef)] = $conn;
+                    array_push($this->globalUserOnlineTab, strval($clef));
                     echo " Add in websocket notif list \n";
                 }
             }catch(Exception $e){
@@ -106,41 +119,74 @@
         private function isUserOnline($clef): bool{
             return array_key_exists(strval($clef), $this->tab_usersOnline);
         }
+        
+        private function isPublicationNotif($id): bool{
+            return strcmp($id, 'id=*') === 0;
+        }
+        
+        private function sendNotifSpecialSexe($notif, $listDestinateur){
+            // admin action
+
+            foreach($listDestinateur as $idDestinataire){
+                $this->sendSpecialNotification($idDestinataire,  $notif);
+            }
+        }
+
+        private function sendSpecialNotification($idDestinataire, $notif){
+            if($this->isUserOnline($idDestinataire)){
+                $userReceiver = $this->tab_usersOnline[strval($idDestinataire)];
+                try{
+                    $userReceiver->send($notif);
+                }catch(Exception $e){
+                    echo "Error on sending notification to all user";
+                }
+
+            }else{
+                    $formatNotif = [
+                        'idUser' => $idDestinataire,
+                        'notif' => $notif
+                    ];
+                    array_push($this->notifMissed, json_encode($formatNotif));
+                    echo "User {$idDestinataire} pas connecté \n";
+            }
+        }
 
         private function sendNotification($id_destinataire, $notification){
             $userReceiver = $this->tab_usersOnline[strval($id_destinataire)];
            try{
-                foreach($this->user as $userRessource){
-                    if($userRessource === $userReceiver){
-                        $userRessource->send($notification);
+                        $userReceiver->send($notification);
                         echo "Notification send to user with {$id_destinataire} \n";
-                    }
-                } 
            }catch(Exception $e){
                 echo ''. $e->getMessage();
            }
              
         }
 
-        private function isPublicationNotif($id): bool{
-                return strcmp($id, 'id=*') === 0;
-        }
+        
 
         private function sendToAllFriend($msg, $id_destinataire, $idSenderRsrc){
             $ressoureID = $this->tab_usersOnline[strval($idSenderRsrc)];
 
             foreach($this->user as $friend){
                 if($friend !== $ressoureID){
-                    $friend->send($msg);
-                    echo "Publication share to {$id_destinataire} friend\n";
+                    //add the save of notif when the user not online
+                    $isOnline = array_search($friend, $this->tab_usersOnline);
+                    if(gettype($isOnline) !== 'boolean') {
+                        $friend->send($msg);
+                        echo "Publication share to {$id_destinataire} friend\n";
+                    }else{
+                        // user don't online, save the notif
+                    }
+                    
                 }
             }
         }
+        
         private function getListUserOnline($currentUsers){
             //send on log in to current user the list of online user 
             $response = [
                 'type'=> 'LIST_USER_ONLINE',
-                'list'=>$this->globalUserOnlineTab
+                'list'=> $this->globalUserOnlineTab
             ];
             $currentUsers->send(json_encode($response));
         }
@@ -157,12 +203,15 @@
                     }
                 }
         }
+        
         private function notifOnLogOut($clef, $currentConn){
             //notif other user when a user log out
-            $response = [
-                'type'=> 'USER_LOGOUT',
-                'id'=> $clef
-            ];
+
+                $response = [
+                    'type'=> 'USER_LOGOUT',
+                    'id'=> $clef
+                ];
+
                 foreach($this->user as $userOnline){
                     if($userOnline !== $currentConn){
                       $userOnline->send(json_encode($response));
@@ -176,7 +225,6 @@
                     foreach($this->notifMissed as $notif){
                         $notifDecode = json_decode($notif);
                         if($notifDecode->idUser === $idUser){
-                            echo 'SEND NOTIF MISSED';
                             $conn->send($notifDecode->notif);
                             array_splice($this->notifMissed, $index, 1);
                         }
@@ -193,8 +241,7 @@
                      array_push($tmp, json_encode($notifDecode));
                 }
             }
-            $this->notifMissed = $tmp;
-               
         }
+
     }
 ?>

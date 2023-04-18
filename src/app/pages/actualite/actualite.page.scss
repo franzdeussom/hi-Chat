@@ -49,7 +49,7 @@ ion-content {
         --placeholder-opacity: 0.9;
       }
       .camera{
-        width: auto;
+        width: 100%;
         margin-top: 10px;
         margin-bottom: 10px;
         margin-left: 10px;
@@ -58,6 +58,8 @@ ion-content {
             cursor: pointer;
             color: #193c41;
             font-weight: bold;
+            float: right;
+           
            }
         .label-file:hover {
             color: #25a5c4;
@@ -161,7 +163,10 @@ ion-content {
     }
     .pubImg {
         height: fit-content;
+        width: 98%;
+        min-height: 15px;
         .message{
+            float: left;
             margin: 5px;
             font-size: 18px;
             padding: 5px;
@@ -261,14 +266,18 @@ ion-content {
         }
         .pubImg {
             height: fit-content;
+            width: 98%;
+            min-height: 15px;
+            font-weight: bold;
             .message{
+                float: left;
                 margin: 5px;
                 font-size: 18px;
                 padding: 5px;
                 margin-bottom: 7px;
             } 
-        }  
-
+        }
+    
     .reaction{
         position: relative;
         bottom: 0;

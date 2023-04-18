@@ -21,9 +21,16 @@
     <div class="space-between">
 
       <div class="followings">
-        <ion-badge color="primary" mode="ios">
+        <div style="text-align: center" *ngIf="listAbonnement.length === 0 && listPublication.length ==0 && listAbonnement.length ==0 " >
+          <ion-spinner name="dots" style="margin: auto;">
+          </ion-spinner>
+        </div>
+        <div *ngIf="listAbonne.length != 0" >
+          <ion-badge color="primary" mode="ios">
             {{ listAbonne.length }}
-        </ion-badge>
+          </ion-badge>
+        </div>
+        
         <p *ngIf="listAbonne.length > 1" >Followers</p>
         <p *ngIf="listAbonne.length == 0 || listAbonne.length == 1" >Follower</p>
 
@@ -31,12 +38,12 @@
 
 
       <div class="border-white">
-          <div class="img-box">
-            <span *ngIf="dataUser.profilImgUrl != null" id="open-modal" >
-                   <img [src]="dataUser.profilImgUrl">
+          <div>
+            <span *ngIf="dataUser.profilImgUrl != null" id="open-modal" class="img-box" >
+                   <img [src]="dataUser.profilImgUrl" class="urlImage">
             </span>
-            <span *ngIf="dataUser.profilImgUrl == null" id="open-modal" >
-                   <img src="/assets/icon/avatar.svg">
+            <span *ngIf="dataUser.profilImgUrl == null" id="open-modal" class="img-box" >
+                   <img src="/assets/icon/avatar.svg" class="urlImage">
             </span>
                   <ion-modal #modal trigger="open-modal" [canDismiss]="">
                     <ng-template>
@@ -44,12 +51,33 @@
                         <ion-toolbar>
                           <ion-title>Photo de Profil</ion-title>
                           <ion-buttons slot="end">
-                            <ion-button (click)="modal.dismiss()">Annuler</ion-button>
+                            <ion-button (click)="modal.dismiss()">Quittez</ion-button>
                           </ion-buttons>
                         </ion-toolbar>
                       </ion-header>
                       <ion-content class="ion-padding">
-                        <p>Choisissez votre nouvel avatar pour votre profil...</p>
+
+                        <div class="camera">
+                          <ion-buttons>
+                            <label for="file" class="label-file">
+                              <ion-icon name="camera" style="font-size: 35px;">  
+                              </ion-icon>
+                            </label>
+                              <input type="file" style="padding: 15px; color:white; background-color: rgb(3, 3, 32); border-radius: 40px; text-rendering: none;"  (change)="updatePp($event)" value="Importer">
+                          </ion-buttons>
+                        </div>
+                          <span style="margin-left: 50%;"><h2> <em>  Ou  </em></h2></span>
+
+                        <h3>Choisissez un avatar pour votre profil : </h3>
+                        
+                        <div class="listAvatar" style="width: 100%; padding: 10px;flex-direction: row;flex-wrap: wrap;display: flex;">
+                            <div *ngFor="let avatar of listAvatar; let index=index">
+                                <ion-avatar style="margin-left : 25px;margin-top: 35px; height: 70px; width:80px;" (click)="showActionSheetCtrl(avatar.name, avatar.path)" >
+                                   <img [src]="avatar.path" class="avatar">
+                                   <span style="text-align: center;"><ion-card-subtitle style="width:100%;">  {{ avatar.name }}  </ion-card-subtitle></span>
+                                </ion-avatar>
+                            </div>
+                        </div>
                       </ion-content>
                     </ng-template>
                   </ion-modal>
@@ -58,9 +86,15 @@
 
 
       <div class="followings">
-        <ion-badge color="primary" mode="ios">
-          {{ listAbonnement.length }}
-        </ion-badge>
+        <div style="text-align: center" *ngIf="listAbonnement.length === 0 && listPublication.length ==0 && listAbonnement.length ==0 " >
+          <ion-spinner name="dots" style="margin: auto;">
+          </ion-spinner>
+        </div>
+        <div *ngIf="listAbonnement.length != 0" >
+          <ion-badge color="primary" mode="ios">
+            {{ listAbonnement.length }}
+          </ion-badge>
+        </div>
         <p *ngIf="listAbonnement.length > 1" >Abonnements</p>
         <p *ngIf="listAbonnement.length == 0 || listAbonnement.length == 1" >Abonnement</p>
       </div>
@@ -173,8 +207,11 @@
           Infos
         </ion-segment-button>
       </ion-segment>
-
-
+      
+        <div style="text-align: center" *ngIf="listPublication.length === 0 || listAbonne.length === 0 || listAbonnement.length === 0" >
+          <ion-spinner name="dots" style="margin: auto;">
+          </ion-spinner>
+        </div>
 
       <div [ngSwitch]="type">
               <div *ngSwitchCase="'publications'">
@@ -240,8 +277,8 @@
                                   <ng-template>
                                     <ion-header>
                                       <ion-toolbar>
-                                        <ion-buttons slot="start">
-                                          <ion-button (click)="modal.dismiss()">Annuler</ion-button>
+                                        <ion-buttons slot="end">
+                                          <ion-button (click)="modal.dismiss()">Quitter</ion-button>
                                         </ion-buttons>
                                         <ion-title>Publication de {{ pub.prenom }} </ion-title>
                           
@@ -254,6 +291,12 @@
                                           <ion-card>
                                             <ion-list id="ion-padding" *ngFor="let user of listUserLikeRslt" >
                                                   <ion-item>
+                                                        <ion-avatar slot="start" *ngIf="user.profilImgUrl != null">
+                                                          <img [src]="user.profilImgUrl" alt="">
+                                                    </ion-avatar>  
+                                                      <ion-avatar slot="start" *ngIf="user.profilImgUrl == null">
+                                                          <img src="/assets/icon/avatar.svg" alt="">
+                                                      </ion-avatar>
                                                         <ion-label> {{user.nom}} {{ user.prenom }} </ion-label>
                                                         <ion-label *ngIf="user.nom === dataUser.nom" > Vous </ion-label>
                                                         <ion-badge color="primary" slot="end"> {{ user.NbrFollow }} Abonnés </ion-badge>
@@ -276,8 +319,14 @@
                                           <div [ngSwitch]="typeList">
                                                 <div *ngSwitchCase="'girl'">
                                                     <ion-card>
-                                                      <ion-list id="ion-padding" *ngFor="let user of listUsersLike" >
-                                                            <ion-item *ngIf="user.sexe === 'f' || user.sexe === 'F'">
+                                                      <ion-list id="ion-padding" *ngFor="let user of listUsersLike">
+                                                            <ion-item *ngIf="user.sexe === 'f' || user.sexe === 'F'" >
+                                                                  <ion-avatar slot="start" *ngIf="user.profilImgUrl != null">
+                                                                    <img [src]="user.profilImgUrl" alt="">
+                                                              </ion-avatar>  
+                                                                <ion-avatar slot="start" *ngIf="user.profilImgUrl == null">
+                                                                    <img src="/assets/icon/avatar.svg" alt="">
+                                                                </ion-avatar>
                                                                   <ion-label> {{user.nom}} {{ user.prenom }} </ion-label>
                                                                   <ion-label *ngIf="user.nom === dataUser.nom" > Vous </ion-label>  
                                                                   <ion-badge color="primary" slot="end"> {{ user.NbrFollow }} Abonnés </ion-badge>
@@ -288,7 +337,7 @@
                                                 <div *ngSwitchCase="'boy'">
                                                   <ion-card style="margin-left: 0; margin-right: 0;">
                                                     <ion-list id="ion-padding" *ngFor="let user of listUsersLike" >
-                                                          <ion-item *ngIf="user.sexe === 'm' || user.sexe === 'M' "  >
+                                                          <ion-item *ngIf="user.sexe === 'm' || user.sexe === 'M' " >
                                                               <ion-avatar slot="start" *ngIf="user.profilImgUrl != null">
                                                                     <img [src]="user.profilImgUrl" alt="">
                                                               </ion-avatar>  
@@ -538,6 +587,7 @@
            </div>
         </div>
 </ion-content>
+
 <div class="displayImg" *ngIf="showFullScreenImg">
   <img [src]="fullScreenBgUrl" alt=""  class="imgToDisplay" (click)="showFullScreen()">
 </div>

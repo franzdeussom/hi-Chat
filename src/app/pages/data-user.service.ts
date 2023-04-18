@@ -8,5 +8,6 @@ export class DataUserService {
  public userData: any;
  public publication: any;
  public indexPub: any;
+ public isFromNotifList!: boolean;
   constructor() {  }
 }

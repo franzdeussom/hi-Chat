@@ -6,6 +6,7 @@ import { Network } from '@capacitor/network';
   providedIn: 'root'
 })
 export class NetworkService {
+ public CONNEXION_DB_STATE = 200;
 
   constructor(private toast: ToastAppService) { }
 
@@ -20,4 +21,11 @@ export class NetworkService {
          this.toast.makeToast('Connection retablie !');
     });
   }
+
+  makeToastErrorConnection(msg: string){
+      if(this.CONNEXION_DB_STATE == 500){
+          this.toast.makeToast(msg);
+      }
+  }
+
 }

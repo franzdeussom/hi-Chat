@@ -7,7 +7,6 @@
    require 'vendor/autoload.php';
    
     global $Chat;
-    global $Notification;
 
    $server = IoServer::factory(
     new HttpServer(

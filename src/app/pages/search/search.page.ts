@@ -1,3 +1,4 @@
+import { NetworkService } from './../../services/network/network.service';
 import { ToastAppService } from './../../services/Toast/toast-app.service';
 import { DataUserService } from './../data-user.service';
 import { GlobalStorageService } from './../../services/localStorage/global-storage.service';
@@ -49,6 +50,7 @@ export class SearchPage implements OnInit {
               private dataUser: DataUserService,
               private toast: ToastAppService,
               private saveSearch: SaveResultSearchService,
+              private network: NetworkService
               ) { }
 
   ngOnInit() {
@@ -67,6 +69,11 @@ export class SearchPage implements OnInit {
           }else{
               this.isNotFound = true;
          }
+          this.network.CONNEXION_DB_STATE = 500;
+    }, (err)=>{
+      this.network.CONNEXION_DB_STATE = 500;
+      this.network.makeToastErrorConnection('Erreur de connexion.');
+
     });
   }
 
@@ -112,7 +119,13 @@ export class SearchPage implements OnInit {
           }else {
             this.isNotFoundOption = true;
           }
-        })
+          this.network.CONNEXION_DB_STATE = 200;
+
+        },  (err)=>{
+          this.network.CONNEXION_DB_STATE = 500;
+          this.network.makeToastErrorConnection('Erreur de connexion.');
+  
+        });
       }
   }
 

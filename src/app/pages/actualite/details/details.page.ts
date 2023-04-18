@@ -213,6 +213,7 @@ export class DetailsPage implements OnInit {
       value.prenom = this.dataUser.prenom;
       value.nbrLike = 0;
       value.alreadyLike = 0;
+      value.pub_PID = this.pub.PID;
       return value;
   }
   renit(){
@@ -227,7 +228,7 @@ export class DetailsPage implements OnInit {
         }, time);
   }
 
-  async actionSheet(idUserWhoCommented: any, id_commentaire: any, index:number, date:string, PID : any,  prevText?:any, isFromSeachList?: boolean){
+  async actionSheet(idUserWhoCommented: any, id_commentaire: any, index:number, date:string, PID : any, prevText?:any, isFromSeachList?: boolean){
     if(idUserWhoCommented === this.dataUser.id_users){
       const actionSheet = await this.actionSheetCtrl.create({
         header: 'Quelle action pour ce Commentaire ?',
@@ -264,6 +265,36 @@ export class DetailsPage implements OnInit {
       const { role } = await actionSheet.onWillDismiss();
   
       return role === 'confirm';
+    }else if(this.pub.id_user === this.dataUser.id_users){
+      const actionSheet = await this.actionSheetCtrl.create({
+        header: 'Quelle action pour ce Commentaire ?',
+        buttons: [
+          {
+            text: 'Copier',
+            role: 'confirm',
+            handler: ()=>{
+              this.copyTextContent(prevText);
+            }
+          },
+          {
+            text:'Supprimer',
+            role: 'confirm',
+            handler: ()=>{
+              this.deleteComment(id_commentaire, PID, this.pub.id_pub, index, idUserWhoCommented, date, isFromSeachList);
+            }
+          },
+          {
+            text:'Annuler',
+            role:'cancel'
+          }
+        ],
+      });
+  
+      actionSheet.present();
+      const { role } = await actionSheet.onWillDismiss();
+  
+      return role === 'confirm';
+
     }else{
       const actionSheet = await this.actionSheetCtrl.create({
         header: 'Quelle action pour ce Commentaire ?',
@@ -298,10 +329,8 @@ export class DetailsPage implements OnInit {
         date: date,
         PID: PID
     }
-    console.log(PID);
         this.accountApi.post('user-api/delComment.php', JSON.stringify(data)).subscribe((response)=>{
             if(Object.keys(JSON.parse(response)).length > 0){
-              console.log('comment delete');
             }
         });
         
@@ -387,26 +416,33 @@ export class DetailsPage implements OnInit {
   
 
   goToProfilFriend(nom: any, prenom:any){
-    if(nom === this.dataUser.nom){
-      this.navCtrl.navigateBack('tabs/account-profils');
-    }else{
-      let simpleSearchValues : {
-        'nom': string,
-        'prenom': string
-      } = {
-        nom: nom,
-        prenom: prenom
-      };
 
-      this.search.simpleSearch('user-api/search.php', JSON.stringify(simpleSearchValues)).subscribe((data)=>{
-        if(Object.keys(data).length === 0 ? false : true ){
-              console.log(data);
-               this.loadDataFriend(data);
-            }else{
-            }
-      });
-    }
+      if(nom === this.dataUser.nom){
+        this.navCtrl.navigateBack('tabs/account-profils');
+      }else{
+        let simpleSearchValues : {
+          'nom': string,
+          'prenom': string
+        } = {
+          nom: nom,
+          prenom: prenom
+        };
+  
+        this.search.simpleSearch('user-api/search.php', JSON.stringify(simpleSearchValues)).subscribe((data)=>{
+          if(Object.keys(data).length === 0 ? false : true ){
+                 this.loadDataFriend(data);
+              }else{
+              }
+        });
+   }
+    
       
+  }
+
+  loadDataFriend(profil: any){
+    this.saveSearch.dataUserFound = profil;
+    this.saveSearch.isOderUser = true;
+    this.navCtrl.navigateForward('search/profils');
   }
 
   showFullScreen(imgBase64Url?: any){
@@ -419,11 +455,5 @@ export class DetailsPage implements OnInit {
       this.showFullScreenImg = false;
     }
   
-  }
-
-  loadDataFriend(profil: any){
-    this.saveSearch.dataUserFound = profil;
-    this.saveSearch.isOderUser = true;
-    this.navCtrl.navigateForward('search/profils');
   }
 }

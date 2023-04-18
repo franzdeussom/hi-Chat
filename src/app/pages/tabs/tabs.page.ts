@@ -8,11 +8,13 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
   templateUrl: './tabs.page.html',
   styleUrls: ['./tabs.page.scss'],
 })
+
 export class TabsPage implements OnInit {
   dataUser: User = new User();
   isAdmin: boolean = false;
   nbrNotif!: number;
   nbrMessage!: number;
+
   constructor(private globalStore: GlobalStorageService,
               private wsNotif: GetNotificationService,
               private cdRef:ChangeDetectorRef
@@ -27,15 +29,15 @@ export class TabsPage implements OnInit {
     this.nbrNotif = this.wsNotif.globalNotification.length;
     this.nbrMessage = this.wsNotif.countMsgNotRead;
     this.cdRef.detectChanges();
-
   }
 
   getDataUser(){
     this.dataUser = JSON.parse(this.globalStore.currentUser)[0];
-    if(this.dataUser.nom === 'admin'){
+    if(this.dataUser.id_users === 1){
       this.isAdmin = true;
     }
   }
+  
   loadNotif(){
       this.wsNotif.loadNotifSave(this.dataUser.id_users);
   }

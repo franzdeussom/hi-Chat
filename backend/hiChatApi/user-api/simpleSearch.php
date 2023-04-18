@@ -8,7 +8,7 @@
         $nom = $data->nom;
         $prenom = $data->prenom;
 
-        if($nom == '' || empty($nom) || !isset($nom)){
+        if($nom === '' || empty($nom) || !isset($nom)){
             echo json_encode([]);
         }else{
 

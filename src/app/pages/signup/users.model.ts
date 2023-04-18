@@ -14,7 +14,8 @@ export class User{
         public date_creationAccount?: Date,
         public reset_pass?: string,
         public ville?: string,
-        public NbrFollow?: number
-    ){
+        public NbrFollow?: number 
+        
+        ){
     }
 }

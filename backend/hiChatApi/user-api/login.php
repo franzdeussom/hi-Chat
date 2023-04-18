@@ -16,18 +16,11 @@
     }else{
         echo 'Pas de Donnees envoyer au serveur';
         return;
-    }
+    } 
+   
 
     $userName = $data->login;
     $mdp = $data->mdp;
-
-    if(isset($data->email)){
-        //user log with email in  
-
-    }else if(isset($data->tel)){
-        //user log with tel num in
-
-    }
     
     $query = $conn->prepare("SELECT * FROM HiChat.USERS WHERE nom = :nom AND mdp = :mdp");
     $query->execute([
@@ -42,14 +35,14 @@
 
     if($responseRow > 0){
         //it's the user
-        array_push($queryResult, getListOfIsPubLike($conn, $tmpUserData));
+       // array_push($queryResult, getListOfIsPubLike($conn, $tmpUserData));
         array_push($queryResult, getFollowers(getUserID($tmpUserData)));
         $response = json_encode($queryResult);
         echo $response;
     }
 
     function getListOfIsPubLike($conn, $tmp): array{
-         $sql = $conn->prepare('SELECT * FROM HiChat.PUB_LIKE WHERE PUB_LIKE.id_users = :id_users');
+         $sql = $conn->prepare('SELECT * FROM HiChat.PUB_LIKE WHERE PUB_LIKE.id_users = :id_users LIMIT 70');
          $sql->execute([
             ':id_users'=> getUserID($tmp)
          ]);

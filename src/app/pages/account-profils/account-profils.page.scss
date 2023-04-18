@@ -30,13 +30,22 @@
         .border-white {
             border: white solid 8px;
             border-radius: 50%;
-            width: fit-content;
+            width: 90%;
+            text-align: center;
             .img-box {
                 border-radius: 50%;
-                overflow: hidden;
-                height: 190px;
-                width: 190px;
+                text-align: center;
+                height: 100%;
+                width: 100%;
+                .urlImage{
+                    border-radius: 50%;
+                    overflow: hidden;
+                    height: 100%;
+                    width: 100%;
+                } 
             }
+            
+
         }
          
     }
@@ -109,14 +118,17 @@ ion-segment {
     }
     .pubImg {
         height: fit-content;
+        width: 98%;
+        min-height: 15px;
+        font-weight: bold;
         .message{
+            float: left;
             margin: 5px;
             font-size: 18px;
             padding: 5px;
             margin-bottom: 7px;
-           
         } 
-    } 
+    }
 
 .reaction{
     position: relative;

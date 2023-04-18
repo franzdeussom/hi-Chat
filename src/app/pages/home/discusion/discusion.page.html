@@ -3,7 +3,7 @@
   <ion-back-button slot="start" (click)="renitListMessage()"></ion-back-button>
     <div (click)="goToProfil()">
       <ion-title>{{ receivData.nom }} {{ receivData.prenom }} <br>
-        <span *ngIf="wsNotif.tabAbment.includes(receivData.idUser)" style="font-size: 14px; font-weight: normal;">
+        <span *ngIf="wsNotif.tabAbment.includes(receivData.id_user)" style="font-size: 14px; font-weight: normal;">
           en ligne
         </span>
       </ion-title>
@@ -43,6 +43,15 @@
 
 
   <ion-footer class="field" [hidden]="showFullScreenImg">
+        <span class="camera">
+          <ion-buttons>
+            <label for="file" class="label-file"> 
+              <ion-icon name="camera">  
+              </ion-icon>
+            </label>
+          <input type="file" id="file" capture class="input-file" #filechooser camera>
+          </ion-buttons>
+        </span>
        
         <ion-input class="custom-textarea" (ionChange)="setColor('primary')" [(ngModel)]="value" [value]="value" [autocapitalize]="true" placeholder="Type something here"></ion-input>
           <span class="send">
@@ -50,16 +59,6 @@
                 <ion-icon name="send-outline" [color]="colorSendBtn"></ion-icon>
             </ion-buttons>
           </span>
-          <span class="camera">
-            <ion-buttons>
-              <label for="file" class="label-file"> 
-                <ion-icon name="camera">  
-                </ion-icon>
-              </label>
-             <input type="file" id="file" capture class="input-file" #filechooser camera>
-            </ion-buttons>
-          </span>
-
   </ion-footer>
   
 </ion-content>
