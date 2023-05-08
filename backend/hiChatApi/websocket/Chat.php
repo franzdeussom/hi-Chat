@@ -21,6 +21,7 @@ class Chat implements MessageComponentInterface{
         $this->msgMissed = array();
         $this->nbrUsersOnline = 0;
         $this->nbreMsgStore = 0;
+        
     }
 
     //implementations of method for the parent Interface

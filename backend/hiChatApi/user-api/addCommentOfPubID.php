@@ -33,7 +33,7 @@
                 ':id_users' => $data->id_users,
                 ':id_pub' => $data->id_publication,
                 ':libelle' => $data->libelle,
-                ':date_comment' =>$dateComment,
+                ':date_comment' => $data->date_comment,
                 ':PID' => $data->PID
             ]);
 
@@ -66,7 +66,7 @@
                 ':id_users' => $data->id_users,
                 'PIDPUB'=>$data->pub_PID,
                 ':libelle' => $data->libelle,
-                ':date_comment' =>$dateComment,
+                ':date_comment' =>$date->date_comment,
                 ':PID' => $data->PID
             ]);
 

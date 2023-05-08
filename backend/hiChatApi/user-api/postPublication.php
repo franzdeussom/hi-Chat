@@ -1,6 +1,7 @@
 <?php
     require('../connectDB.php');
     require('../header.php');
+    require('../file.service/saveFile.class.php');
 
     global $conn;
 
@@ -20,42 +21,90 @@
     $is_public = $data->is_public;
     $bgColor  = $data->colorBg;
 
-    $query = $conn->prepare('INSERT INTO HiChat.PUBLICATION(
-                                id_user,
-                                libelle,
-                                date_pub,
-                                url_file,
-                                is_public,
-                                colorBg,
-                                PID )  VALUES(
-                                    :id,
-                                    :libelle,
-                                    :date_pub,
-                                    :url_file,
-                                    :isPublic,
-                                    :Color,
-                                    :pid
-                                     )
-                            ');
-    $query->execute([
-        ':id' => $id_users,
-        ':libelle' => $libellePub,
-        ':date_pub' => $datePub,
-        ':url_file' => $url_file,
-        ':isPublic' => $is_public,
-        ':Color' => $bgColor,
-        ':pid'=> $data->PID
-    ]);
+    if(isset($data->url_file) && !empty($data->url_file)){
+        $fileService = new SaveFile($data->url_file,  $data->id_user);
+        $imgDecode = $fileService->decodeFile();
 
-    if($query){
-        $response =json_encode([
-            'success'=> true,
-            'insert'=> true
+       if( $fileService->moveFile($imgDecode)){
+            //save url of the img into the database;
+                        $query = $conn->prepare('INSERT INTO HiChat.PUBLICATION(
+                                    id_user,
+                                    libelle,
+                                    date_pub,
+                                    url_file,
+                                    is_public,
+                                    colorBg,
+                                    PID )  VALUES(
+                                        :id,
+                                        :libelle,
+                                        :date_pub,
+                                        :url_file,
+                                        :isPublic,
+                                        :Color,
+                                        :pid
+                                        )
+                                ');
+        $query->execute([
+            ':id' => $id_users,
+            ':libelle' => $libellePub,
+            ':date_pub' => $datePub,
+            ':url_file' => $fileService->getFileFullPath(),
+            ':isPublic' => $is_public,
+            ':Color' => $bgColor,
+            ':pid'=> $data->PID
         ]);
-        echo $response;
+
+        if($query){
+            $response =json_encode([
+                'success'=> true,
+                'insert'=> true
+            ]);
+            echo $response;
+        }else{
+            $response = json_encode([]);
+            http_response_code(500);
+            echo $response;
+        }
+       }
     }else{
-        $response = json_encode([]);
-        http_response_code(500);
-        echo $response;
+            $query = $conn->prepare('INSERT INTO HiChat.PUBLICATION(
+                                    id_user,
+                                    libelle,
+                                    date_pub,
+                                    url_file,
+                                    is_public,
+                                    colorBg,
+                                    PID )  VALUES(
+                                        :id,
+                                        :libelle,
+                                        :date_pub,
+                                        :url_file,
+                                        :isPublic,
+                                        :Color,
+                                        :pid
+                                        )
+                                ');
+        $query->execute([
+            ':id' => $id_users,
+            ':libelle' => $libellePub,
+            ':date_pub' => $datePub,
+            ':url_file' => $url_file,
+            ':isPublic' => $is_public,
+            ':Color' => $bgColor,
+            ':pid'=> $data->PID
+        ]);
+
+        if($query){
+            $response =json_encode([
+                'success'=> true,
+                'insert'=> true
+            ]);
+            echo $response;
+        }else{
+            $response = json_encode([]);
+            http_response_code(500);
+            echo $response;
+        }
     }
+    
 ?>
