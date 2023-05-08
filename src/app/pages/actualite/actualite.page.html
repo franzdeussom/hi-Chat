@@ -25,7 +25,7 @@
        <div class="createPub">
         
           <ion-avatar slot="start" (click)="goToProfil()" *ngIf="dataUser.profilImgUrl != null" (click)="goToProfil()" >
-            <img alt="" [src]="dataUser.profilImgUrl" />
+            <img alt="" [src]="dataUser.profilImgUrl | safePipe: 'url'" />
           </ion-avatar>
           <ion-avatar slot="start" (click)="goToProfil()" *ngIf="dataUser.profilImgUrl == null">
             <img alt="" src="/assets/icon/avatar.svg" />
@@ -76,7 +76,7 @@
                       <ion-list class="head">
                               <ion-item>
                                       <ion-avatar slot="start" *ngIf="dataUser.profilImgUrl != null">
-                                        <img alt="" [src]="dataUser.profilImgUrl" />
+                                        <img alt="" [src]="dataUser.profilImgUrl | safePipe:'url'" />
                                       </ion-avatar>
                                       <ion-avatar slot="start" *ngIf="dataUser.profilImgUrl == null" >
                                           <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
@@ -93,7 +93,7 @@
                       </div>
                 </div>
                 <div *ngIf="publication.url_file!= null" class="apercuImg" style="margin-top: 15px;">
-                  <img [src]="publication.url_file" alt="" width="100%">
+                  <img [src]="publication.url_file | safePipe:'url'" alt="" width="100%">
                 </div>
 
                     <div class="choiceColor">
@@ -126,7 +126,7 @@
                       <ion-list class="head">
                               <ion-item lines="none">
                                       <ion-avatar slot="start" *ngIf="pub.profilImgUrl != null"  (click)="goToProfilFriend(pub.nom, pub.prenom)">
-                                        <img alt="" [src]="pub.profilImgUrl" />
+                                        <img alt="" [src]="pub.profilImgUrl | safePipe: 'url'" />
                                       </ion-avatar>
                                       <ion-avatar slot="start" *ngIf="pub.profilImgUrl == null"  (click)="goToProfilFriend(pub.nom, pub.prenom)">
                                           <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
@@ -161,7 +161,7 @@
                           <div class="pubImg">   
                               <span class="message" style="margin-bottom: 10px;"> {{ pub.libelle }} </span>
                               <div>
-                                <img [src]="pub.url_file" width="100%" alt="" (click)="showFullScreen(pub.url_file)">
+                                <img [src]="pub.url_file | safePipe:'url' " width="100%" alt="" (click)="showFullScreen(pub.url_file)">
                               </div>
                           </div>
 
@@ -188,7 +188,7 @@
                                             <ion-list id="ion-padding" *ngFor="let user of listUserLikeRslt" >
                                                   <ion-item >
                                                       <ion-avatar slot="start" *ngIf="user.profilImgUrl != null">
-                                                        <img [src]="user.profilImgUrl" alt="">
+                                                        <img [src]="user.profilImgUrl | safePipe: 'url'" alt="">
                                                       </ion-avatar>  
                                                         <ion-avatar slot="start" *ngIf="user.profilImgUrl == null">
                                                             <img src="/assets/icon/avatar.svg" alt="">
@@ -218,7 +218,7 @@
                                                       <ion-list id="ion-padding" *ngFor="let user of listUsersLike" >
                                                             <ion-item *ngIf="user.sexe === 'f' || user.sexe === 'F'">
                                                                   <ion-avatar slot="start" *ngIf="user.profilImgUrl != null">
-                                                                    <img [src]="user.profilImgUrl" alt="">
+                                                                    <img [src]="user.profilImgUrl | safePipe: 'url'" alt="">
                                                                   </ion-avatar>  
                                                                     <ion-avatar slot="start" *ngIf="user.profilImgUrl == null">
                                                                         <img src="/assets/icon/avatar.svg" alt="">
@@ -236,7 +236,7 @@
                                                     <ion-list id="ion-padding" *ngFor="let user of listUsersLike" >
                                                           <ion-item *ngIf="user.sexe === 'm' || user.sexe === 'M' ">
                                                               <ion-avatar slot="start" *ngIf="user.profilImgUrl != null">
-                                                                    <img [src]="user.profilImgUrl" alt="">
+                                                                    <img [src]="user.profilImgUrl | safePipe: 'url' " alt="">
                                                               </ion-avatar>  
                                                                 <ion-avatar slot="start" *ngIf="user.profilImgUrl == null">
                                                                     <img src="/assets/icon/avatar.svg" alt="">
@@ -286,7 +286,7 @@
                       <ion-list class="head">
                               <ion-item>
                                       <ion-avatar slot="start" *ngIf="pub.profilImgUrl != null"  (click)="goToProfilFriend(pub.nom, pub.prenom)">
-                                        <img alt="" [src]="pub.profilImgUrl" />
+                                        <img alt="" [src]="pub.profilImgUrl | safePipe:'url'" />
                                       </ion-avatar>
                                       <ion-avatar slot="start" *ngIf="pub.profilImgUrl == null"  (click)="goToProfilFriend(pub.nom, pub.prenom)">
                                           <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
@@ -320,7 +320,7 @@
                           <div class="pubImg">   
                               <span class="message"> {{ pub.libelle }} </span>
                               <div>
-                                <img [src]="pub.url_file" width="100%" alt="" (click)="showFullScreen(pub.url_file)">
+                                <img [src]="pub.url_file | safePipe:'url'" width="100%" alt="" (click)="showFullScreen(pub.url_file)">
                               </div>
                           </div>
 
@@ -352,5 +352,5 @@
  </div>
 </ion-content>
 <div class="displayImg" *ngIf="showFullScreenImg">
-  <img [src]="fullScreenBgUrl" alt=""  class="imgToDisplay" (click)="showFullScreen()">
+  <img [src]="fullScreenBgUrl | safePipe:'url'" alt=""  class="imgToDisplay" (click)="showFullScreen()">
 </div>

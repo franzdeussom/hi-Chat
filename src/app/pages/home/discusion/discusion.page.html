@@ -1,5 +1,5 @@
 <ion-header [hidden]="showFullScreenImg">
-  <ion-toolbar color="light">
+  <ion-toolbar>
   <ion-back-button slot="start" (click)="renitListMessage()"></ion-back-button>
     <div (click)="goToProfil()">
       <ion-title>{{ receivData.nom }} {{ receivData.prenom }} <br>
@@ -21,11 +21,11 @@
 
 <ion-content class="contener">
   <div class="chat-box">
-    <div *ngFor="let item of message" >
+    <div *ngFor="let item of message; let index=index" >
       <ion-row>
         <ion-col>
           <div *ngIf="item.type === typeMsg.TEXT">
-            <div [ngClass]="item.isReceived === 1 || item.isReceived ? 'received':'sending'" (click)="showDetailmsg(item)">
+            <div [ngClass]="item.isReceived === 1 || item.isReceived ? 'received':'sending'" (click)="showDetailmsg(item, index)">
                       <span class="msg">
                         {{item.libelle}}                    
                       </span><br>

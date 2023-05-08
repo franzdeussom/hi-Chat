@@ -1,3 +1,4 @@
+import { TimeSystemService } from './../../../services/timestamp/time-system.service';
 import { TmpCommentService } from './tmp-comment.service';
 import { ToastAppService } from 'src/app/services/Toast/toast-app.service';
 import { DataUserService } from '../../data-user.service';
@@ -31,6 +32,7 @@ export class DetailsPage implements OnInit {
   hideSpinnear: boolean = false;
   fullScreenBgUrl: any = '';
   showFullScreenImg: boolean = false;
+
   constructor(
               private dataUserServ: DataUserService,
               private accountApi: AccountApiService,
@@ -40,6 +42,7 @@ export class DetailsPage implements OnInit {
               private search : SearchService,
               private copyCliboard: Clipboard,
               private wsNotif: GetNotificationService,
+              private timeSystem: TimeSystemService,
               private saveSearch: SaveResultSearchService,
               private alertController: AlertController,
               private actionSheetCtrl: ActionSheetController,
@@ -63,6 +66,7 @@ export class DetailsPage implements OnInit {
   handleRefresh(event:any) {
     setTimeout(() => {
       // Any calls to load data go here
+      this.loadComment();
       event.target.complete();
     }, 2100);
   }
@@ -91,17 +95,18 @@ export class DetailsPage implements OnInit {
   loadUserData(){
     this.dataUser = JSON.parse(this.dataUserServ.userData)[0];
   }
+  
   loadPublication(){
     this.pub = this.dataUserServ.publication;
     this.indexPub = this.dataUserServ.indexPub;
-    
   }
 
   loadComment(){
     const time = 1800;
           this.accountApi.post('user-api/getCommentOfPubID.php', JSON.stringify(this.pub)).subscribe((data)=>{
-                this.commentaires = JSON.parse(data);
-                this.tmpComment.Comment = JSON.parse(data);
+                this.commentaires = this.timeSystem.getElapsedTimeComment(JSON.parse(data));
+                this.tmpComment.Comment = this.commentaires;
+                
           }, (err)=>{
               this.toast.makeToast(''+err.getMessage());
           });
@@ -130,7 +135,6 @@ export class DetailsPage implements OnInit {
               
                 if(this.commentaires[index].id_users !== this.dataUser.id_users){
                   this.wsNotif.sendNotification(TypeNotification.LIKE_COMMENT, this.dataUser, this.pub, 0,  this.commentaires[index]);
-                  console.log('like success');
                 }
                 
             }
@@ -146,11 +150,13 @@ export class DetailsPage implements OnInit {
         this.commentaires[index].alreadyLike = 1;
         this.tmpComment.updateLikeAdd(index, nbrLike);
   }
+
   delLike(index: number, nbrLike:any){
     this.commentaires[index].nbrLike = nbrLike-1;
     this.commentaires[index].alreadyLike = 0;
     this.tmpComment.updateLikeDel(index, nbrLike);
   }
+
   addComment(comment: Commentaire){
       this.pub.nbrCommentaire = this.pub.nbrCommentaire + 1;
       this.tmpComment.updateAddComment(comment);
@@ -167,13 +173,7 @@ export class DetailsPage implements OnInit {
       PID: PID
     }
     this.delLike(index, this.commentaires[index].nbrLike);
-    this.accountApi.post('user-api/unLikeComment.php', JSON.stringify(data)).subscribe((response)=>{
-           if(Object.keys(response).length > 0){
-                console.log('unlike success');
-            }else{
-              console.log('erreur');
-            }
-    })
+    this.accountApi.post('user-api/unLikeComment.php', JSON.stringify(data)).subscribe((response)=>{}, (err)=>{ console.log(err.mesage)})
   }
 
   searchUserInComments(){
@@ -189,12 +189,12 @@ export class DetailsPage implements OnInit {
   sendComment(){
       if(this.commentaire.length > 0 && this.commentaire !== '' ){
        let comment = this.setParamComment();
-        this.commentaires.unshift(comment);
           this.accountApi.post('user-api/addCommentOfPubID.php', JSON.stringify(comment)).subscribe((data)=>{
               if(Object.keys(JSON.parse(data)).length > 0){
                   this.confirm = true;
                   this.wsNotif.sendNotification(TypeNotification.COMMENT, this.dataUser, this.pub, comment.libelle);
-                  this.commentaires[0].date_comment = JSON.parse(data).date;
+                  comment.date_comment = "à l'instant";
+                  this.commentaires.unshift(comment);
                   this.addComment(comment);
                   this.renit();
                   this.hideConfirmation();
@@ -202,7 +202,8 @@ export class DetailsPage implements OnInit {
           });
       }
   }
-  setParamComment(): Publication{
+
+  setParamComment(): Commentaire{
     let value = new Commentaire();
       value.PID = " " + (Math.random() * 1).toFixed(2) + this.dataUser.id_users;
       value.id_users = this.dataUser.id_users;
@@ -214,6 +215,8 @@ export class DetailsPage implements OnInit {
       value.nbrLike = 0;
       value.alreadyLike = 0;
       value.pub_PID = this.pub.PID;
+      value.date_comment = new Date();
+
       return value;
   }
   renit(){
@@ -329,14 +332,11 @@ export class DetailsPage implements OnInit {
         date: date,
         PID: PID
     }
-        this.accountApi.post('user-api/delComment.php', JSON.stringify(data)).subscribe((response)=>{
-            if(Object.keys(JSON.parse(response)).length > 0){
-            }
-        });
+        this.accountApi.post('user-api/delComment.php', JSON.stringify(data)).subscribe((response)=>{});
         
 
         if(isFromSeachList){
-            const indexInCommentList = this.commentaires.findIndex(comment => comment.id_commentaire === id_commentaire );
+            const indexInCommentList = this.commentaires.findIndex(comment => (comment.id_commentaire === id_commentaire || comment.PID === PID) );
             if(indexInCommentList !== -1){
                 this.commentaires.splice(indexInCommentList, 1);
                 this.tmpComment.delComment(indexInCommentList);

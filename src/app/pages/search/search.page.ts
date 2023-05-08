@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
   templateUrl: './search.page.html',
   styleUrls: ['./search.page.scss'],
 })
+
 export class SearchPage implements OnInit {
   simpleSearchValues : {
     'nom': any,
@@ -63,6 +64,7 @@ export class SearchPage implements OnInit {
     this.search.simpleSearch('user-api/search.php', JSON.stringify(this.simpleSearchValues)).subscribe((data)=>{
          this.isNotFound= false;
          this.isNotFoundOption = false;
+
       if(Object.keys(data).length === 0 ? false : true ){
             this.GlobalSearchResult = data;
             this.disableSpaceOption = true
@@ -95,9 +97,11 @@ export class SearchPage implements OnInit {
       this.isWithOption = true;
     }
   }
+
   disableSearchWithOption(){
     this.disableSpaceOption = true;
   }
+  
   enableSearchSpaceWithOption(){
     if(this.value.length == 0 || this.value === ''){
        this.disableSpaceOption = false;

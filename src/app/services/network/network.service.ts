@@ -8,7 +8,7 @@ import { Network } from '@capacitor/network';
 export class NetworkService {
  public CONNEXION_DB_STATE = 200;
 
-  constructor(private toast: ToastAppService) { }
+  constructor(private toast: ToastAppService, ) { }
 
  async isConnect(){
       const status = await Network.getStatus();
@@ -22,6 +22,9 @@ export class NetworkService {
     });
   }
 
+  byPassSecurity(url: string): any{
+
+  }
   makeToastErrorConnection(msg: string){
       if(this.CONNEXION_DB_STATE == 500){
           this.toast.makeToast(msg);

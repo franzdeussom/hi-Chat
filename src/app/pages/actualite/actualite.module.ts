@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { ActualitePageRoutingModule } from './actualite-routing.module';
 
 import { ActualitePage } from './actualite.page';
+import { SafePipePipe } from './safe-pipe.pipe';
 
 @NgModule({
   imports: [
@@ -15,6 +16,6 @@ import { ActualitePage } from './actualite.page';
     IonicModule,
     ActualitePageRoutingModule
   ],
-  declarations: [ActualitePage]
+  declarations: [ActualitePage, SafePipePipe]
 })
 export class ActualitePageModule {}

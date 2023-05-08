@@ -9,7 +9,7 @@ import { RangeMessageService } from './../range-message.service';
 import { GlobalStorageService } from './../../../services/localStorage/global-storage.service';
 import { MessageApiService } from './../../../services/message-api.service';
 import { ReceiverDataService } from './../receiver-data.service';
-import { Component, ContentChild, ContentChildren, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Message } from './message.model';
 import { DataUserService } from '../../data-user.service';
 
@@ -18,6 +18,7 @@ import { DataUserService } from '../../data-user.service';
   templateUrl: './discusion.page.html',
   styleUrls: ['./discusion.page.scss'],
 })
+
 export class DiscusionPage implements OnInit {
   @ViewChild(IonContent) private myscroll!: IonContent;
   @ViewChild('filechooser', { static: true }) private fileChooserElementRef!: ElementRef;
@@ -35,6 +36,7 @@ export class DiscusionPage implements OnInit {
   fullScreenBgUrl: any = '';
   showFullScreenImg: boolean = false;
   typeMsg = TypeMessage;
+
   constructor(private receiverData: ReceiverDataService, 
               private apiMessage: MessageApiService,
               private apisearch: SearchService,
@@ -58,7 +60,6 @@ export class DiscusionPage implements OnInit {
     this.loadUsersData();
     this.loadMessageThisDiscussion();
     this.renit();
-    this.webSocketOnMessage();
     this.setTheDatOfMsg();
     this.checkNewMsg();
     this.listenerInputChange();
@@ -73,21 +74,23 @@ export class DiscusionPage implements OnInit {
     this.scrollToBottom();
     this.loadUsersData();
   }
+  
   ngAfterViewChecked() {
     this.checkNewMsg();
-    
+ 
   }
 
-async showDetailmsg(msg: Message){
+async showDetailmsg(msg: Message, index: number){
   console.log(msg);
+  console.log('index', index);
     const action = await this.actionCtrl.create({
       header: 'Message: ' + msg.libelle + ' Date reception/envoie: ' + msg.date_envoie,
       buttons: [
         {
-          text: 'Supprimer pour moi',
+          text: 'Supprimer temp. pour moi',
           role: 'confirm',
           handler: ()=>{
-            console.log('Message delete');
+           this.deleteMessage(index);
           }
         },
         {
@@ -100,6 +103,11 @@ async showDetailmsg(msg: Message){
     await action.present();
   }
 
+  deleteMessage(index: number){
+      let messageTmp;
+      this.message.splice(index, 1);
+  }
+
  checkNewMsg(){
 
         if(typeof this.apiMessage.newMsg !== 'undefined' ? true : false){
@@ -107,7 +115,7 @@ async showDetailmsg(msg: Message){
           if(this.isForThisUser(this.apiMessage.newMsg)){
              this.apiMessage.newMsg.statut = true;
              if(typeof this.message !== 'undefined'){
-              this.message.push(
+                this.message.push(
                 this.apiMessage.newMsg
               );
              }    
@@ -284,15 +292,6 @@ isFileValid(file: File): any{
     return base64Url;
  }
 
-  webSocketOnMessage(){
-   /* this.apiMessage.ws.onmessage = (msg)=>{
-        let msgReceived = JSON.parse(msg.data);
-        if(msgReceived.id_destinateur_user == this.currentUserData[0].id_users){
-          msgReceived.isReceived = true;
-          this.message.push(msgReceived);
-        }
-    }*/
-  }
 
   loadMessageThisDiscussion(){
     setTimeout(() => {

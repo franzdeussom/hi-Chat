@@ -1,3 +1,4 @@
+import { TimeSystemService } from './../../../services/timestamp/time-system.service';
 import { SinalAccountService } from './sinal-account.service';
 import { NetworkService } from './../../../services/network/network.service';
 import { TypeNotification } from '../../notifications/typeNotif.enum';
@@ -53,6 +54,7 @@ export class ProfilsPage implements OnInit {
               private network: NetworkService,
               private wsNotif: GetNotificationService,
               private signalAccnt: SinalAccountService,
+              private timeSystem : TimeSystemService,
               private receiverData: ReceiverDataService)
               {
                 this.listDiscSecur = new SecurityMsg();
@@ -221,6 +223,8 @@ ionViewWillEnter(){
     this.listPublication = data[0].length === 0 ? [] : data[0];
     this.listAbonne = data[1].length === 0 ? [] : data[1];
     this.listAbonnenment = data[2].length === 0 ? [] : data[2];
+    this.listPublication = this.timeSystem.getElapsedTime(this.listPublication);
+
   }
 
   getParamQuery(isOrderUser: boolean): any{

@@ -1,11 +1,13 @@
+import { SearchService } from './../../search/search.service';
 import { ToastAppService } from 'src/app/services/Toast/toast-app.service';
 import { AccountApiService } from 'src/app/services/account-api.service';
 import { TypeNotification } from './../../notifications/typeNotif.enum';
 import { GetNotificationService } from 'src/app/pages/notifications/get-notification.service';
-import { AlertController, ActionSheetController } from '@ionic/angular';
+import { AlertController, ActionSheetController, NavController } from '@ionic/angular';
 import { TransitService } from './../transit.service';
 import { Component, OnInit } from '@angular/core';
 import { User } from '../../signup/users.model';
+import { SaveResultSearchService } from '../../search/save-result-search.service';
 
 @Component({
   selector: 'app-details-list',
@@ -24,6 +26,9 @@ export class DetailsListPage implements OnInit {
       private actionSheet: ActionSheetController,
       private wsNotif: GetNotificationService,
       private accountApi: AccountApiService,
+      private apisearch : SearchService,
+      private saveResltSearch: SaveResultSearchService,
+      private route: NavController,
       private toast: ToastAppService
   ) {  }
 
@@ -112,5 +117,18 @@ export class DetailsListPage implements OnInit {
       }
 
     this.listUserSearch = this.listUser.filter(execSearch);      
+  }
+
+  goToProfil(user: User){
+    setTimeout(() => {
+
+      this.apisearch.simpleSearch('user-api/search.php', JSON.stringify(user)).subscribe((data)=>{
+        //this.saveResltSearch.dataUserFound = JSON.parse(data);
+        this.saveResltSearch.dataUserFound = data;
+        this.route.navigateForward('search/profils');
+      });  
+    }, 100);
+
+
   }
 }

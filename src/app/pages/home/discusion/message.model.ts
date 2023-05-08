@@ -10,6 +10,7 @@ export class Message{
         public libelle?: any,
         public myDateSend?: any,
         public date_envoie?: any,
+        public timeElapsed?: any,
         public statut?: any,
         public received?: any,
         public id_destinateur_user?: any,

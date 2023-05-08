@@ -19,7 +19,7 @@
                             </ion-item-option>
                         </ion-item-options>
           
-                              <ion-item>
+                              <ion-item (click)="goToProfil(user)">
                                     <ion-avatar slot="start" *ngIf="user.profilImgUrl != null ">
                                       <img alt="" [src]="user.profilImgUrl" />
                                   </ion-avatar>
@@ -52,7 +52,7 @@
                   </ion-item-option>
               </ion-item-options>
 
-                    <ion-item>
+                    <ion-item (click)="goToProfil(user)">
                           <ion-avatar slot="start" *ngIf="user.profilImgUrl != null ">
                             <img alt="" [src]="user.profilImgUrl" />
                         </ion-avatar>

@@ -41,8 +41,8 @@ export class PathPpService {
       private toast: ToastAppService
   ) { }
 
-  doUpdatingPp(idUser: number, newImgUrl: any){
-      const param = {id_users: idUser, profilImgUrl: newImgUrl }
+  doUpdatingPp(idUser: number, newImgUrl: any, isBase64File: boolean, fileImg?: File){
+      const param = {id_users: idUser, profilImgUrl: newImgUrl , imgData: fileImg, isBase64File: isBase64File}
       this.accountApi.post('user-api/updateAvatar.php', JSON.stringify(param)).subscribe((response)=>{
           if(Object.keys(response).length > 0){
             this.toast.makeToast('Photo de profil mise à jour !');

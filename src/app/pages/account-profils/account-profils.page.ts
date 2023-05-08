@@ -1,3 +1,4 @@
+import { TimeSystemService } from './../../services/timestamp/time-system.service';
 import { PathPpService } from './path-pp.service';
 import { SecurityMsg } from './../home/securitymsg.model';
 import { TypeNotification } from './../notifications/typeNotif.enum';
@@ -8,7 +9,7 @@ import { DataUserService } from './../data-user.service';
 import { RangeMessageService } from './../home/range-message.service';
 import { ActionSheetController, IonModal, NavController, AlertController } from '@ionic/angular';
 import { GlobalStorageService } from './../../services/localStorage/global-storage.service';
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ToastAppService } from 'src/app/services/Toast/toast-app.service';
 import { AccountApiService } from 'src/app/services/account-api.service';
 import { Publication } from '../actualite/publicatin.model';
@@ -62,6 +63,7 @@ export class AccountProfilsPage implements OnInit {
               private wsNotif: GetNotificationService,
               private pathPP: PathPpService,
               private network : NetworkService,
+              private timeSystem : TimeSystemService,
               private copyCliboard: Clipboard,
               ) { this.dataUser = new User()
                   this.listAbonne = new Array<User>();
@@ -86,9 +88,9 @@ export class AccountProfilsPage implements OnInit {
   handleRefresh(event:any) {
     setTimeout(() => {
       // Any calls to load data go here
+      this.loadFwAbmPubThisUsers();
       event.target.complete();
     }, 2100);
-    this.loadFwAbmPubThisUsers();
 
   }
 
@@ -175,7 +177,7 @@ export class AccountProfilsPage implements OnInit {
       await action.present();
   }
 
-  async confirmToChangePpimg(base64: any){
+  async confirmToChangePpimg(base64: any, img : File){
     const action = await this.alertController.create({
       header: 'Entrer votre mot de passe pour confirmer votre identité',
       buttons: [
@@ -184,16 +186,16 @@ export class AccountProfilsPage implements OnInit {
           role:'confirm',
           handler: (data)=>{
               if(data.pass === this.dataUser.mdp){
-                const doUpdate = (base64: any)=>{
-                  this.dataUser.profilImgUrl = base64;
-                  this.listPublication.map(
-                    (pub)=>{
-                      pub.profilImgUrl = base64;
+                    const doUpdate = (base64: any)=>{
+                      this.dataUser.profilImgUrl = base64;
+                      this.listPublication.map(
+                        (pub)=>{
+                          pub.profilImgUrl = base64;
+                        }
+                      );
+                      this.pathPP.doUpdatingPp(this.dataUser.id_users, base64, true, img);
+                      this.dataUsers.userData = JSON.stringify([this.dataUser]);
                     }
-                  );
-                  this.pathPP.doUpdatingPp(this.dataUser.id_users, base64);
-                  this.dataUsers.userData = JSON.stringify([this.dataUser]);
-               }
                 doUpdate(base64);
 
               }else{
@@ -226,7 +228,7 @@ export class AccountProfilsPage implements OnInit {
       }
     );
         
-       this.pathPP.doUpdatingPp(this.dataUser.id_users, path);
+       this.pathPP.doUpdatingPp(this.dataUser.id_users, path, false);
        this.dataUsers.userData = JSON.stringify([this.dataUser]);
    }  
 
@@ -234,7 +236,7 @@ export class AccountProfilsPage implements OnInit {
       const gestion = evt.target.files[0] as File;
 
       const check = (file: File)=>{
-            const supportFile = ['JPEG', 'GIF', 'PNG'];
+            const supportFile = ['JPEG', 'GIF', 'PNG', 'JPG'];
             const extension = file.type.toString().split('/')[1].toUpperCase();
             const index = supportFile.indexOf(extension);
             if(index != -1){
@@ -253,12 +255,13 @@ export class AccountProfilsPage implements OnInit {
         let base64;
           fileReader.addEventListener('load', ()=>{
             base64 = fileReader.result as ArrayBuffer;
-            this.confirmToChangePpimg(base64);
+            this.confirmToChangePpimg(base64, gestion);
         });
   
         fileReader.readAsDataURL(gestion);
       }else{
         //alert error of file type 
+        this.toast.makeToast('Format de fichier pas supporter');
       }
       
   }
@@ -301,6 +304,7 @@ setValuelist(data: any){
   this.listPublication = data[0].length === 0 ? [] : data[0];
   this.listAbonne = data[1].length === 0 ? [] : data[1];
   this.listAbonnement = data[2].length === 0 ? [] : data[2];
+  this.listPublication = this.timeSystem.getElapsedTime(this.listPublication);
 }
 
 getParamQuery(): any{

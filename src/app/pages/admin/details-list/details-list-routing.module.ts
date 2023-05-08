@@ -1,3 +1,4 @@
+import { ProfilsPage } from './../../search/profils/profils.page';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 

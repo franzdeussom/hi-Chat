@@ -1,3 +1,4 @@
+import { TimeSystemService } from './../../services/timestamp/time-system.service';
 import { NetworkService } from './../../services/network/network.service';
 import { TypeMessage } from './discusion/typeMessage.enum';
 import { GetNotificationService } from './../notifications/get-notification.service';
@@ -35,6 +36,7 @@ export class HomePage implements OnInit {
   listDiscSecur : SecurityMsg;
   listOfSearchBar: Message[] = [];
   typeMsg = TypeMessage;
+  
   constructor(public webSocket : MessageApiService,
               private cdRef:ChangeDetectorRef,
               private loadDataUser: DataUserService,
@@ -138,14 +140,14 @@ export class HomePage implements OnInit {
              nom = msgReceived.nom;
               msgReceived.isReceived = 1;
              this.api.newMsg = msgReceived;
-              this.wsNotif.countMsgNotRead++;
-        this.rangeMessage.saveMsgSend(msgReceived, await this.checkDestinataireIDMsg(msgReceived.id_destinateur_user, msgReceived));
+            this.wsNotif.countMsgNotRead++;
+         this.rangeMessage.saveMsgSend(msgReceived, await this.checkDestinataireIDMsg(msgReceived.id_destinateur_user, msgReceived));
         this.upDateSenderList(msgReceived);
         this.toast.makeToast('Vous avez recu un nouveau message de ' + prenom + ' ' + nom);
     }
 
   }
-
+ 
 async checkDestinataireID(id_destinateur_user: any, msg : Message, changeSender?: boolean): Promise<number>{
   changeSender = false;
   let isSenderKey = false;

@@ -1,3 +1,4 @@
+import { TimeSystemService } from './../../services/timestamp/time-system.service';
 import { NetworkService } from './../../services/network/network.service';
 import { ToastAppService } from './../../services/Toast/toast-app.service';
 import { AccountApiService } from './../../services/account-api.service';
@@ -51,10 +52,11 @@ export class ActualitePage implements OnInit {
               private wsNotif: GetNotificationService,
               private listColor: ListBgColorService,
               private search : SearchService,
+              private timeSystem : TimeSystemService,
               private actionSheet: ActionSheetController,
               private alertController: AlertController,
               private copyCliboard: Clipboard,
-              private network: NetworkService
+              private network: NetworkService,
               ) { this.publication = new Publication();
                   this.Color = new Array();
                   this.Color = this.listColor.Color;
@@ -138,13 +140,17 @@ export class ActualitePage implements OnInit {
               if(Object.keys(data).length > 0 ? true:false){
                   this.toast.makeToast('Votre publication a été publiée avec success!');
                   this.listPublication.unshift(JSON.parse(PubToSend));
-                  this.wsNotif.sendNotification(TypeNotification.NEW_PUBLICATION, this.dataUser, JSON.parse(PubToSend))
+                  
+                  this.wsNotif.sendNotification(TypeNotification.NEW_PUBLICATION, this.dataUser, JSON.parse(PubToSend));
+
+                  this.listPublication[0].date_pub = this.timeSystem.buildElapsedTime(this.listPublication[0].date_pub);
                 }else{
                 this.toast.makeToast('Erreur interne du serveur');
               }
           });
       }   
   }
+  
   listenerInputChange(evt: any) {
     const wireUpFileChooser = (e:any) => {
             const files = e.target.files as File[];
@@ -173,6 +179,7 @@ export class ActualitePage implements OnInit {
     isValid : false,
     extension: ''
   };
+
   const extensionSupportList = ['JPG', 'PNG', 'JPEG', 'SVG', 'TIF', 'GIF']
   let extension = file.type.split('/')[1].toUpperCase();
   let index = extensionSupportList.indexOf(extension);
@@ -219,8 +226,8 @@ let base64Url;
       Pub.libelle = tmpPub.libelle;
       Pub.alreadyLike = 0;
       Pub.colorBg  = this.isPubColorBgSet(tmpPub) ? tmpPub.colorBg : this.Color[0].value; //when the user hat don't a color choose, set the default colorBg
-      let min = new Date().getMinutes() < 10 ? '0'+new Date().getMinutes():new Date().getMinutes();
-      Pub.date_pub = '' + new Date().getHours().toString() + ':' +  min.toString() + ' | ' + new Date().toString().split(' ')[1]  + ' - ' + new Date().toString().split(' ')[0];
+      //Pub.date_pub = '' + new Date().getHours().toString() + ':' +  min.toString() + ' | ' + new Date().toString().split(' ')[1]  + ' - ' + new Date().toString().split(' ')[0] + '/*/' + new Date().getFullYear() + '/*/' + new Date().getMonth() + '/*/' + new Date().getDay();
+      Pub.date_pub = new Date();
       Pub.url_file = typeof tmpPub.url_file !== 'undefined' ? tmpPub.url_file: null;
       Pub.nom = this.dataUser.nom;
       Pub.prenom = this.dataUser.prenom;
@@ -290,6 +297,7 @@ let base64Url;
       this.listPublication[index].alreadyLike = 1;  
     }
   }
+  
   delLike(index: number, nbrLike:any, isFromGlobe?:boolean){
     if(isFromGlobe){
       this.listPublicationGLobe[index].nbrLike = nbrLike-1; 
@@ -310,11 +318,13 @@ let base64Url;
       id_pub: idPublication,
       PID: pub.PID
     }
+
     if(isFromGlobe){
         this.delLike(index, this.listPublicationGLobe[index].nbrLike, isFromGlobe);  
     }else{
-         this.delLike(index, this.listPublication[index].nbrLike);     
+        this.delLike(index, this.listPublication[index].nbrLike);     
     }
+
     this.accountApi.post('user-api/unLike.php', JSON.stringify(data)).subscribe((response)=>{
            if(Object.keys(response).length === 0){
                 this.toast.makeToast('Erreur !');     
@@ -341,6 +351,8 @@ let base64Url;
             let response = JSON.parse(data);
             this.addOnListPub(response);
             this.network.CONNEXION_DB_STATE = 200;
+          this.listPublication = this.timeSystem.getElapsedTime(this.listPublication);
+
 
         }, (err)=>{
             this.network.CONNEXION_DB_STATE = 500;
@@ -364,6 +376,8 @@ let base64Url;
           if(Object.keys(data).length > 0){
             this.listPublicationGLobe = JSON.parse(data);
             this.network.CONNEXION_DB_STATE = 200;
+            this.listPublicationGLobe = this.timeSystem.getElapsedTime(this.listPublicationGLobe);
+
               resole(this.listPublicationGLobe);
             }
       }, (err)=> {
@@ -607,7 +621,6 @@ let base64Url;
       this.search.simpleSearch('user-api/search.php', JSON.stringify(simpleSearchValues)).subscribe((data)=>{
         if(Object.keys(data).length === 0 ? false : true ){
                this.loadDataFriend(data);
-            }else{
             }
       });
  }
