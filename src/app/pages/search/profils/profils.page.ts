@@ -1,3 +1,4 @@
+import { PublicationType } from './../../actualite/publicationType.enum';
 import { TimeSystemService } from './../../../services/timestamp/time-system.service';
 import { SinalAccountService } from './sinal-account.service';
 import { NetworkService } from './../../../services/network/network.service';
@@ -43,6 +44,7 @@ export class ProfilsPage implements OnInit {
   activeFieldListLikeRslt: boolean = false;
   listUserLikeRslt: Array<User> = [];
   listUsersLike: Array<User> = [];
+  isVideo : string = PublicationType.PUBLICATION_VIDEO;
 
   constructor(private searchResltService: SaveResultSearchService,
               private navCtrl : NavController,
@@ -53,7 +55,6 @@ export class ProfilsPage implements OnInit {
               private dataUser: DataUserService,
               private network: NetworkService,
               private wsNotif: GetNotificationService,
-              private signalAccnt: SinalAccountService,
               private timeSystem : TimeSystemService,
               private receiverData: ReceiverDataService)
               {
@@ -64,6 +65,7 @@ export class ProfilsPage implements OnInit {
                 this.listPublication = new Array<Publication>();
                 this.listSearchFollowers = new Array<User>();
                 this.listSearchAbm = new Array<User>();
+                
                }
 
   ngOnInit() {
@@ -87,13 +89,21 @@ ionViewWillEnter(){
    }
 
   signal(){
-      const isDone = this.signalAccnt.makeSignal(this.dataCurrentUser.id_users, this.dataUserFound.id_users);
-      if(isDone){
-        this.wsNotif.kontoMelden(this.dataUserFound.id_users);
-        this.toast.makeToast('Compte Signalé ! Merci de signaler des activités supectes ! Hi-Chat ')  
-      }else{
-        this.toast.makeToast('Erreur lors du singalement de ce profil !');
-      }
+    
+      const data = { 
+        id_user_WMS: this.dataCurrentUser.id_users,
+        id_user_S: this.dataUserFound.id_users
+      };
+
+      this.accountApi.postSignal('user-api/signalAccount.php', data).subscribe((resp) =>{
+          if(Object.keys(resp).length > 0){
+            this.wsNotif.kontoMelden(this.dataUserFound.id_users);
+            this.toast.makeToast('Compte Signalé ! Merci de signaler des activités supectes ! Hi-Chat ')  
+          }else{
+            this.toast.makeToast('Erreur lors du singalement de ce profil !');
+          }
+      });
+      
   }
   
   checkTheData(){

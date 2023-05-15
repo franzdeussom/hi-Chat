@@ -25,7 +25,7 @@
        <div class="createPub">
         
           <ion-avatar slot="start" (click)="goToProfil()" *ngIf="dataUser.profilImgUrl != null" (click)="goToProfil()" >
-            <img alt="" [src]="dataUser.profilImgUrl | safePipe: 'url'" />
+            <img alt="Profile" [src]="dataUser.profilImgUrl | safePipe: 'url'" />
           </ion-avatar>
           <ion-avatar slot="start" (click)="goToProfil()" *ngIf="dataUser.profilImgUrl == null">
             <img alt="" src="/assets/icon/avatar.svg" />
@@ -51,7 +51,7 @@
           <ion-content class="ion-padding">
             <ion-list id="ion-margin">
               <ion-item>
-                <ion-label>Publication publique:</ion-label>
+                <ion-label>Booster la Publication:</ion-label>
                 <ion-toggle name="public" (click)="setOrUnsetPub()"></ion-toggle>
               </ion-item>
                 <ion-item id="ion-padding">
@@ -76,10 +76,10 @@
                       <ion-list class="head">
                               <ion-item>
                                       <ion-avatar slot="start" *ngIf="dataUser.profilImgUrl != null">
-                                        <img alt="" [src]="dataUser.profilImgUrl | safePipe:'url'" />
+                                        <img alt="Avatar" [src]="dataUser.profilImgUrl | safePipe:'url'" />
                                       </ion-avatar>
                                       <ion-avatar slot="start" *ngIf="dataUser.profilImgUrl == null" >
-                                          <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+                                          <img alt="Avatar" src="/assets/icon/avatar.svg" />
                                       </ion-avatar>
                                     <ion-label>
                                        <span class="name">{{ dataUser.nom }} {{ dataUser.prenom }}</span><br>
@@ -92,8 +92,11 @@
                           <span class="message"> {{ publication.libelle }} </span>
                       </div>
                 </div>
-                <div *ngIf="publication.url_file!= null" class="apercuImg" style="margin-top: 15px;">
+                <div *ngIf="publication.url_file != null && typePublication === isImage" class="apercuImg" style="margin-top: 15px;">
                   <img [src]="publication.url_file | safePipe:'url'" alt="" width="100%">
+                </div>
+                <div *ngIf="publication.url_file != null && typePublication === isVideo" class="apercuImg" style="margin-top: 15px;">
+                  <video [src]="publication.url_file | safePipe:'url'" alt="" width="100%" autoplay controls></video>
                 </div>
 
                     <div class="choiceColor">
@@ -126,10 +129,10 @@
                       <ion-list class="head">
                               <ion-item lines="none">
                                       <ion-avatar slot="start" *ngIf="pub.profilImgUrl != null"  (click)="goToProfilFriend(pub.nom, pub.prenom)">
-                                        <img alt="" [src]="pub.profilImgUrl | safePipe: 'url'" />
+                                        <img alt="Avatar" [src]="pub.profilImgUrl | safePipe: 'url'" />
                                       </ion-avatar>
                                       <ion-avatar slot="start" *ngIf="pub.profilImgUrl == null"  (click)="goToProfilFriend(pub.nom, pub.prenom)">
-                                          <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+                                          <img alt="Avatar" src="/assets/icon/avatar.svg" />
                                       </ion-avatar>
                                     <ion-label>
                                        <span class="name"  (click)="goToProfilFriend(pub.nom, pub.prenom)">{{ pub.nom }} {{ pub.prenom }}</span><br>
@@ -148,24 +151,41 @@
                               </ion-item>
                         </ion-list>  
 
-                         <div *ngIf="pub.url_file == null">  
-
-                          <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
-                              <span class="message"> {{ pub.libelle }} </span>
-                          </div>
-
-                         </div>
-                         
-                         <div *ngIf="pub.url_file != null">   
-
-                          <div class="pubImg">   
-                              <span class="message" style="margin-bottom: 10px;"> {{ pub.libelle }} </span>
-                              <div>
-                                <img [src]="pub.url_file | safePipe:'url' " width="100%" alt="" (click)="showFullScreen(pub.url_file)">
+                         <div *ngIf="pub.url_file == null;then text_content else other_content"></div>
+                          <ng-template #text_content>
+                              <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
+                                <span class="message"> {{ pub.libelle }} </span>
                               </div>
-                          </div>
+                          </ng-template>
+                          <ng-template #other_content>
 
-                         </div>
+                            <div *ngIf="pub.type_pub === isVideo;then video_content else image_content">here is ignored</div>
+                            <ng-template #video_content>
+                              <div class="pubImg" >  
+                               <span class="message" style="margin-bottom: 10px;"> {{ pub.libelle }} </span>
+                                <div>
+                                  <video  width="100%" alt="" controls>
+                                      <source [src]="pub.url_file" type="video/mp4"> 
+                                  </video>
+                                </div>
+                              </div>  
+                            </ng-template>
+
+                            <ng-template #image_content>
+                              <div class="pubImg">   
+                                <span class="message" style="margin-bottom: 10px;"> {{ pub.libelle }} </span>
+                                <div>
+
+                                  <img [src]="pub.url_file | safePipe:'url' " width="100%" alt="" (click)="showFullScreen(pub.url_file)">
+                                </div>
+                            </div>  
+                          </ng-template>
+    
+                              
+                          </ng-template>
+
+                         
+                        
 
                       <div class="reaction">
                                 <span (click)="getListUsersLike(pub.id_pub, pub.id_user)" *ngIf="pub.nbrLike > 0 ? true:false"[id]="'open' + pub.id_pub"> <ion-icon name="heart" class="heart"></ion-icon> {{ pub.nbrLike }}</span>
@@ -188,7 +208,7 @@
                                             <ion-list id="ion-padding" *ngFor="let user of listUserLikeRslt" >
                                                   <ion-item >
                                                       <ion-avatar slot="start" *ngIf="user.profilImgUrl != null">
-                                                        <img [src]="user.profilImgUrl | safePipe: 'url'" alt="">
+                                                        <img [src]="user.profilImgUrl | safePipe: 'url'" alt="Avatar">
                                                       </ion-avatar>  
                                                         <ion-avatar slot="start" *ngIf="user.profilImgUrl == null">
                                                             <img src="/assets/icon/avatar.svg" alt="">
@@ -218,10 +238,10 @@
                                                       <ion-list id="ion-padding" *ngFor="let user of listUsersLike" >
                                                             <ion-item *ngIf="user.sexe === 'f' || user.sexe === 'F'">
                                                                   <ion-avatar slot="start" *ngIf="user.profilImgUrl != null">
-                                                                    <img [src]="user.profilImgUrl | safePipe: 'url'" alt="">
+                                                                    <img [src]="user.profilImgUrl | safePipe: 'url'" alt="Avatar">
                                                                   </ion-avatar>  
                                                                     <ion-avatar slot="start" *ngIf="user.profilImgUrl == null">
-                                                                        <img src="/assets/icon/avatar.svg" alt="">
+                                                                        <img src="/assets/icon/avatar.svg" alt="Avatar">
                                                                     </ion-avatar>
 
                                                                   <ion-label> {{user.nom}} {{ user.prenom }} </ion-label>
@@ -239,7 +259,7 @@
                                                                     <img [src]="user.profilImgUrl | safePipe: 'url' " alt="">
                                                               </ion-avatar>  
                                                                 <ion-avatar slot="start" *ngIf="user.profilImgUrl == null">
-                                                                    <img src="/assets/icon/avatar.svg" alt="">
+                                                                    <img src="/assets/icon/avatar.svg" alt="Avatar">
                                                                 </ion-avatar>
                                                            
                                                                 <ion-label> {{user.nom}} {{ user.prenom }} </ion-label>
@@ -286,10 +306,10 @@
                       <ion-list class="head">
                               <ion-item>
                                       <ion-avatar slot="start" *ngIf="pub.profilImgUrl != null"  (click)="goToProfilFriend(pub.nom, pub.prenom)">
-                                        <img alt="" [src]="pub.profilImgUrl | safePipe:'url'" />
+                                        <img alt="Avatar" [src]="pub.profilImgUrl | safePipe:'url'" />
                                       </ion-avatar>
                                       <ion-avatar slot="start" *ngIf="pub.profilImgUrl == null"  (click)="goToProfilFriend(pub.nom, pub.prenom)">
-                                          <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+                                          <img alt="Avatar" src="/assets/icon/avatar.svg" />
                                       </ion-avatar>
                                     <ion-label >
                                        <span class="name"  (click)="goToProfilFriend(pub.nom, pub.prenom)">{{ pub.nom }} {{ pub.prenom }}</span><br>
@@ -317,14 +337,21 @@
                          
                          <div *ngIf="pub.url_file != null">   
 
-                          <div class="pubImg">   
-                              <span class="message"> {{ pub.libelle }} </span>
-                              <div>
-                                <img [src]="pub.url_file | safePipe:'url'" width="100%" alt="" (click)="showFullScreen(pub.url_file)">
+                              <div class="pubImg" *ngIf="pub.type_pub === isImage" >   
+                                  <span class="message" style="margin-bottom: 10px;"> {{ pub.libelle }} </span>
+                                  <div>
+                                    <img [src]="pub.url_file | safePipe:'url' " width="100%" alt="" (click)="showFullScreen(pub.url_file)">
+                                  </div>
                               </div>
-                          </div>
 
-                         </div>
+                              <div class="pubImg" *ngIf="pub.type_pub === isVideo" >   
+                                <span class="message" style="margin-bottom: 10px;"> {{ pub.libelle }} </span>
+                                <div>
+                                  <video [src]="pub.url_file | safePipe:'url' " width="100%" alt="" autoplay controls></video>
+                                </div>
+                              </div>
+
+                          </div>
 
                       <div class="reaction">
                                 <span> <ion-icon name="heart" class="heart"></ion-icon> {{ pub.nbrLike }}</span>
@@ -352,5 +379,5 @@
  </div>
 </ion-content>
 <div class="displayImg" *ngIf="showFullScreenImg">
-  <img [src]="fullScreenBgUrl | safePipe:'url'" alt=""  class="imgToDisplay" (click)="showFullScreen()">
+  <img [src]="fullScreenBgUrl | safePipe:'url'" alt="Avatar"  class="imgToDisplay" (click)="showFullScreen()">
 </div>

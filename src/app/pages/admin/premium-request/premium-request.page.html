@@ -1,0 +1,60 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-back-button slot="start"></ion-back-button>
+    <ion-title>Demandes Premium</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handlerRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+  <ion-card>
+    <ion-card-title>Total Request Price: <span><em style="color:greenyellow;">{{ totalPrice }} XAF </em> </span></ion-card-title>
+    <ion-card-content>
+        <p>Request Valid : {{ totalPriceRequestValid }} </p>
+    </ion-card-content>
+  </ion-card>
+  <div>
+      <span> {{ listRequest.length }} Demandes</span>
+  </div>
+  
+  <ion-list class="ion-padding">
+    <div *ngFor="let request of listRequest; let index=index" >
+      
+      <ion-item-sliding>
+
+          <ion-item-options slot="end">
+              <ion-item-option color="danger" (click)="deleteRequest(request.id_request, index)" >
+                  Supprimer tmp. <ion-icon name="trash"></ion-icon>
+              </ion-item-option>
+          </ion-item-options>
+
+            <ion-item>
+              <ion-avatar *ngIf="request.profilImgUrl != null" >
+                  <img [src]="request.profilImgUrl" alt="Avatar">
+              </ion-avatar>
+              <ion-avatar *ngIf="request.profilImgUrl == null" >
+                <img src="/assets/icon/avatar.svg" alt="Avatar">
+              </ion-avatar>
+
+              <ion-label>{{ request.prenom }} {{ request.nom }}  </ion-label>
+
+                <div *ngIf="request.REQUEST_DECISION !== requestValidMsg">
+                  <ion-button (click)="approvedRequest(request.id_user, request.premiumType, index)" >
+                    <span> Approuver {{ request.premiumType }} </span> 
+                    <span *ngIf="request.REQUEST_DECISION === requestValidMsg " > Approuver {{ request.premiumType }} </span> 
+                  </ion-button>
+               </div>
+               
+                <div *ngIf="request.REQUEST_DECISION === requestValidMsg">
+                  <ion-button disabled>
+                    <span> Ok !! {{ request.premiumType }} </span> 
+                  </ion-button>
+               </div>
+          </ion-item>
+      </ion-item-sliding>
+        
+    </div>
+  </ion-list>
+</ion-content>

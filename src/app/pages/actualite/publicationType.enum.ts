@@ -1,0 +1,4 @@
+export enum PublicationType{
+        PUBLICATION_VIDEO = 'PUBLICATION_VIDEO',
+        PUBLICATION_IMAGE = 'PUBLICATION_IMAGE'
+}

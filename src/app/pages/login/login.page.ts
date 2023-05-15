@@ -21,6 +21,7 @@ export class LoginPage implements OnInit {
     rememberMe!: boolean;
     errorMessage!: string;
     showSpinner: boolean = false;
+    
   constructor(private apiAccount: AccountApiService, private navController: NavController,
               private globalStorage : GlobalStorageService, private dataUser: DataUserService ) {  
                 this.rememberMe = false; 
@@ -140,6 +141,9 @@ export class LoginPage implements OnInit {
     this.account.mdp = '';
   }
 
+  resetPassword(){
+    this.navController.navigateForward('reset-password');
+  }
   goSignup(){
     this.navController.navigateForward('signup');
   }

@@ -4,6 +4,6 @@ export enum MessageNotif{
     LIKE_COMMENT = 'aime votre commentaire',
     NEW_FOLLOWER = "s'est récement abonné(e) a votre compte",
     PUBLICATION = 'a effectué une nouvelle publication',
-    ACCOUNT_SIGNAL = 'Votre compte a été signalé'
-
+    ACCOUNT_SIGNAL = 'Votre compte a été signalé',
+    ADMIN_PREMIUM_CONFIRM = 'Votre demande de compte Premium a été approuvée ! type :'
 }

@@ -19,21 +19,21 @@
                     </ion-item-options>
                         <ion-item (click)="goToDetails(notif.publication, index, notif.isRead, (notif.id_UsersSender === 0))" >
                             <ion-avatar slot="start" *ngIf="notif.profilImgUrlSender != null ">
-                                <img alt="" [src]="notif.profilImgUrlSender" />
+                                <img alt="Avatar" [src]="notif.profilImgUrlSender" />
                             </ion-avatar>
                             <ion-avatar slot="start" *ngIf="notif.profilImgUrlSender == null" >
-                                <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+                                <img alt="Avatar" src="/assets/icon/avatar.svg" />
                             </ion-avatar>
-                            <ion-label>
+                            <ion-label text-wrap>
                                 <span style="display: flex; flex-direction: row; flex-wrap: wrap; width: 100%;"> <b class="name"> {{ notif.nomSender }} {{ notif.prenom }}</b> &nbsp;{{ notif.message }} : </span>
                                 <span *ngIf="notif.id_UsersSender > 0" > "{{ notif.publication?.libelle }}" </span>
-                                <ion-badge color="primary" *ngIf="notif.isRead" style="float:right"> Lu </ion-badge>
+                                <ion-badge color="primary" *ngIf="notif.isRead" style="float:right"> Vu </ion-badge>
                             </ion-label>
                             
                         </ion-item>
                         <ion-item-options *ngIf="!notif.isRead">
                             <ion-item-option (click)="setNotifAsRead(index)">
-                                <span>Marquer comme lu</span>
+                                <span>Marquer comme vu</span>
                             </ion-item-option>
                         </ion-item-options>
           </ion-item-sliding>
@@ -42,13 +42,13 @@
           <div *ngIf="notif.type ===  typeNotif " >
             <ion-item (click)="goToDetailsSignal()" >
                 <ion-avatar slot="start" *ngIf="notif.profilImgUrlSender != null ">
-                    <img alt="" [src]="notif.profilImgUrlSender" />
+                    <img alt="Avatar" [src]="notif.profilImgUrlSender" />
                   </ion-avatar>
                   <ion-avatar slot="start" *ngIf="notif.profilImgUrlSender == null" >
-                      <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+                      <img alt="Avatar" src="/assets/icon/avatar.svg" />
                   </ion-avatar>
-                <ion-label>
-                    <span style="display: flex; flex-direction: row; flex-wrap: wrap; width: 100%;"> <b class="name"> {{ notif.nomSender }} {{ notif.prenom }}</b> &nbsp;{{ notif.message }} </span>
+                <ion-label text-wrap>
+                    <span style="display: flex; flex-direction: row; flex-wrap: wrap; width: 100%;"> <b class="name"> {{ notif.nomSender }} {{ notif.prenom }}</b> &nbsp; <p> {{ notif.message }} </p> </span>
                     <ion-badge color="primary" *ngIf="notif.isRead" style="float:right"> Lu </ion-badge>
                 </ion-label>
                 

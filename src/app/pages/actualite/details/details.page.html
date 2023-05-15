@@ -17,10 +17,10 @@
               <ion-list class="head">
                       <ion-item lines="none">
                               <ion-avatar slot="start" *ngIf="pub.profilImgUrl != null">
-                                <img alt="" [src]="pub.profilImgUrl" />
+                                <img alt="Avatar" [src]="pub.profilImgUrl" />
                               </ion-avatar>
                               <ion-avatar slot="start" *ngIf="pub.profilImgUrl == null" >
-                                  <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+                                  <img alt="Avatar" src="/assets/icon/avatar.svg" />
                               </ion-avatar>
                             <ion-label>
                               <span class="name">{{ pub.nom }} {{ pub.prenom }}</span><br>
@@ -43,24 +43,39 @@
                       </ion-item>
                 </ion-list>  
 
-                <div *ngIf="pub.url_file == null">  
-
-                  <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
+                
+                <div *ngIf="pub.url_file == null;then text_content else other_content"></div>
+                <ng-template #text_content>
+                    <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
                       <span class="message"> {{ pub.libelle }} </span>
-                  </div>
+                    </div>
+                </ng-template>
+                <ng-template #other_content>
 
-                 </div>
-                 
-                 <div *ngIf="pub.url_file != null">   
-
-                  <div class="pubImg">   
-                      <span class="message"> {{ pub.libelle }} </span>
+                  <div *ngIf="pub.type_pub === isVideo;then video_content else image_content">here is ignored</div>
+                  <ng-template #video_content>
+                    <div class="pubImg" >  
+                     <span class="message" style="margin-bottom: 10px;"> {{ pub.libelle }} </span>
                       <div>
-                        <img [src]="pub.url_file" alt="" (click)="showFullScreen(pub.url_file)">
+                        <video  width="100%" alt="" controls>
+                            <source [src]="pub.url_file" type="video/mp4"> 
+                        </video>
                       </div>
-                  </div>
-                  
-                 </div>
+                    </div>  
+                  </ng-template>
+
+                  <ng-template #image_content>
+                    <div class="pubImg">   
+                      <span class="message" style="margin-bottom: 10px;"> {{ pub.libelle }} </span>
+                      <div>
+
+                        <img [src]="pub.url_file " width="100%" alt="" (click)="showFullScreen(pub.url_file)">
+                      </div>
+                  </div>  
+                </ng-template>
+
+                    
+                </ng-template>
 
               <div class="reaction">
                   <span *ngIf="pub.nbrLike > 0 ? true:false" > <ion-icon name="heart" class="heart" style="color: red;"></ion-icon> {{ pub.nbrLike }}  </span>
@@ -105,15 +120,15 @@
       <div class="commentaire">
         <div class="profil" style="top:0 !important;">
             <ion-avatar *ngIf="comment.profilImgUrl == null" (click)="goToProfilFriend(comment.nom, comment.prenom)">
-              <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+              <img alt="Avatar" src="/assets/icon/avatar.svg" />
             </ion-avatar>
 
             <ion-avatar *ngIf="comment.profilImgUrl != null" (click)="goToProfilFriend(comment.nom, comment.prenom)">
-              <img alt="Silhouette of a person's head" [src]="comment.profilImgUrl"/>
+              <img alt="Avatar" [src]="comment.profilImgUrl"/>
             </ion-avatar>
         </div>
           <ion-card (click)="actionSheet(comment.id_users, comment.id_commentaire, index, comment.date_comment , comment.libelle, true)" style="width: 90%; height: fit-content; margin-right: 2px !important;top:0 !important;">
-              <ion-card-title style="font-size: 15px; margin-top: 8px; margin-left: 10px;">
+              <ion-card-title style="font-size: 20px; margin-top: 8px; margin-left: 10px;">
                   {{ comment.nom }} {{ comment.prenom }}
                 <ion-badge style="float: right; margin-top: 1px;"> {{ comment.date_comment }} </ion-badge>
               </ion-card-title>
@@ -144,11 +159,11 @@
         <div class="commentaire">
           <div class="profil" style="top:0 !important;">
               <ion-avatar *ngIf="comment.profilImgUrl == null" (click)="goToProfilFriend(comment.nom, comment.prenom)" >
-                <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
+                <img alt="Avatar" src="/assets/icon/avatar.svg" />
               </ion-avatar>
 
               <ion-avatar *ngIf="comment.profilImgUrl != null" (click)="goToProfilFriend(comment.nom, comment.prenom)">
-                <img alt="Silhouette of a person's head" [src]="comment.profilImgUrl"/>
+                <img alt="Avatar" [src]="comment.profilImgUrl"/>
               </ion-avatar>
           </div>
             <ion-card  style="width: 90%; height: fit-content; margin-right: 2px !important;top:0 !important;">

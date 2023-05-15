@@ -27,7 +27,7 @@
           <div *ngIf="item.type === typeMsg.TEXT">
             <div [ngClass]="item.isReceived === 1 || item.isReceived ? 'received':'sending'" (click)="showDetailmsg(item, index)">
                       <span class="msg">
-                        {{item.libelle}}                    
+                        {{item.libelle}}   
                       </span><br>
             </div> 
         </div>

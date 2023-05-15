@@ -82,25 +82,25 @@
           </ion-item>
 
           <ion-item class="ion-margin">
-            <ion-label position="floating">Mot de passe</ion-label>
-            <ion-input type="password" min="4" [(ngModel)]="account.mdp" name="password"></ion-input>
+            <ion-label position="floating">Mot de passe <h6>(Min 10 caracteres)</h6> </ion-label>
+            <ion-input type="password" min="12" [(ngModel)]="account.mdp" name="password"></ion-input>
           </ion-item>
           
         </div>   
         
         <div style="margin-bottom: 10px;" class="ion-margin">
           <div style="float: left;">
-            <span style="font-size: 40px; color: greenyellow;" (click)="prev()" slot="start"><ion-icon name="chevron-back-circle-outline"></ion-icon></span>
+            <span style="font-size: 40px; color: rgb(74, 75, 73);" (click)="prev()" slot="start"><ion-icon name="chevron-back-circle-outline"></ion-icon></span>
           </div>
           <div style="float: right;">
-            <span style="font-size: 40px; color: greenyellow;" (click)="next()" slot="end"><ion-icon name="chevron-forward-circle-outline"></ion-icon></span>
+            <span style="font-size: 40px; color: rgb(51, 51, 51);" (click)="next()" slot="end"><ion-icon name="chevron-forward-circle-outline"></ion-icon></span>
           </div>
         </div>
 
         <div class="ion-margin">
         <ion-row class="ion-padding">
           <ion-col>
-            <ion-button expand="block" type="submit" [disabled]="!showBtnSend" color="primary">Creer mon compte</ion-button>
+            <ion-button expand="block" type="submit" [disabled]="!showBtnSend" color="primary">Terminer</ion-button>
           </ion-col>
         </ion-row>  
       </div>

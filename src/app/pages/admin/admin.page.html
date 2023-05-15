@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Hi-Chat Adminnistration page</ion-title>
+    <ion-title>Hi-Chat Adminnistration</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -8,6 +8,7 @@
   <ion-refresher slot="fixed" (ionRefresh)="handlerRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
+  
       <ion-list id="ion-margin">
         <ion-item-sliding>
           <ion-item-options side="start">
@@ -15,7 +16,7 @@
                 env. Notification aux H <ion-icon name="notifications"></ion-icon>
             </ion-item-option>
           </ion-item-options>
-          <ion-item (click)="goToDetails(1)" >
+          <ion-item (click)="goToDetails(1, 'UsersList')" >
             <ion-label>Utilisateurs Hommes</ion-label>
             <ion-badge slot="end"> {{ UserMale.length }} </ion-badge>
           </ion-item>
@@ -28,11 +29,34 @@
             </ion-item-option>
           </ion-item-options>
 
-          <ion-item (click)="goToDetails(2)">
+          <ion-item (click)="goToDetails(2, 'UsersList')">
             <ion-label>Utilisateurs Femmes</ion-label>
             <ion-badge slot="end"> {{ UserFemalle.length }} </ion-badge>
           </ion-item>
         </ion-item-sliding>
-       
+
+        <ion-item (click)="goToDetails(0, 'premium-request')">
+          <ion-label>Demandes Premium</ion-label>
+          <ion-badge slot="end"> A B C D </ion-badge>
+        </ion-item>
+
       </ion-list>
+
+      <div class="ion-margin">
+          <p class="ion-padding">
+              <ion-icon name="person-circle-outline"></ion-icon>
+              Users : <span style="color:green">{{ systemData.NbrUsersOnline }}</span>  
+          </p>
+
+          <p class="ion-padding">
+            <ion-icon name="chatbubbles" ></ion-icon>
+            Message : <span style="color:orangered">{{ systemData.NbrMessageStore }}</span>
+          </p>
+
+          <p class="ion-padding">
+            <ion-icon name="notifications" ></ion-icon> 
+            Notif : <span style="color:orangered">{{ systemData.NbrNotifStore }}</span> 
+          </p>
+      </div>
+      
 </ion-content>

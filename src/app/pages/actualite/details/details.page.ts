@@ -1,18 +1,19 @@
 import { TimeSystemService } from './../../../services/timestamp/time-system.service';
 import { TmpCommentService } from './tmp-comment.service';
-import { ToastAppService } from 'src/app/services/Toast/toast-app.service';
 import { DataUserService } from '../../data-user.service';
 import { User } from '../../signup/users.model';
 import { Publication } from './../publicatin.model';
 import { Component, OnInit } from '@angular/core';
-import { AccountApiService } from 'src/app/services/account-api.service';
 import { Commentaire } from './Commentaire.model';
 import { ActionSheetController, AlertController, NavController } from '@ionic/angular';
 import { SaveResultSearchService } from '../../search/save-result-search.service';
 import { SearchService } from '../../search/search.service';
 import { Clipboard } from '@ionic-native/clipboard/ngx';
-import { GetNotificationService } from 'src/app/pages/notifications/get-notification.service';
-import { TypeNotification } from 'src/app/pages/notifications/typeNotif.enum';
+import { PublicationType } from '../publicationType.enum';
+import { AccountApiService } from '../../../services/account-api.service';
+import { ToastAppService } from '../../../services/Toast/toast-app.service';
+import { GetNotificationService } from '../../notifications/get-notification.service';
+import { TypeNotification } from '../../notifications/typeNotif.enum';
 
 @Component({
   selector: 'app-details',
@@ -32,7 +33,9 @@ export class DetailsPage implements OnInit {
   hideSpinnear: boolean = false;
   fullScreenBgUrl: any = '';
   showFullScreenImg: boolean = false;
-
+  isVideo : string = PublicationType.PUBLICATION_VIDEO;
+  isImage : string = PublicationType.PUBLICATION_IMAGE;
+  
   constructor(
               private dataUserServ: DataUserService,
               private accountApi: AccountApiService,
@@ -194,7 +197,6 @@ export class DetailsPage implements OnInit {
                   this.confirm = true;
                   this.wsNotif.sendNotification(TypeNotification.COMMENT, this.dataUser, this.pub, comment.libelle);
                   comment.date_comment = "à l'instant";
-                  this.commentaires.unshift(comment);
                   this.addComment(comment);
                   this.renit();
                   this.hideConfirmation();
@@ -428,7 +430,7 @@ export class DetailsPage implements OnInit {
           prenom: prenom
         };
   
-        this.search.simpleSearch('user-api/search.php', JSON.stringify(simpleSearchValues)).subscribe((data)=>{
+        this.search.simpleSearch('user-api/search/search.php', JSON.stringify(simpleSearchValues)).subscribe((data)=>{
           if(Object.keys(data).length === 0 ? false : true ){
                  this.loadDataFriend(data);
               }else{

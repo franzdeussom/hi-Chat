@@ -40,7 +40,7 @@
       <div class="border-white">
           <div>
             <span *ngIf="dataUser.profilImgUrl != null" id="open-modal" class="img-box" >
-                   <img [src]="dataUser.profilImgUrl" class="urlImage">
+                   <img [src]="dataUser.profilImgUrl" class="urlImage" alt="Avatar">
             </span>
             <span *ngIf="dataUser.profilImgUrl == null" id="open-modal" class="img-box" >
                    <img src="/assets/icon/avatar.svg" class="urlImage">
@@ -121,7 +121,7 @@
             <ion-content class="ion-padding">
                 <div class="img-pp" style="text-align: center; margin-top: 5%;">
                     <span *ngIf="dataUser.profilImgUrl != null">
-                      <img [src]="dataUser.profilImgUrl" style="border-radius: 100px; height: 85px;">
+                      <img [src]="dataUser.profilImgUrl" alt="Avatar" style="border-radius: 100px; height: 85px;">
                     </span>
                     <span *ngIf="dataUser.profilImgUrl == null">
                       <img src="/assets/icon/avatar.svg" style="border-radius: 100px;  height: 85px;">
@@ -227,7 +227,7 @@
                             <ion-list class="head">
                                     <ion-item lines="none">
                                             <ion-avatar slot="start" *ngIf="pub.profilImgUrl != null">
-                                              <img alt="" [src]="pub.profilImgUrl" />
+                                              <img alt="Avatar" [src]="pub.profilImgUrl" />
                                             </ion-avatar>
                                             <ion-avatar slot="start" *ngIf="pub.profilImgUrl == null" >
                                                 <img alt="Silhouette of a person's head" src="/assets/icon/avatar.svg" />
@@ -252,24 +252,39 @@
                                             </ion-label>
                                     </ion-item>
                               </ion-list>  
-                              <div *ngIf="pub.url_file == null">  
-
-                                <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
+                             
+                              <div *ngIf="pub.url_file == null;then text_content else other_content"></div>
+                              <ng-template #text_content>
+                                  <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
                                     <span class="message"> {{ pub.libelle }} </span>
-                                </div>
-      
-                               </div>
-                               
-                               <div *ngIf="pub.url_file != null">   
-      
-                                <div class="pubImg">   
-                                    <span class="message"> {{ pub.libelle }} </span>
+                                  </div>
+                              </ng-template>
+                              <ng-template #other_content>
+    
+                                <div *ngIf="pub.type_pub === isVideo;then video_content else image_content">here is ignored</div>
+                                <ng-template #video_content>
+                                  <div class="pubImg" >  
+                                   <span class="message" style="margin-bottom: 10px;"> {{ pub.libelle }} </span>
                                     <div>
-                                      <img [src]="pub.url_file" alt="" width="100%" (click)="showFullScreen(pub.url_file)">
+                                      <video  width="100%" alt="" controls>
+                                          <source [src]="pub.url_file" type="video/mp4"> 
+                                      </video>
                                     </div>
-                                </div>
-      
-                               </div>
+                                  </div>  
+                                </ng-template>
+    
+                                <ng-template #image_content>
+                                  <div class="pubImg">   
+                                    <span class="message" style="margin-bottom: 10px;"> {{ pub.libelle }} </span>
+                                    <div>
+    
+                                      <img [src]="pub.url_file " width="100%" alt="" (click)="showFullScreen(pub.url_file)">
+                                    </div>
+                                </div>  
+                              </ng-template>
+        
+                                  
+                              </ng-template>
       
                             <div class="reaction" [id]="'open' + pub.id_pub">
                                 <span (click)="getListUsersLike(pub.id_pub, pub.id_user)" *ngIf="pub.nbrLike > 0 ? true:false"> {{ pub.nbrLike }} <ion-icon name="heart" class="heart"></ion-icon></span>
@@ -322,7 +337,7 @@
                                                       <ion-list id="ion-padding" *ngFor="let user of listUsersLike">
                                                             <ion-item *ngIf="user.sexe === 'f' || user.sexe === 'F'" >
                                                                   <ion-avatar slot="start" *ngIf="user.profilImgUrl != null">
-                                                                    <img [src]="user.profilImgUrl" alt="">
+                                                                    <img [src]="user.profilImgUrl" alt="Avatar">
                                                               </ion-avatar>  
                                                                 <ion-avatar slot="start" *ngIf="user.profilImgUrl == null">
                                                                     <img src="/assets/icon/avatar.svg" alt="">

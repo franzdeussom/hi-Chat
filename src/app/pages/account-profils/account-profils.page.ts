@@ -16,6 +16,8 @@ import { Publication } from '../actualite/publicatin.model';
 import { Clipboard } from '@ionic-native/clipboard/ngx';
 import { NetworkService } from 'src/app/services/network/network.service';
 import { Avatar } from './avatar.model';
+import { PublicationType } from '../actualite/publicationType.enum';
+
 
 @Component({
   selector: 'app-account-profils',
@@ -50,6 +52,9 @@ export class AccountProfilsPage implements OnInit {
   fullScreenBgUrl: any = '';
   showFullScreenImg: boolean = false;
   listAvatar: Avatar[] = [];
+  isVideo : string ;
+  isImage : string;
+  
 
   constructor(private globalStorage: GlobalStorageService,
               private navController: NavController,
@@ -73,7 +78,9 @@ export class AccountProfilsPage implements OnInit {
                   this.listSearchFollowers = new Array<User>();
                   this.listUsersLike = new Array<User>();
                   this.listUserLikeRslt = new Array<User>();
-
+                  
+                  this.isVideo = PublicationType.PUBLICATION_VIDEO;;
+                  this.isImage = PublicationType.PUBLICATION_IMAGE;
                   this.loadDataCurrentUser();
               }
 

@@ -6,6 +6,7 @@ import { GlobalStorageService } from './../../services/localStorage/global-stora
 import { Message } from './discusion/message.model';
 import { Injectable } from '@angular/core';
 import { Storage } from '@capacitor/storage';
+import { SQLite, SQLiteObject } from '@awesome-cordova-plugins/sqlite/ngx';
 
 
 @Injectable({
@@ -29,7 +30,7 @@ export class RangeMessageService {
   private tmpMissedID : Array<number>;
   constructor( private globaStrorage: GlobalStorageService, 
                private api : MessageApiService, private localSave: GlobalStorageService,
-               private UserData: DataUserService,private toast: ToastAppService
+               private UserData: DataUserService,private toast: ToastAppService,
                ) {this.AllMessage = new Array<Message>(); 
                 this.msgRage = new Array<Message>();
                 this.listOfSender = new Array<any>();
@@ -562,5 +563,30 @@ export class RangeMessageService {
   getMsgDiscuss(tab?: any): Array<Message>{
     return tab;
   }
+
+
+  /*
+        **-- Hier sind die Implementation des Sqlites Module, das heisst das neues update
+  */
+
+  createLocalDataBase(){
+  /*  try{
+
+      this.sqlite.create({
+        'name': 'hi-chat.db',
+        'location': 'default'
+      }).then((dataBase: SQLiteObject)=>{
+            dataBase.executeSql('create table MESSAGES(senderID int, receiverID int, nom varchar(32), prenom varchar(32), profilImgUrl varchar(50), libelle text)')
+            .then(()=>{
+              console.log('created');
+            }).catch(e => console.log('chiff', e));
+      }).catch(e => console.log('errorrrrrr', e));
+
+    }catch(e){
+          console.log(e);
+    }*/
+      
+  }
+
 
 }

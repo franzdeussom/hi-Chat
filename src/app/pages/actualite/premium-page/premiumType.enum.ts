@@ -1,0 +1,22 @@
+export enum PremiumType{
+        PREMIUM_A = 'PREMIUM_A', //1 an 30 000
+        PREMIUM_B = 'PREMIUM_B', //6 mois 17 000
+        PREMIUM_C = 'PREMIUM_C', // 3 mois 8 500
+        PREMIUM_D = 'PREMIUM_D', // 1 mois 5 300
+
+        PREMIUM_A_DURATION = 12,
+        PREMIUM_B_DURATION = 6,
+        PREMIUM_C_DURATION = 3,
+        PREMIUM_D_DURATION = 1,
+
+        PREMIUM_A_PRICE = 30000,
+        PREMIUM_B_PRICE = 17000,
+        PREMIUM_C_PRICE = 8500,
+        PREMIUM_D_PRICE = 5300,
+        
+        DEFAULT_ACCOUNT = 'STANDARD_ACCOUNT',
+        DECISION_ACCOUNT_PREMIUM_OK = 'VALID',
+        DECISION_ACCOUNT_PREMIUM_ON_WAIT = 'EN_COURS',
+        DECISION_ACCOUNT_PREMIUM_UNSET = 'NOT VALID'
+
+}

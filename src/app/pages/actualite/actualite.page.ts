@@ -1,3 +1,6 @@
+import { PublicationType } from './publicationType.enum';
+import { PremiumService } from './../../services/premium.service';
+import { SheetControllerService } from './../../services/Toast/sheet-controller.service';
 import { TimeSystemService } from './../../services/timestamp/time-system.service';
 import { NetworkService } from './../../services/network/network.service';
 import { ToastAppService } from './../../services/Toast/toast-app.service';
@@ -12,8 +15,8 @@ import { ListBgColorService } from './list-bg-color.service';
 import { SearchService } from '../search/search.service';
 import { Clipboard } from '@ionic-native/clipboard/ngx';
 import { SaveResultSearchService } from '../search/save-result-search.service';
-import { GetNotificationService } from 'src/app/pages/notifications/get-notification.service';
-import { TypeNotification } from 'src/app/pages/notifications/typeNotif.enum';
+import { TypeNotification } from '../notifications/typeNotif.enum';
+import { GetNotificationService } from '../notifications/get-notification.service';
 @Component({
   selector: 'app-actualite',
   templateUrl: './actualite.page.html',
@@ -42,7 +45,11 @@ export class ActualitePage implements OnInit {
   typeNotif!: TypeNotification;
   num: number = 0;
   fullScreenBgUrl: any = '';
+  typePublication: string ='';
   showFullScreenImg: boolean = false;
+  isVideo : string = PublicationType.PUBLICATION_VIDEO;
+  isImage : string = PublicationType.PUBLICATION_IMAGE;
+
   constructor(private dataUserServ: DataUserService,
               private cdRef:ChangeDetectorRef,
               private navCtrl: NavController ,
@@ -53,10 +60,12 @@ export class ActualitePage implements OnInit {
               private listColor: ListBgColorService,
               private search : SearchService,
               private timeSystem : TimeSystemService,
+              private globalSheetCtrl: SheetControllerService, 
               private actionSheet: ActionSheetController,
               private alertController: AlertController,
               private copyCliboard: Clipboard,
               private network: NetworkService,
+              private premiumService: PremiumService
               ) { this.publication = new Publication();
                   this.Color = new Array();
                   this.Color = this.listColor.Color;
@@ -66,13 +75,13 @@ export class ActualitePage implements OnInit {
                   this.listUsersLike = new Array<User>(); 
               }
 
-  ngOnInit() {
+ ngOnInit() {
     this.loadUserData();
     setTimeout(() => {
       this.loadFriendPublications();
       this.init();
     }, 800);
-    
+    this.checkPremiumAccount();
   }
 
   ngAfterViewChecked() {
@@ -83,6 +92,7 @@ export class ActualitePage implements OnInit {
 
 
   init(){
+    this.publication.type_pub = '';
     this.publication.libelle = '';
     this.isPublic = false;
     this.publication.colorBg = '';
@@ -128,6 +138,9 @@ export class ActualitePage implements OnInit {
   segmentChanged(event:any){
         if(this.type === 'globe'){
          this.getPubGlobalOnListPub();
+        }else if(this.type === 'watched'){
+          //loadVideo
+          
         }
   }
 
@@ -180,13 +193,18 @@ export class ActualitePage implements OnInit {
     extension: ''
   };
 
-  const extensionSupportList = ['JPG', 'PNG', 'JPEG', 'SVG', 'TIF', 'GIF']
+  const extensionSupportList = ['JPG', 'PNG', 'JPEG', 'SVG', 'TIF', 'GIF', 'MP4', 'MOV','AVI', 'MPEG', 'VOD']
   let extension = file.type.split('/')[1].toUpperCase();
   let index = extensionSupportList.indexOf(extension);
+
+  const getType = (indexTab:number)=>{
+          return (indexTab+1) > 6 ? PublicationType.PUBLICATION_VIDEO:PublicationType.PUBLICATION_IMAGE;
+  }
 
   if(index != -1){
       response.isValid  = true;
       response.extension = extensionSupportList[index];
+      this.typePublication = getType(index);
   }else{
     response.isValid  = false;
     response.extension = '';
@@ -233,6 +251,8 @@ let base64Url;
       Pub.prenom = this.dataUser.prenom;
       Pub.profilImgUrl = this.dataUser.profilImgUrl;
 
+      Pub.type_pub = this.typePublication;
+
       this.renit();
 
       return JSON.stringify(Pub);
@@ -242,6 +262,7 @@ let base64Url;
     this.publication.libelle = '';
     this.isPublic = false;
     this.publication.colorBg = '';
+    this.publication.type_pub ='';
     this.renitAp();
   }
 
@@ -339,10 +360,16 @@ let base64Url;
   }
 
   setOrUnsetPub(){
+
     if(this.isPublic){
       this.isPublic = false;
     }else{
-      this.isPublic = true;
+      if(this.dataUser.isPremiumAccount){
+          this.isPublic = true;
+      }else{
+          this.globalSheetCtrl.AlertSuscribePremiumController();
+          this.modal.dismiss();
+      }
     }
   }
 
@@ -351,7 +378,7 @@ let base64Url;
             let response = JSON.parse(data);
             this.addOnListPub(response);
             this.network.CONNEXION_DB_STATE = 200;
-          this.listPublication = this.timeSystem.getElapsedTime(this.listPublication);
+            this.listPublication = this.timeSystem.getElapsedTime(this.listPublication);
 
 
         }, (err)=>{
@@ -396,6 +423,21 @@ let base64Url;
 
   loadUserData(){
     this.dataUser = JSON.parse(this.dataUserServ.userData)[0];
+    this.dataUser.isPremiumAccount = this.dataUser.isPremiumAccount == 1 ? true:false;
+  }
+
+  async checkPremiumAccount(){
+    if(this.dataUser.isPremiumAccount){
+      let isPremiumValid = this.timeSystem.isPremiumDateValid(this.dataUser.dateStartPremium, this.dataUser.dateEndPremium);
+      if(!isPremiumValid){
+        //premium validity expired
+          this.dataUser.isPremiumAccount = false;
+          Object.assign(this.dataUserServ.userData, [this.dataUser]);
+          //update in database
+          await this.premiumService.updateAccountPremium('user-api/updatePremium.php', this.dataUser.id_users, false);
+  
+      }
+    }
   }
 
   renitAp(){
@@ -618,7 +660,7 @@ let base64Url;
         prenom: prenom
       };
 
-      this.search.simpleSearch('user-api/search.php', JSON.stringify(simpleSearchValues)).subscribe((data)=>{
+      this.search.simpleSearch('user-api/search/search.php', JSON.stringify(simpleSearchValues)).subscribe((data)=>{
         if(Object.keys(data).length === 0 ? false : true ){
                this.loadDataFriend(data);
             }

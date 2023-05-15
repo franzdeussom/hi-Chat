@@ -1,3 +1,4 @@
+import { DataUserService } from './../data-user.service';
 import { TransitService } from './transit.service';
 import { NavController, AlertController } from '@ionic/angular';
 import { AccountApiService } from 'src/app/services/account-api.service';
@@ -13,16 +14,24 @@ import { User } from '../signup/users.model';
 export class AdminPage implements OnInit {
   UserMale: Array<User> = [];
   UserFemalle: Array<User> = [];
-  
+  user: User = new User();
+
+  systemData: { NbrUsersOnline: string, NbrMessageStore: string, NbrNotifStore: string } = {
+        NbrUsersOnline: '',
+        NbrMessageStore: '',
+        NbrNotifStore: '',
+  }
 
   constructor(
       private accountApi: AccountApiService,
       private transit: TransitService,
       private alertCtrl: AlertController,
-      private navCtrl : NavController
+      private navCtrl : NavController,
+      private dataUserSrv: DataUserService
   ) { }
 
   ngOnInit() {
+    this.loadDataUser();
     this.loadUsers();
   }
 
@@ -30,14 +39,22 @@ export class AdminPage implements OnInit {
       this.accountApi.get('API-ADMIN/getAllUsers.php').subscribe((response)=>{
           this.UserMale = response[0];
           this.UserFemalle = response[1];
-      })
+          this.systemData = response[2];
+      });
   }
 
+  loadDataUser(){
+      Object.assign(this.user, JSON.parse(this.dataUserSrv.userData)[0]);
+      if(!this.accountApi.isAdmin(this.user.id_users)){
+        throw new Error('Pas d autorisation pour acceder a cette page !');
+      }
+  }
+
+
   handlerRefresh(evt: any){
-    this.loadUsers();
 
     setTimeout(() => {
-
+      this.loadUsers();
         evt.target.complete();
     }, 1200);
   }
@@ -81,12 +98,12 @@ export class AdminPage implements OnInit {
     await action.present();
   }
 
-  goToDetails(number: number){
+  goToDetails(number: number,  nameTemplate:string){
     if(number == 1){
       this.transit.listUser = this.UserMale;
     }else{
       this.transit.listUser = this.UserFemalle;
     }
-    this.navCtrl.navigateForward('UsersList');
+    this.navCtrl.navigateForward(nameTemplate);
   }
 }

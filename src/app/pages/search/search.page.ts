@@ -61,7 +61,7 @@ export class SearchPage implements OnInit {
   simpleSearch(){
     this.devidedVal();
     this.enableSearchSpaceWithOption();
-    this.search.simpleSearch('user-api/search.php', JSON.stringify(this.simpleSearchValues)).subscribe((data)=>{
+    this.search.simpleSearch('user-api/search/search.php', JSON.stringify(this.simpleSearchValues)).subscribe((data)=>{
          this.isNotFound= false;
          this.isNotFoundOption = false;
 

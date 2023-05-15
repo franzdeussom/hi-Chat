@@ -1,0 +1,101 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-back-button slot="start"></ion-back-button>
+    <ion-title>Passer en Premium <ion-icon name="ribbon-outline" color="tertiary"></ion-icon>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  
+  <ion-accordion-group class="ion-padding">
+  <ion-radio-group value="custom-checked" [(ngModel)]="selectedValue" (ionChange)="checkValue($event)">
+
+    <ion-accordion value="first">
+
+      <ion-item slot="header" color="light">
+        <ion-label slot="end">Mode Premium A</ion-label>
+        <ion-radio value="PREMIUM_A" aria-label="Custom checkbox"></ion-radio>
+      </ion-item>
+
+      <div class="ion-padding" slot="content">
+            <em><h3>Mode Premium A</h3></em><br>
+            <span>
+              <p style="line-height: 1.7;"> En mode Premium A, vous beneficiez d'une audience maximale possible. Ceci dit, toutes vos publications defini en premium toucheront le plus grand nombre de personne 
+                 <br>
+                  Duree : 12 Mois, Renouvelable !!! <br>
+                  Prix : <span style="color:green"><em>30 000 XAF</em></span> 
+              </p>
+            </span>
+      </div>
+    </ion-accordion>
+
+    <ion-accordion value="second">
+      <ion-item slot="header" color="light">
+        <ion-label slot="end">Mode Premium B</ion-label>
+        <ion-radio value="PREMIUM_B" aria-label="Custom checkbox"></ion-radio>
+      </ion-item>
+
+        <div class="ion-padding" slot="content">
+          <em><h3>Mode Premium B</h3></em><br>
+
+              <span>
+                 <p style="line-height: 1.7;"> En mode Premium B, vous beneficiez d'une audience maximale possible. Ceci dit, toutes vos publications defini en premium toucheront le plus grand nombre de personnes 
+                   <br>
+                    Duree : 6 Mois, Renouvelable !!! <br>
+                    Prix : <span style="color:green"><em>17 000 XAF</em></span> 
+
+                  </p>
+              </span>
+        </div>
+    </ion-accordion>
+    
+
+    <ion-accordion value="third">
+
+      <ion-item slot="header" color="light">
+        <ion-label slot="end">Mode Premium C </ion-label>
+        <ion-radio value="PREMIUM_C" aria-label="Custom checkbox"></ion-radio>
+      </ion-item>
+
+        <div class="ion-padding" slot="content">
+          <em><h3>Mode Premium C</h3></em><br>
+
+          <span> 
+            <p style="line-height: 1.7;"> En mode Premium C, vous beneficiez d'une audience maximale possible. Ceci dit, toutes vos publications defini en premium toucheront le plus grand nombre de personnes
+            <br> 
+                Duree : 3 Mois, Renouvelable !!! <br>
+                Prix : <span style="color:green"><em>8 500 XAF</em></span> 
+
+          </p>
+          </span>
+        </div>
+
+    </ion-accordion>
+
+    <ion-accordion value="four">
+      <ion-item slot="header" color="light">
+        <ion-label slot="end">Mode Premium D</ion-label>
+        <ion-radio value="PREMIUM_D" aria-label="Custom checkbox"></ion-radio>
+      </ion-item>
+        <div class="ion-padding" slot="content">
+          <em><h3>Mode Premium D</h3></em><br>
+
+          <span>
+           <p> En mode Premium D, vous beneficiez d'une audience maximale possible. Ceci dit, toutes vos publications defini en premium toucheront le plus grand nombre de personnes 
+              <br>
+              Duree : 1 Mois, Renouvelable !!! <br>
+              Prix : <span style="color:green"><em>5 300 XAF</em></span> 
+
+          </p>
+          </span>
+        </div>
+    </ion-accordion>
+
+  </ion-radio-group>
+  </ion-accordion-group>
+  
+  <div class="ion-margin">
+      <ion-button color="primary" (click)="doRequest()" >Soummettre la demande</ion-button>
+  </div>
+</ion-content>

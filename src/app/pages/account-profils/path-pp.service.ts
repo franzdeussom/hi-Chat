@@ -10,13 +10,13 @@ export class PathPpService {
   public path_pp : Avatar[] = [
     {
       id: 1,
-      name:'Default',
+      name:'Default A',
       path: '/assets/icon/avatar.svg',
     },
     {
       id: 2,
-      name:'Une autre pp',
-      path: '/assets/icon/avatar.svg',
+      name:'Default B',
+      path: '/assets/icon/avatarB.jpeg',
     },
     {
       id: 3,

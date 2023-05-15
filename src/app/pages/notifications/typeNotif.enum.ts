@@ -9,6 +9,7 @@ export enum TypeNotification{
         DELETE_PUB = 'DELETE_PUB',
         ADMIN_NOTIF = 'ADMIN_NOTIF',
         ADMIN_NOTIF_DISTINCT = 'ADMIN_NOTIF_DISTINCT',
+        ADMIN_PREMIUM_CONFIRM = 'ADMIN_PREMIUM_CONFIRM', 
         //on new connection listenner
         NEW_USER_ONLINE = 'NEW_USER_ONLINE',
         USER_LOGOUT = 'USER_LOGOUT',

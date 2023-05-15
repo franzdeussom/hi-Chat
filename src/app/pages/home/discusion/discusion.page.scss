@@ -3,11 +3,9 @@
     width: 100%;
     height: 100%;
     border-radius: 5px;
-    text-align: center;
-    vertical-align: middle;
     padding-left: 5px;
     padding-right: 5px;
-    --background: url('../../../../assets/icon/chatBackground.jpeg') 0 0/100% 100% no-repeat;
+   // --background: url('../../../../assets/icon/chatBackground.jpeg') 0 0/100% 100% no-repeat;
     padding-bottom: 5px;
     .chat-box{
       position: relative;
@@ -21,20 +19,21 @@
         width: fit-content;
         max-width: 250px;
         height: fit-content;
-        min-height: 30px;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        background-color: #39b912;
-        color: #fff;
         padding-left: 3px;
         padding-bottom: 4px;
         padding-top: 6px;
+        padding-right: 3px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        background-color: #000000;
+        color: #fff;
+        box-shadow: #111111;
         border-radius: 20px;
         .msg{
           padding-left: 3px;
           padding-right: 5px;
-          padding-bottom: 3px;
+        
           margin-bottom: 2px;
           margin-top: 3px;
           margin-left: 4px;
@@ -55,7 +54,6 @@
     .received{
       width: fit-content;
       max-width: 250px;
-      min-height: 30px;
       padding-left: 3px;
       padding-bottom: 4px;
       padding-top: 6px;
@@ -64,7 +62,7 @@
         flex-direction: row;
         flex-wrap: wrap;
       height: fit-content;
-      background-color: #4a5353;
+      background-color: #1b046e;
       color: #fff;
       border-radius: 20px;
         .msg{
@@ -85,7 +83,6 @@
 
     .imgReceived{
       max-width: 250px;
-      min-height: 30px;
       padding-left: 3px;
       padding-bottom: 4px;
       padding-top: 6px;
@@ -104,7 +101,6 @@
       width: fit-content;
       max-width: 250px;
       height: fit-content;
-      min-height: 30px;
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;

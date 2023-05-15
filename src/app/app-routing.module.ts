@@ -58,6 +58,18 @@ const routes: Routes = [
   {
     path: 'UsersList',
     loadChildren: () => import('./pages/admin/details-list/details-list.module').then( m => m.DetailsListPageModule)
+  },
+  {
+    path: 'premium-page',
+    loadChildren: () => import('./pages/actualite/premium-page/premium-page.module').then( m => m.PremiumPagePageModule)
+  },
+  {
+    path: 'premium-request',
+    loadChildren: () => import('./pages/admin/premium-request/premium-request.module').then( m => m.PremiumRequestPageModule)
+  },
+  {
+    path: 'reset-password',
+    loadChildren: () => import('./pages/login/reset-password/reset-password.module').then( m => m.ResetPasswordPageModule)
   }
 ];
 

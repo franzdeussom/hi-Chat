@@ -1,3 +1,4 @@
+import { PremiumType } from './../../pages/actualite/premium-page/premiumType.enum';
 import { Commentaire } from './../../pages/actualite/details/Commentaire.model';
 import { Publication } from '../../pages/actualite/publicatin.model';
 import { Injectable } from '@angular/core';
@@ -51,7 +52,7 @@ export class TimeSystemService {
 
         if(pubDateY == currentYear){
           if(pubDateM == currentMonth){
-            if(pubDay == currentDate.getDay()){
+            if(pubDay == currentDate.getDate()){
 
               return "Aujourd'hui";
 
@@ -63,16 +64,18 @@ export class TimeSystemService {
                     return 'Hier';
                 }else if(elaspsedDay == 0 ){
                     return "Aujourd'hui";
+                }else if(elaspsedDay == 7){
+                  return "il y'a 1sem";
                 }
-              return elaspsedDay > 7 ? 'il ya 1 sem' : 'il ya ' + elaspsedDay + ' jours';
+              return elaspsedDay > 7 ? 'Ce mois, le : ' + pubDay : "il y'a " + elaspsedDay + " jours";
             }
 
           }else{
             //same year but different month
-            let tmp = currentDate.getMonth() - pubDateM;              
+            let tmp = (currentDate.getMonth()+1) - pubDateM;              
             const elapsedMonth = tmp < 0 ?  tmp*(-1) :tmp;
 
-            return 'il ya ' + elapsedMonth + ' Mois';
+            return "il y'a " + elapsedMonth + ' Mois';
 
           }
         }else{
@@ -81,4 +84,61 @@ export class TimeSystemService {
         }
   }
 
+  getFormatDatePremium(): string{
+    const date = new Date();
+    
+    return ''+date.getDate()+'/'+(date.getMonth()+1)+'/'+date.getFullYear();
+  }
+
+  getBuildDateExpiredPremium(premiumType: string, dateCreate:string): string{
+        let endDate = '';
+        let startDay = Number.parseInt(dateCreate.split('/')[0]);
+        let startMonth = Number.parseInt(dateCreate.split('/')[1]);
+        let startYear = Number.parseInt(dateCreate.split('/')[2]);
+    
+        const calculEndDate = (duration:number)=>{
+              if(duration == 12){
+                  return startDay+'/'+startMonth+'/'+(startYear+1);
+              }else{
+                  let endMonth = duration + startMonth;
+                  if(endMonth > 12){
+                      startYear++;
+                      return startDay+'/'+(12-startMonth)+'/'+startYear;
+                  }else{
+                      return startDay+'/'+endMonth+'/'+startYear;
+                  }
+              }
+        }
+
+        switch(premiumType){
+          case PremiumType.PREMIUM_A:
+              endDate = calculEndDate(PremiumType.PREMIUM_A_DURATION);
+            break;
+
+          case PremiumType.PREMIUM_B:
+              endDate = calculEndDate(PremiumType.PREMIUM_B_DURATION);
+            break;
+
+          case PremiumType.PREMIUM_C:
+              endDate = calculEndDate(PremiumType.PREMIUM_C_DURATION);
+            break;
+
+          case PremiumType.PREMIUM_D:
+              endDate = calculEndDate(PremiumType.PREMIUM_D_DURATION);
+            break;
+         }
+      return endDate;
+  }
+
+  isPremiumDateValid(dateStart: string, dateEnd:string): boolean{
+      const setDateAsNumber = (date:string)=>{
+        let startDay = Number.parseInt(date.split('/')[0]);
+        let startMonth = Number.parseInt(date.split('/')[1]);
+        let startYear = Number.parseInt(date.split('/')[2]);
+
+        return Number.parseInt(''+startDay+''+startMonth+''+startYear);
+      }
+
+      return setDateAsNumber(dateStart) <= setDateAsNumber(dateEnd);
+  }
 }

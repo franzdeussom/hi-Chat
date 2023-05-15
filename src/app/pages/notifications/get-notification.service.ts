@@ -1,7 +1,5 @@
-import { Message } from './../home/discusion/message.model';
-import { RangeMessageService } from './../home/range-message.service';
+import { TypeNotification } from './typeNotif.enum';
 import { GlobalStorageService } from './../../services/localStorage/global-storage.service';
-import { TypeNotification } from 'src/app/pages/notifications/typeNotif.enum';
 import { ToastAppService } from './../../services/Toast/toast-app.service';
 import { MessageNotif } from './messageNotif.enum';
 import { NotificationApp } from './notification.model';
@@ -60,6 +58,13 @@ export class GetNotificationService {
   showToast(notificationGet: NotificationApp){
 
       switch(notificationGet.type){
+
+          case TypeNotification.ADMIN_PREMIUM_CONFIRM:
+            this.globalNotification.unshift(notificationGet);
+            this.newNotification = true;
+            this.toast.makeToast('Hi-Chat: ' + notificationGet.message);
+            break;
+            
           case TypeNotification.LIKE:
             if(!this.isNotifPresentInMainList(notificationGet)){
                 this.globalNotification.unshift(notificationGet);
@@ -164,6 +169,7 @@ export class GetNotificationService {
     this.notifToSend.nomSender ='Hi-Chat';
     this.notifToSend.id_UsersSender = 0;
     this.notifToSend.profilImgUrlSender = '/assets/icon/appIcon.png';
+    
     this.wsNotif.send(JSON.stringify(this.notifToSend));
   }
 
@@ -171,7 +177,7 @@ export class GetNotificationService {
       this.wsNotif.send(JSON.stringify(notifBuild));
   }
 
-  sendNotification(type:any, dataUser: User, pub?: any, follower?: any, commentContent?: any){
+  sendNotification(type:any, dataUser: User, pub?: any, follower?: any, commentContent?: any, idReceiver?: number){
     this.notifToSend.id_UsersSender = dataUser.id_users;
     this.notifToSend.nomSender = dataUser.nom;
     this.notifToSend.prenom = dataUser.prenom;
@@ -179,6 +185,12 @@ export class GetNotificationService {
     this.notifToSend.profilImgUrlSender = dataUser.profilImgUrl;
 
       switch(type){
+
+        case TypeNotification.ADMIN_PREMIUM_CONFIRM:
+          this.notifToSend.id_destinataire = idReceiver;
+          this.notifToSend.message = MessageNotif.ADMIN_PREMIUM_CONFIRM;
+          break;
+
         case TypeNotification.LIKE:
           this.notifToSend.type = type;
           this.notifToSend.message = MessageNotif.LIKE;
@@ -236,6 +248,17 @@ export class GetNotificationService {
       this.wsNotif.send(JSON.stringify(this.notifToSend));
   }
 
+  sendPremiumConfirmationNotif(id_receiver:number, typePremium: string){
+    this.notifToSend.message = MessageNotif.ADMIN_PREMIUM_CONFIRM + typePremium;
+    this.notifToSend.id_destinataire = id_receiver;
+    this.notifToSend.type = TypeNotification.ADMIN_PREMIUM_CONFIRM ;
+    this.notifToSend.nomSender ='Hi-Chat';
+    this.notifToSend.id_UsersSender = 0;
+    this.notifToSend.profilImgUrlSender = '/assets/icon/appIcon.png';
+
+    this.wsNotif.send(JSON.stringify(this.notifToSend));
+  }
+
 async loadNotifSave(idUser: number){
     const KEY_NOTIFICATION = 'NOTIFICATIONS_USERS' + idUser;
 
@@ -273,7 +296,6 @@ deleteInlistOfUserOnline(connectionData: any){
 }
 
 showUsersOnline(notifGet: any){
-  console.log('list user get online: ', notifGet.list);
   if(Array.isArray(notifGet.list)){
     if(notifGet.list.length > 0){
         notifGet.list.forEach((item:any) => {
@@ -287,7 +309,6 @@ showUsersOnline(notifGet: any){
     }
 
   }
-  console.log('list of user online', this.tabAbment);
 }
 
 deleteAllNotif(key: string){
@@ -303,7 +324,7 @@ deleteOneNotif(index: number, key: string){
 
 checkPresenceInListAbmnt(id: number): boolean{
   const isInTabAbment = ()=>{
-    if(typeof  this.listAbonneCurrentUser[0] !== 'undefined' || Array.isArray(this.listAbonneCurrentUser[0])){
+    if(typeof this.listAbonneCurrentUser[0] !== 'undefined' || Array.isArray(this.listAbonneCurrentUser[0])){
       let index = this.listAbonneCurrentUser[0].findIndex(((user: { id_users: number; })=> user.id_users === id));
       return index != -1;
     }else{

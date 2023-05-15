@@ -88,7 +88,6 @@ export class SignupPage implements OnInit {
         //data inser t
         this.dataUser.userData = this.responseUser;
         this.globalStorage.currentUser = this.responseUser;
-        console.log('id current user:', this.globalStorage.currentUser.id_users);
         this.toast.makeToast('Cration de compte reussie ! Veuillez vous connecter. Hi-Chat')
         this.navController.navigateForward('/login');
       }else{
@@ -118,7 +117,11 @@ export class SignupPage implements OnInit {
     return typeof this.account.tel != 'undefined' && typeof this.account.date_naiss !=  'undefined' && typeof this.account.age != 'undefined';
   }
   isBlock3Ok(): boolean{
-    return typeof this.account.sexe != 'undefined' && this.sexCharCorrect != 'undefined'  && typeof this.account.pays != 'undefined' && typeof this.account.ville != 'undefined' && typeof this.account.mdp != 'undefined';
+    return typeof this.account.sexe != 'undefined' && this.sexCharCorrect != 'undefined'  && typeof this.account.pays != 'undefined' && typeof this.account.ville != 'undefined' && this.checkMdp(this.account.mdp);
+  }
+
+  checkMdp(mdp: string): boolean{
+   return typeof mdp != 'undefined' && mdp.length > 10;  
   }
 
   next(){

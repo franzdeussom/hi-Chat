@@ -22,7 +22,7 @@
     </ion-item>
 
     <ion-item class="ion-margin">
-      <ion-label position="floating">Password :</ion-label>
+      <ion-label position="floating">Mot de passe:</ion-label>
       <ion-input type="password" [(ngModel)]="account.mdp" name="password"></ion-input>
     </ion-item>
 
@@ -44,4 +44,11 @@
     </ion-row>
   </ion-list>
 </form>
+<div style="text-align: center;">
+  <ion-buttons slot="end">
+      <button (click)="resetPassword()">
+          <span style="color:red;"> <em> Mot de passe oublié ? </em> </span>
+      </button>
+  </ion-buttons>
+</div>
 </ion-content>

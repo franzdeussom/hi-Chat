@@ -2,6 +2,7 @@ export class Publication{
     constructor(
         public id_pub?: number,
         public PID?: any,
+        public type_pub?:any,
         public id_user?: number,
         public libelle?: string,
         public date_pub?: any,
