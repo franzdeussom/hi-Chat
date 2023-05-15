@@ -22,6 +22,7 @@
                                         PUBLICATION.is_public, 
                                         PUBLICATION.colorBg, 
                                         PUBLICATION.PID,
+                                        PUBLICATION.type_pub,
                                         USERS.nom, 
                                         USERS.prenom, 
                                         USERS.profilImgUrl, 
@@ -48,12 +49,19 @@
                                         HiChat.USERS, 
                                         HiChat.FOLLOW 
                                             WHERE 
-                                            FOLLOW.id_users_WF = :id_users 
+                                                (SELECT COUNT(*) 
+                                                    FROM HiChat.PUB_LIKE 
+                                                    WHERE PUB_LIKE.id_users = :id_users 
+                                                    AND 
+                                                    PUB_LIKE.id_pub = PUBLICATION.id_pub
+                                                ) = 0 
+                                                AND
+                                                FOLLOW.id_users_WF = :id_users 
                                             AND 
-                                                FOLLOW.id_users_F = USERS.id_users 
-                                            AND
+                                                FOLLOW.id_users_F = USERS.id_users                                           
+                                            AND                                            
                                                 PUBLICATION.id_user = USERS.id_users
-                                                ORDER BY PUBLICATION.id_pub DESC 
+                                            ORDER BY PUBLICATION.id_pub DESC LIMIT 110
                             ");
     $query->execute([
         ':id_users' => $data->id_users

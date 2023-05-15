@@ -47,10 +47,17 @@
                                         FROM HiChat.PUBLICATION,
                                         HiChat.USERS
                                             WHERE 
+                                            (SELECT COUNT(*) 
+                                                    FROM HiChat.PUB_LIKE 
+                                                    WHERE PUB_LIKE.id_users = :idUser 
+                                                    AND 
+                                                    PUB_LIKE.id_pub = PUBLICATION.id_pub
+                                                ) = 0 
+                                                AND
                                                 PUBLICATION.is_public = 0
                                             AND
                                                 USERS.id_users = PUBLICATION.id_user 
-                                                ORDER BY PUBLICATION.id_pub DESC LIMIT 80
+                                                ORDER BY PUBLICATION.id_pub DESC LIMIT 170
                             ");
     $query->execute([
         ':idUser'=> $data->id_users

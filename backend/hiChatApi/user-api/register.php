@@ -122,7 +122,7 @@
             'email' => $userEmail,
             'sexe' => $userSexe,
             'tel' => $userTel,
-            'mdp' => $userMdp,
+            'mdp' => $userMdp , //hash('md5', $userMdp),
             'imgUrl' => $userProfilUrl,
             'pays' => $userCountry,
             'age' => $userAge,

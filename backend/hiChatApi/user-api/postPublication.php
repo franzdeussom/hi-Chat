@@ -22,7 +22,7 @@
     $bgColor  = $data->colorBg;
 
     if(isset($data->url_file) && !empty($data->url_file)){
-        $fileService = new SaveFile($data->url_file,  $data->id_user);
+        $fileService = new SaveFile($data->url_file,  $data->id_user, $data->type_pub);
         $imgDecode = $fileService->decodeFile();
 
        if( $fileService->moveFile($imgDecode)){
@@ -34,14 +34,17 @@
                                     url_file,
                                     is_public,
                                     colorBg,
-                                    PID )  VALUES(
+                                    PID,
+                                    type_pub
+                                     )  VALUES(
                                         :id,
                                         :libelle,
                                         :date_pub,
                                         :url_file,
                                         :isPublic,
                                         :Color,
-                                        :pid
+                                        :pid,
+                                        :typePub
                                         )
                                 ');
         $query->execute([
@@ -51,7 +54,8 @@
             ':url_file' => $fileService->getFileFullPath(),
             ':isPublic' => $is_public,
             ':Color' => $bgColor,
-            ':pid'=> $data->PID
+            ':pid'=> $data->PID,
+            ':typePub'=> $data->type_pub
         ]);
 
         if($query){

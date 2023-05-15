@@ -12,8 +12,8 @@
         return;
     }
 
-    $query = $conn->prepare("INSERT INTO HiChat.ACCOUNT_SIGNALED(id_signal, id_user_WMS, id_user_S) 
-                                    VALUES('', :id_userWMS, :id_userS) 
+    $query = $conn->prepare("INSERT INTO HiChat.ACCOUNT_SIGNALED(id_user_WMS, id_user_S) 
+                                    VALUES(:id_userWMS, :id_userS) 
                             ");
     $query->execute([
         ':id_userWMS' => $data->id_user_WMS,

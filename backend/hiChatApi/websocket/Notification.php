@@ -6,6 +6,8 @@
     require('../header.php');
     require('../API-ADMIN/admin.model.php');
     require('../API-ADMIN/function/setSystem.data.php');
+    require('../file.service/file.class.php');
+
     require 'vendor/autoload.php';
 
     class Notification implements MessageComponentInterface{
@@ -15,9 +17,12 @@
         protected $tabNotificationSave;
         protected $globalUserOnlineTab;
         private $nbrNotifStore;
+        private $file;
     
         public function __construct(){
             $this->user = new \SplObjectStorage;
+            $this->file = new File(Standard::FILE_NOTIF_STORE->value);
+
             $this->tab_usersOnline = array();
             $this->tabNotificationSave = array();
             $this->notifMissed = array();
@@ -61,7 +66,9 @@
                                 'notif' => $msg
                             ];
                             array_push($this->notifMissed, json_encode($formatNotif));
-                            setNbrNotif($this->nbrNotifStore++);
+                            $this->nbrNotifStore++;
+                            $this->file->writeFileData('Nbre de notification Stockes: '. $this->nbrNotifStore, null);
+
                             echo "User {$id_destinataire} pas connecté  \n";
                     }
                 }
@@ -147,6 +154,9 @@
                         'notif' => $notif
                     ];
                     array_push($this->notifMissed, json_encode($formatNotif));
+                    $this->nbrNotifStore++;
+                    $this->file->writeFileData('Nombre de notifications stockes: '.$this->nbrNotifStore, null);
+                
                     echo "User {$idDestinataire} pas connecté \n";
             }
         }
@@ -241,6 +251,8 @@
                      array_push($tmp, json_encode($notifDecode));
                 }
             }
+            $this->nbrNotifStore = $size;
+            $this->file->writeFileData('Nombre de notifications stockes: '.$size, null);
         }
 
     }

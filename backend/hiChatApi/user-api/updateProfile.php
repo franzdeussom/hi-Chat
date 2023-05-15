@@ -32,7 +32,7 @@
         ':email' => $data->email,
         ':sexe'=> $data->sexe,
         ':tel'=> $data->tel,
-        ':mdp'=> $data->mdp,
+        ':mdp'=> $data->mdp , //hash('md5', $data->mdp),
         ':pays'=> $data->pays,
         ':age'=>$data->age,
         ':dateNaiss'=>$data->date_naiss,

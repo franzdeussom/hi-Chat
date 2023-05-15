@@ -3,7 +3,6 @@
     require('../header.php');
     require('../file.service/saveFile.class.php');
 
-
     global $conn;
 
     $getData = file_get_contents('php://input');
@@ -16,7 +15,7 @@
     }
     if($data->isBase64File){
         //base64 user image
-         $saveFile = new SaveFile($data->profilImgUrl, $data->id_users);
+         $saveFile = new SaveFile($data->profilImgUrl, $data->id_users, Standard::PUBLICATION_IMAGE->value);
        $fileToDecode = $saveFile->decodeFile();
        
       if($saveFile->moveFileAvatar($fileToDecode)){

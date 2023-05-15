@@ -34,6 +34,7 @@
                                  PUBLICATION.is_public,
                                  PUBLICATION.colorBg,
                                  PUBLICATION.PID,
+                                 PUBLICATION.type_pub,
                                  USERS.nom, 
                                  USERS.prenom, 
                                  USERS.profilImgUrl, 

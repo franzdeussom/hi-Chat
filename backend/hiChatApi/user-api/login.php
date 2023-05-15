@@ -25,7 +25,7 @@
     $query = $conn->prepare("SELECT * FROM HiChat.USERS WHERE nom = :nom AND mdp = :mdp");
     $query->execute([
         ':nom' => $userName,
-        ':mdp' => $mdp
+        ':mdp' =>$mdp // hash('md5', $mdp)
     ]);
     $responseRow = $query->rowCount();
     $queryResult = Array();
