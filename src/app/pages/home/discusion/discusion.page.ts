@@ -1,3 +1,4 @@
+import { CryptAndDecryptMessage } from './encrytDecrypt.service';
 import { SheetControllerService } from './../../../services/Toast/sheet-controller.service';
 import { TypeMessage } from './typeMessage.enum';
 import { GetNotificationService } from 'src/app/pages/notifications/get-notification.service';
@@ -51,6 +52,7 @@ export class DiscusionPage implements OnInit {
               private sheetCtrl : SheetControllerService,
               private actionCtrl : ActionSheetController,
               private alertController: AlertController,
+              private encryptSystem: CryptAndDecryptMessage,
               private navContrl: NavController
               ) {this.messageToSend = new Message(); }
 
@@ -68,6 +70,7 @@ export class DiscusionPage implements OnInit {
 
   ngOnDestroy() {
       this.stopInterval = true;
+  
   }
 
   ionViewDidEnter(){
@@ -81,8 +84,6 @@ export class DiscusionPage implements OnInit {
   }
 
 async showDetailmsg(msg: Message, index: number){
-  console.log(msg);
-  console.log('index', index);
     const action = await this.actionCtrl.create({
       header: 'Message: ' + msg.libelle + ' Date reception/envoie: ' + msg.date_envoie,
       buttons: [
@@ -201,27 +202,26 @@ async showDetailmsg(msg: Message, index: number){
     }
       
   }
-
-  send(){
+  
+  postMessageOnUi(){
       //post message on User interface
+        let tmp : Message = new Message();
+        Object.assign(tmp, this.messageToSend);
+        tmp.libelle = this.encryptSystem.decryptMessage(this.messageToSend.libelle);
+        
         if(typeof this.message !== 'undefined'){
-          this.message.push(this.messageToSend);
-          try{
-              this.myscroll.scrollToBottom();
-          }catch(err){
-
-          }
+          this.message.push(tmp);
     
         }else{
           this.message = [];
-          this.message.push(this.messageToSend);
-          try{
-            this.myscroll.scrollToBottom();
-        }catch(err){
-
+          this.message.push(tmp);
         }
 
-        }
+        this.myscroll.scrollToBottom();
+  }
+
+  send(){
+        this.postMessageOnUi();
         this.messageToSend.id_user = this.currentUserData[0].id_users;
         this.apiMessage.webSocketSendMessage(this.messageToSend);
         
@@ -351,7 +351,7 @@ isFileValid(file: File): any{
     this.setPIDdisc();
     this.defineReceiver();
     this.messageToSend.type = TypeMessage.TEXT;
-    this.messageToSend.libelle = this.value;
+    this.messageToSend.libelle = this.encryptSystem.cryptMessage(this.value);
     this.value = '';
     let min = new Date().getMinutes() < 10 ? '0'+new Date().getMinutes() : new Date().getMinutes();
     this.messageToSend.date_envoie = '' + new Date().getHours().toString() + ':' +  min.toString() + ' | ' + new Date().toString().split(' ')[1]  + ' - ' + new Date().toString().split(' ')[0];
@@ -411,7 +411,7 @@ isFileValid(file: File): any{
     this.messageToSend.nom = this.receivData.nom;
     this.messageToSend.prenom  = this.receivData.prenom;
     this.messageToSend.imageEnvoyeur = typeof this.receivData.profilImgUrl !== 'undefined' ? this.receivData.profilImgUrl : this.receivData.imageEnvoyeur;
-
+    this.messageToSend.libelle = this.encryptSystem.decryptMessage(this.messageToSend.libelle);
     if(typeof this.receivData.id_users === 'undefined'){
       if(keyTab.length > 0){
         keyTab.forEach((key:number)=>{
@@ -435,7 +435,7 @@ isFileValid(file: File): any{
    }
 
   goToProfil(){
-      this.apisearch.simpleSearch('user-api/search.php', JSON.stringify(this.receivData)).subscribe((data)=>{
+      this.apisearch.simpleSearch('user-api/search/search.php', JSON.stringify(this.receivData)).subscribe((data)=>{
         //this.saveResltSearch.dataUserFound = JSON.parse(data);
         this.dataForProfil = data;
         this.saveResltSearch.dataUserFound = this.dataForProfil;
@@ -455,11 +455,11 @@ isFileValid(file: File): any{
 
  async notAvailable(){
     const alert = await this.alertController.create({
-      header: 'Les appels audios et videos sont pas encore disponible pour cette version de Hi-Chat',
+      header: 'Les appels audios et videos sont pas encore disponible pour cette version de Hi-Chat !',
       buttons: [
         {
           text: 'Ok',
-          role: 'cancel',
+          role: 'cancel'
         }
       ],
     });

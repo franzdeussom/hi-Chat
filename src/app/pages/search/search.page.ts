@@ -115,7 +115,7 @@ export class SearchPage implements OnInit {
       if(!this.isAllParamSet()){
         this.toast.makeToast('Veuillez Remplir au moins un champ !');
       }else{
-        this.search.searchWithOption('user-api/search.php', JSON.stringify(this.optionSearch)).subscribe((data: any)=>{
+        this.search.searchWithOption('user-api/search/search.php', JSON.stringify(this.optionSearch)).subscribe((data: any)=>{
           if(Object.keys(data).length === 0 ? false : true){
             this.GlobalSearchResult = data;
             this.init();

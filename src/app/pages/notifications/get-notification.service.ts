@@ -56,7 +56,6 @@ export class GetNotificationService {
   }
 
   showToast(notificationGet: NotificationApp){
-
       switch(notificationGet.type){
 
           case TypeNotification.ADMIN_PREMIUM_CONFIRM:
@@ -149,7 +148,7 @@ export class GetNotificationService {
   isNotifPresentInMainList(notifGet: NotificationApp): boolean{
     return this.globalNotification.findIndex((notif => 
              ( notif.publication?.PID === notifGet.publication?.PID && notif.type === notifGet.type && notif.id_UsersSender === notifGet.id_UsersSender)
-      )) !== -1 ? true: false;
+      )) !== -1 ? true : false;
   }
 
   checkFollow(notif: NotificationApp){
@@ -171,6 +170,18 @@ export class GetNotificationService {
     this.notifToSend.profilImgUrlSender = '/assets/icon/appIcon.png';
     
     this.wsNotif.send(JSON.stringify(this.notifToSend));
+  }
+
+  sendNotifPayementGateway(id_users: string, message: string, type: string){
+    this.notifToSend.message = message;
+    this.notifToSend.id_destinataire = id_users;
+    this.notifToSend.type = type;
+    this.notifToSend.nomSender ='Hi-Chat';
+    this.notifToSend.id_UsersSender = 0;
+    this.notifToSend.profilImgUrlSender = '/assets/icon/appIcon.png';
+
+    this.wsNotif.send(JSON.stringify(this.notifToSend));
+    
   }
 
   sendMultiNotifAdmin(notifBuild: NotificationApp){
@@ -231,14 +242,14 @@ export class GetNotificationService {
           
         case TypeNotification.NEW_PUBLICATION:
           this.notifToSend.type = type;
-          this.notifToSend.PID = pub.PID,
+          this.notifToSend.PID = pub.PID;
           this.notifToSend.id_destinataire = '*';//send to all friends
           this.notifToSend.message = MessageNotif.PUBLICATION;
           this.notifToSend.publication = pub;
           break;
         case TypeNotification.DELETE_PUB:
           this.notifToSend.type = type;
-          this.notifToSend.PID = pub.PID,
+          this.notifToSend.PID = pub.PID;
           this.notifToSend.id_destinataire = '*';//send to all friends
           this.notifToSend.message = MessageNotif.PUBLICATION;
           this.notifToSend.publication = pub;
@@ -264,7 +275,7 @@ async loadNotifSave(idUser: number){
 
     if(await this.localStore.isAlreadyData(KEY_NOTIFICATION)){
         this.tmpNotif = await this.localStore.getData(KEY_NOTIFICATION);
-  }
+    }
 } 
 
 deletePubOnNotifList(notifGet: NotificationApp){
@@ -305,7 +316,6 @@ showUsersOnline(notifGet: any){
               this.tabAbment.push(id);
             }
         });
-
     }
 
   }
@@ -336,7 +346,7 @@ checkPresenceInListAbmnt(id: number): boolean{
   return isInTabAbment();
 }
 
- getLocaSave(): Array<any>{
+ getLocaSave(): any{
    return this.tmpNotif.length > 0 ? this.tmpNotif: [];
  }
  

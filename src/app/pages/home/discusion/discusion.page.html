@@ -53,7 +53,7 @@
           </ion-buttons>
         </span>
        
-        <ion-input class="custom-textarea" (ionChange)="setColor('primary')" [(ngModel)]="value" [value]="value" [autocapitalize]="true" placeholder="Type something here"></ion-input>
+        <ion-textarea class="custom-textarea" (ionChange)="setColor('primary')" [(ngModel)]="value" [value]="value" [autocapitalize]="true" placeholder="Type something here" autosize></ion-textarea>
           <span class="send">
             <ion-buttons (click)="sendMessage()">
                 <ion-icon name="send-outline" [color]="colorSendBtn"></ion-icon>

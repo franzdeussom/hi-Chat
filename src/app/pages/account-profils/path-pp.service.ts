@@ -36,16 +36,32 @@ export class PathPpService {
       path: '/assets/icon/avatar.svg',
     }
 ]
+  newUrlImg: string = '';
+
   constructor(
       private accountApi : AccountApiService,
       private toast: ToastAppService
   ) { }
 
-  doUpdatingPp(idUser: number, newImgUrl: any, isBase64File: boolean, fileImg?: File){
-      const param = {id_users: idUser, profilImgUrl: newImgUrl , imgData: fileImg, isBase64File: isBase64File}
+  doUpdatingPp(idUser: number, newImgUrl: any, isBase64File: boolean, fileImg?: any){
+    let param = {id_users: idUser, profilImgUrl: newImgUrl , imgUrl: fileImg, isBase64File: isBase64File, isUrlPresent: false}
+
+      const details = fileImg.split('../hichatpubs/');
+      if(details.length > 1){
+        param.isUrlPresent = true;
+        param.imgUrl = details[1];
+      }else{
+        if(this.newUrlImg.length > 1){
+          param.isUrlPresent = true;
+          param.imgUrl = this.newUrlImg.split('../hichatpubs/')[1];
+        }
+      }
+
       this.accountApi.post('user-api/updateAvatar.php', JSON.stringify(param)).subscribe((response)=>{
           if(Object.keys(response).length > 0){
             this.toast.makeToast('Photo de profil mise à jour !');
+            this.newUrlImg = JSON.parse(response).imgUrl;
+            console.log(this.newUrlImg)
           }else{
              this.toast.makeToast('Une Erreur interne est survenue lors du changement.')
           }

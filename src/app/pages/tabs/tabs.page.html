@@ -1,6 +1,6 @@
 <ion-content>
  <ion-tabs>
-  <ion-tab-bar slot="bottom">
+  <ion-tab-bar slot="bottom" [scrollLeft]="true">
     <ion-tab-button tab="home" (click)="renit()">
       <ion-icon name="chatbubbles" ></ion-icon>
       <ion-badge id="notifications-badge" color="danger" *ngIf="nbrMessage > 0"> {{ nbrMessage }}</ion-badge> 
@@ -28,7 +28,6 @@
       <ion-icon name="person-circle-outline"></ion-icon>
       <ion-label>Profil</ion-label>
     </ion-tab-button>
-
     
     <ion-tab-button tab="admin" *ngIf="isAdmin" >
       <ion-icon name="person-circle-outline"></ion-icon>

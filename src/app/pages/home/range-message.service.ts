@@ -206,6 +206,9 @@ export class RangeMessageService {
     })
   }
 
+  deleteAllMessage(){
+    this.localSave.clear();
+  }
 
   async deleteKey(id_sender: number){
     let key = 'SENDER_ID';

@@ -4,7 +4,7 @@ import { PremiumType } from './../pages/actualite/premium-page/premiumType.enum'
 import { PremiumRequest } from './../pages/admin/premium-request/PremiumRequest.model';
 import { TimeSystemService } from './timestamp/time-system.service';
 import { EnvironementService } from './environement.service';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 @Injectable({
@@ -60,17 +60,24 @@ export class PremiumService {
       return this.http.post(this.env.hostName+endpoint, JSON.stringify(body), {withCredentials: true});
   }
 
-  
-
+  deleteAllRequestValid(id: any, endpoint: string){
+    const body : {
+          id_admin: number,
+          mode: string ,
+          clause: string,
+    } = {
+      id_admin : id,
+      mode: 'DELETE',
+      clause: 'VALID'
+     }
+     return this.http.post(this.env.hostName+endpoint, JSON.stringify(body));
+  }
  
 
   doRequestPremium(body: PremiumRequest, endpoint: string){
       return this.http.post(this.env.hostName+endpoint, JSON.stringify(body), {withCredentials: true});
   }
 
-  sendConfirmationNotification(){
-
-  }
 
   getTotalPriceOfPremiumRequest(listRequest: PremiumRequest[]): number{
     let TotalPrice = 0;

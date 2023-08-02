@@ -14,11 +14,70 @@
     <ion-card-content>
         <p>Request Valid : {{ totalPriceRequestValid }} </p>
     </ion-card-content>
+    <div style="float: right;">
+      <ion-buttons slot="end">
+          <ion-button color="danger" (click)="confirmDeleteRequestValid()" > Delete All Requests Valid</ion-button>
+      </ion-buttons>
+    </div>
   </ion-card>
   <div>
       <span> {{ listRequest.length }} Demandes</span>
   </div>
+
+    
+
+  <div *ngIf="listRequest.length > 1" >
+
+    <ion-searchbar color="medium" placeholder="search" [(ngModel)]="searchValue" (ionChange)="searchUser()">
+    </ion-searchbar>
+
+  </div>
+
+  <div *ngIf="searchValue.length > 0" >
+    <ion-list class="ion-padding">
+      <div *ngFor="let request of listRequestSearchResult; let index=index" >
+        
+        <ion-item-sliding>
   
+            <ion-item-options slot="end">
+                <ion-item-option color="danger" (click)="deleteRequest(request.id_request, index, true)" >
+                    Supprimer tmp. <ion-icon name="trash"></ion-icon>
+                </ion-item-option>
+            </ion-item-options>
+  
+              <ion-item>
+                <ion-avatar *ngIf="request.profilImgUrl != null" >
+                    <img [src]="request.profilImgUrl" alt="Avatar">
+                </ion-avatar>
+                <ion-avatar *ngIf="request.profilImgUrl == null" >
+                  <img src="/assets/icon/avatar.svg" alt="Avatar">
+                </ion-avatar>
+  
+                <ion-label>{{ request.prenom }} {{ request.nom }}  </ion-label>
+  
+                  <div *ngIf="request.REQUEST_DECISION !== requestValidMsg" style="display: flex;" >
+                    <ion-button (click)="confirmApplyRequest(request.id_user, request.premiumType, index, true)" >
+                      <span> Valider {{ request.premiumType }} </span> 
+                    </ion-button>
+                    <ion-button color="tertiary" (click)="alertCtrlAddReference(request.id_user, request.premiumType)" >
+                        <span>Payment Request</span>
+                    </ion-button>
+                 </div>
+                 
+                  <div *ngIf="request.REQUEST_DECISION === requestValidMsg">
+                    <ion-button disabled>
+                      <span> Ok !! {{ request.premiumType }} </span> 
+                    </ion-button>
+                 </div>
+            </ion-item>
+        </ion-item-sliding>
+          
+      </div>
+    </ion-list>
+
+  </div>
+  
+<div *ngIf="searchValue.length == 0">
   <ion-list class="ion-padding">
     <div *ngFor="let request of listRequest; let index=index" >
       
@@ -41,9 +100,11 @@
               <ion-label>{{ request.prenom }} {{ request.nom }}  </ion-label>
 
                 <div *ngIf="request.REQUEST_DECISION !== requestValidMsg">
-                  <ion-button (click)="approvedRequest(request.id_user, request.premiumType, index)" >
-                    <span> Approuver {{ request.premiumType }} </span> 
-                    <span *ngIf="request.REQUEST_DECISION === requestValidMsg " > Approuver {{ request.premiumType }} </span> 
+                  <ion-button (click)="confirmApplyRequest(request.id_user, request.premiumType, index)" >
+                    <span> Valider {{ request.premiumType }} </span> 
+                  </ion-button>
+                  <ion-button color="tertiary" (click)="alertCtrlAddReference(request.id_user, request.premiumType)" >
+                      <span>Payment Request {{ request.prenom }}</span>
                   </ion-button>
                </div>
                
@@ -57,4 +118,5 @@
         
     </div>
   </ion-list>
+</div>
 </ion-content>

@@ -42,6 +42,31 @@ public listLike : any;
 
   deleteData(key : string){
     Storage.remove({key: key});
+
+  }
+
+  clear(){
+    Storage.clear();
+  }
+
+  saveNotif(notif: any, key: string){
+    localStorage.setItem(key, JSON.stringify(notif));
+  }
+
+  getNotifSaved(key: string): any{
+      return localStorage.getItem(key);
+  }
+
+  isAlreadyNotif(key: string): boolean{
+      return typeof localStorage.getItem(key) !== 'undefined' ? true:false;
+  }
+
+  deleteNotif(key: string){
+    localStorage.removeItem(key);
+  }
+
+  deleteAllNotif(){
+    localStorage.clear();
   }
 
 }

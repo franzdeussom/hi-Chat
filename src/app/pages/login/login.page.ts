@@ -41,6 +41,7 @@ export class LoginPage implements OnInit {
   }
 
   hideMessage(){
+    this.showSpinner = false;
     setTimeout(()=>{
         this.errorMessage = '';
     }, 2500);

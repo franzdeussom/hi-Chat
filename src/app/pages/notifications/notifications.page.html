@@ -9,7 +9,7 @@
 <ion-content>
     <ion-list lines="none">
         <div *ngFor="let notif of wsNotif.tmpNotif; let index=index" >
-            <div *ngIf="notif.type !==  typeNotif " >
+            <div *ngIf="notif.type !==  typeNotif_AccountSignal || notif.type !==  typeNotif_admin || notif.type !== typeNotif_PremiumConfirmation">
                 <ion-item-sliding>
                     <ion-item-options side="start">
                       <ion-item-option color="danger" (click)="showActionSheetCtrl(false, index)" >
@@ -39,8 +39,24 @@
           </ion-item-sliding>
           </div>
 
-          <div *ngIf="notif.type ===  typeNotif " >
+          <div *ngIf="notif.type ===  typeNotif_AccountSignal " >
             <ion-item (click)="goToDetailsSignal()" >
+                <ion-avatar slot="start" *ngIf="notif.profilImgUrlSender != null ">
+                    <img alt="Avatar" [src]="notif.profilImgUrlSender" />
+                  </ion-avatar>
+                  <ion-avatar slot="start" *ngIf="notif.profilImgUrlSender == null" >
+                      <img alt="Avatar" src="/assets/icon/avatar.svg" />
+                  </ion-avatar>
+                <ion-label text-wrap>
+                    <span style="display: flex; flex-direction: row; flex-wrap: wrap; width: 100%;"> <b class="name"> {{ notif.nomSender }} {{ notif.prenom }}</b> &nbsp; <p> {{ notif.message }} </p> </span>
+                    <ion-badge color="primary" *ngIf="notif.isRead" style="float:right"> Lu </ion-badge>
+                </ion-label>
+                
+            </ion-item>
+          </div>
+
+          <div *ngIf="notif.type === typeNotif_PremiumConfirmation || notif.type === typeNotif_admin" >
+            <ion-item (click)="goToDetailsPremium(notif.message)" >
                 <ion-avatar slot="start" *ngIf="notif.profilImgUrlSender != null ">
                     <img alt="Avatar" [src]="notif.profilImgUrlSender" />
                   </ion-avatar>

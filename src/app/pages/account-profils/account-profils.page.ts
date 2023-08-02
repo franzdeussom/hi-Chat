@@ -54,7 +54,7 @@ export class AccountProfilsPage implements OnInit {
   listAvatar: Avatar[] = [];
   isVideo : string ;
   isImage : string;
-  
+  showSpinnear: boolean = true; 
 
   constructor(private globalStorage: GlobalStorageService,
               private navController: NavController,
@@ -193,6 +193,8 @@ export class AccountProfilsPage implements OnInit {
           role:'confirm',
           handler: (data)=>{
               if(data.pass === this.dataUser.mdp){
+                this.pathPP.doUpdatingPp(this.dataUser.id_users, base64, true, this.dataUser.profilImgUrl);
+
                     const doUpdate = (base64: any)=>{
                       this.dataUser.profilImgUrl = base64;
                       this.listPublication.map(
@@ -200,7 +202,6 @@ export class AccountProfilsPage implements OnInit {
                           pub.profilImgUrl = base64;
                         }
                       );
-                      this.pathPP.doUpdatingPp(this.dataUser.id_users, base64, true, img);
                       this.dataUsers.userData = JSON.stringify([this.dataUser]);
                     }
                 doUpdate(base64);
@@ -312,6 +313,7 @@ setValuelist(data: any){
   this.listAbonne = data[1].length === 0 ? [] : data[1];
   this.listAbonnement = data[2].length === 0 ? [] : data[2];
   this.listPublication = this.timeSystem.getElapsedTime(this.listPublication);
+  this.showSpinnear = false;
 }
 
 getParamQuery(): any{

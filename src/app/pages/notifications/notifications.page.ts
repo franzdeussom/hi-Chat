@@ -1,5 +1,5 @@
-import { TypeNotification } from 'src/app/pages/notifications/typeNotif.enum';
-import { NavController, ActionSheetController } from '@ionic/angular';
+import { TypeNotification } from './typeNotif.enum';
+import { NavController, ActionSheetController, AlertController } from '@ionic/angular';
 import { User } from './../signup/users.model';
 import { DataUserService } from './../data-user.service';
 import { GlobalStorageService } from './../../services/localStorage/global-storage.service';
@@ -16,13 +16,16 @@ export class NotificationsPage implements OnInit {
   listOfNotifations: Array<NotificationApp>
   tmpListOfNotification: any;
   dataCurrentUser: User = new User();
-  typeNotif = TypeNotification.ACCOUNT_SIGNAL;  
+  typeNotif_AccountSignal = TypeNotification.ACCOUNT_SIGNAL;
+  typeNotif_admin = TypeNotification.ADMIN_NOTIF;
+  typeNotif_PremiumConfirmation  = TypeNotification.ADMIN_PREMIUM_CONFIRM;
   constructor(
                 public wsNotif: GetNotificationService,
                 private localStore: GlobalStorageService,
                 private dataUser: DataUserService,
                 private navCtrl: NavController,
-                private actionSheetCtrl: ActionSheetController
+                private actionSheetCtrl: ActionSheetController,
+                private alertCtrl: AlertController
              ) {
                   this.listOfNotifations = new Array<NotificationApp>();
               }
@@ -74,11 +77,11 @@ export class NotificationsPage implements OnInit {
   }
 
 loadNotifSave(){
-          this.listOfNotifations =  this.wsNotif.getLocaSave();
+          this.listOfNotifations = this.wsNotif.getLocaSave();
    }
 
    async showActionSheetCtrl(deleteAll?: boolean, index?: any){
-    const msg = deleteAll ? 'Voulez vous vraiment supprimer toute vos notifications ?': 'Voulez vous vraiment Supprimer cette notification';
+    const msg = deleteAll ? 'Voulez vous vraiment supprimer toutes vos notifications ?': 'Voulez vous vraiment Supprimer cette notification';
 
     const action = await  this.actionSheetCtrl.create({
       header: msg,
@@ -121,6 +124,20 @@ loadNotifSave(){
         this.navCtrl.navigateForward('details');
       }
    
+   }
+
+   async goToDetailsPremium(msg: any){
+          const alert = await this.alertCtrl.create({
+            header: msg,
+            buttons: [
+              {
+                text: 'Ok',
+                role: 'cancel'
+              }
+            ]
+          });
+          
+         await alert.present();
    }
 
    async setNotifAsRead(index: number, isRead?: boolean){

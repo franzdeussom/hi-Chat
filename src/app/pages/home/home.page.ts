@@ -1,3 +1,4 @@
+import { CryptAndDecryptMessage } from './discusion/encrytDecrypt.service';
 import { TimeSystemService } from './../../services/timestamp/time-system.service';
 import { NetworkService } from './../../services/network/network.service';
 import { TypeMessage } from './discusion/typeMessage.enum';
@@ -8,7 +9,7 @@ import { GlobalStorageService } from './../../services/localStorage/global-stora
 import { DataUserService } from './../data-user.service';
 import { ReceiverDataService } from './receiver-data.service';
 import { RangeMessageService } from './range-message.service';
-import { AlertController, NavController, Platform } from '@ionic/angular';
+import { AlertController, NavController, Platform, ActionSheetController } from '@ionic/angular';
 import { GetAllMessageService } from './get-all-message.service';
 import { MessageApiService } from '../../services/message-api.service';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
@@ -50,10 +51,12 @@ export class HomePage implements OnInit {
               private toast: ToastAppService,
               private network: NetworkService,
               private plt: Platform,
-              private alertController: AlertController
+              private actionSheetCtrl: ActionSheetController,
+              private alertController: AlertController,
+              private encryptDecryptSystem: CryptAndDecryptMessage
               ) {
                 this.plt.ready().then(()=>{
-                  
+
                 })
                 this.listDiscSecur = new SecurityMsg();
                 this.listOfSender = new Array<Message>(); this.listLastMesg = new Array<Message>()  
@@ -64,7 +67,7 @@ export class HomePage implements OnInit {
       this.connectWebSocket();
       this.onWebsocketMessage();
       this.loadMessage();
-      this.checkGetMessageMissed();
+     // this.checkGetMessageMissed();
       this.checkUpdateListOfSenderHome();
       this.loadSecurityDisc();
       this.getFollowers();
@@ -106,6 +109,36 @@ export class HomePage implements OnInit {
      });
   }
 
+  async showActionSheetCtrl(){
+    const msg =  'Voulez vous vraiment supprimer toutes vos discusion?';
+
+    const action = await  this.actionSheetCtrl.create({
+      header: msg,
+      buttons: [
+        {
+          text:'Supprimer tous',
+          role: 'confirm',
+          handler: ()=>{
+              this.deleteAllDisc();
+          }
+        },
+        {
+          text: 'Annuler',
+          role: 'cancel',
+        }
+      ]
+    });
+    await action.present();
+   }
+
+   deleteAllDisc(){
+
+    this.rangeMessage.deleteAllMessage();
+      setTimeout(() => {
+          this.listOfSender.length = 0;
+      }, 2500);
+   }
+
   checkUpdateListOfSenderHome(){
      // let tmp = setInterval(()=>{
       try{
@@ -141,8 +174,10 @@ export class HomePage implements OnInit {
               msgReceived.isReceived = 1;
              this.api.newMsg = msgReceived;
             this.wsNotif.countMsgNotRead++;
+            msgReceived.libelle = this.encryptDecryptSystem.decryptMessage(msgReceived.libelle);
          this.rangeMessage.saveMsgSend(msgReceived, await this.checkDestinataireIDMsg(msgReceived.id_destinateur_user, msgReceived));
         this.upDateSenderList(msgReceived);
+        //include local notification push here
         this.toast.makeToast('Vous avez recu un nouveau message de ' + prenom + ' ' + nom);
     }
 
@@ -327,7 +362,7 @@ if(this.listOfSender.length > 0){
             this.addInListSender(data);
             this.rangeMessage.delMsgMissedDB(); 
       }
-    }, (err)=>{
+    }, ()=>{
           this.network.CONNEXION_DB_STATE = 500;
           
     });
@@ -549,7 +584,7 @@ async  forgotDiscKey(){
         await alert.present();
   
       }else{
-        //don't present in the list, we add it
+        //don't present in the list, so we add it
         this.rangeMessage.addPasswordOnDisc(id_sec);
         this.loadSecurityDisc();
       }

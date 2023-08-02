@@ -47,6 +47,7 @@ export class ActualitePage implements OnInit {
   fullScreenBgUrl: any = '';
   typePublication: string ='';
   showFullScreenImg: boolean = false;
+  waitingResponse: boolean =false;
   isVideo : string = PublicationType.PUBLICATION_VIDEO;
   isImage : string = PublicationType.PUBLICATION_IMAGE;
 
@@ -374,14 +375,17 @@ let base64Url;
   }
 
   loadFriendPublications(){
+    this.waitingResponse = true;
         this.accountApi.post('user-api/getFriendPub.php', JSON.stringify(this.dataUser)).subscribe((data)=>{
             let response = JSON.parse(data);
+            this.waitingResponse =false;
             this.addOnListPub(response);
             this.network.CONNEXION_DB_STATE = 200;
             this.listPublication = this.timeSystem.getElapsedTime(this.listPublication);
 
 
         }, (err)=>{
+            this.waitingResponse =false;
             this.network.CONNEXION_DB_STATE = 500;
             this.network.makeToastErrorConnection('Aucune connexion internet');
         });
@@ -399,8 +403,11 @@ let base64Url;
 
   loadGlobePublication(): Promise<any>{
      return new Promise((resole, reject)=>{
+          this.waitingResponse = true;
           this.accountApi.post('user-api/getGlobePub.php', JSON.stringify(this.dataUser)).subscribe((data)=>{
-          if(Object.keys(data).length > 0){
+            this.waitingResponse =false;
+         
+           if(Object.keys(data).length > 0){
             this.listPublicationGLobe = JSON.parse(data);
             this.network.CONNEXION_DB_STATE = 200;
             this.listPublicationGLobe = this.timeSystem.getElapsedTime(this.listPublicationGLobe);
@@ -409,6 +416,7 @@ let base64Url;
             }
       }, (err)=> {
           reject(err);
+          this.waitingResponse =false;
           this.network.CONNEXION_DB_STATE = 500;
           this.network.makeToastErrorConnection('Aucune connexion internet');
       });
@@ -682,6 +690,7 @@ loadDataFriend(profil: any){
 
       this.navCtrl.navigateForward('details');
   }
+  
   goToProfil(){
       this.navCtrl.navigateForward('tabs/account-profils');
   }

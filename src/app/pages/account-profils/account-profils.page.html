@@ -16,7 +16,7 @@
   </ion-refresher>
   
   <div class="header">
-    <h2>{{ dataUser.nom }} {{ dataUser.prenom }} </h2>
+    <h2>{{ dataUser.nom }} {{ dataUser.prenom }} <span *ngIf="dataUser.isPremiumAccount == 1"> <ion-icon name="ribbon-outline" color="tertiary"></ion-icon> </span> </h2>
 
     <div class="space-between">
 
@@ -32,7 +32,7 @@
         </div>
         
         <p *ngIf="listAbonne.length > 1" >Followers</p>
-        <p *ngIf="listAbonne.length == 0 || listAbonne.length == 1" >Follower</p>
+        <p *ngIf="listAbonne.length == 0 || listAbonne.length == 1" >Follower</p>
 
       </div> 
 
@@ -66,7 +66,6 @@
                               <input type="file" style="padding: 15px; color:white; background-color: rgb(3, 3, 32); border-radius: 40px; text-rendering: none;"  (change)="updatePp($event)" value="Importer">
                           </ion-buttons>
                         </div>
-                          <span style="margin-left: 50%;"><h2> <em>  Ou  </em></h2></span>
 
                         <h3>Choisissez un avatar pour votre profil : </h3>
                         
@@ -127,7 +126,7 @@
                       <img src="/assets/icon/avatar.svg" style="border-radius: 100px;  height: 85px;">
                     </span>
                 </div>
-
+                  
                 <form (submit)="confrimationToUpdateActionCtrl()">
                   <ion-list class="ion-padding">
                     <ion-item class="ion-margin">
@@ -208,7 +207,7 @@
         </ion-segment-button>
       </ion-segment>
       
-        <div style="text-align: center" *ngIf="listPublication.length === 0 || listAbonne.length === 0 || listAbonnement.length === 0" >
+        <div style="text-align: center" *ngIf="showSpinnear" >
           <ion-spinner name="dots" style="margin: auto;">
           </ion-spinner>
         </div>

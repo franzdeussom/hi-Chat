@@ -45,6 +45,7 @@ export class ProfilsPage implements OnInit {
   listUserLikeRslt: Array<User> = [];
   listUsersLike: Array<User> = [];
   isVideo : string = PublicationType.PUBLICATION_VIDEO;
+  showSpinnear: boolean = true;
 
   constructor(private searchResltService: SaveResultSearchService,
               private navCtrl : NavController,
@@ -113,6 +114,7 @@ ionViewWillEnter(){
     }else{
       this.dataUserFound = this.searchResltService.dataUserFound[0];
     }
+    this.dataUserFound.isPremiumAccount = this.dataUserFound.isPremiumAccount == 1; 
   }
 
   async presentEntryPassword(){
@@ -234,7 +236,7 @@ ionViewWillEnter(){
     this.listAbonne = data[1].length === 0 ? [] : data[1];
     this.listAbonnenment = data[2].length === 0 ? [] : data[2];
     this.listPublication = this.timeSystem.getElapsedTime(this.listPublication);
-
+    this.showSpinnear = false;
   }
 
   getParamQuery(isOrderUser: boolean): any{

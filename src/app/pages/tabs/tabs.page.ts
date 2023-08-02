@@ -1,3 +1,4 @@
+import { ADMIN_CREDENTIALS } from './../../services/admim.enum';
 import { GetNotificationService } from 'src/app/pages/notifications/get-notification.service';
 import { GlobalStorageService } from './../../services/localStorage/global-storage.service';
 import { User } from './../signup/users.model';
@@ -33,7 +34,7 @@ export class TabsPage implements OnInit {
 
   getDataUser(){
     this.dataUser = JSON.parse(this.globalStore.currentUser)[0];
-    if(this.dataUser.id_users === 1){
+    if(this.dataUser.id_users === ADMIN_CREDENTIALS.ADMIN_ID){
       this.isAdmin = true;
     }
   }

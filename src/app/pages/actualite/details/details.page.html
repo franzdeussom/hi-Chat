@@ -47,7 +47,7 @@
                 <div *ngIf="pub.url_file == null;then text_content else other_content"></div>
                 <ng-template #text_content>
                     <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
-                      <span class="message"> {{ pub.libelle }} </span>
+                      <span class="message" style="white-space: pre-line;"> {{ pub.libelle }} </span>
                     </div>
                 </ng-template>
                 <ng-template #other_content>
@@ -133,7 +133,7 @@
                 <ion-badge style="float: right; margin-top: 1px;"> {{ comment.date_comment }} </ion-badge>
               </ion-card-title>
               <ion-card-content>
-                  <span style="font-size: 20px;">
+                  <span style="font-size: 20px; white-space: pre-line;">
                       {{ comment.libelle }}
                   </span>
               </ion-card-content>
@@ -172,7 +172,7 @@
                   <ion-badge style="float: right; margin-top: 1px;"> {{ comment.date_comment }} </ion-badge>
                 </ion-card-title>
                 <ion-card-content (click)="actionSheet(comment.id_users, comment.id_commentaire, index, comment.date_comment, comment.PID, comment.libelle)">
-                    <span style="font-size: 20px;">
+                    <span style="font-size: 20px; white-space: pre-line;">
                         {{ comment.libelle }}
                     </span>
                 </ion-card-content>
@@ -197,7 +197,7 @@
  <form>
   <div class="chat-input">
     <div id="chat-input" >
-      <ion-textarea [inputmode]="'text'" [(ngModel)]="commentaire" name="commentaire" placeholder="Votre commentaire ici" [autofocus]="true"></ion-textarea>
+      <ion-textarea [inputmode]="'text'" [(ngModel)]="commentaire" name="commentaire" placeholder="Votre commentaire ici" [autofocus]="true" autosize></ion-textarea>
       <ion-button (click)="sendComment()"  class="chat-submit" ><ion-icon name="send-outline"></ion-icon></ion-button>
     </div>  
   </div>

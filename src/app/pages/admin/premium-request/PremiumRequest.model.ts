@@ -4,7 +4,7 @@ export class PremiumRequest{
         public id_user?:any,
         public date_request?:any,
         public premiumType?: string,
-        public nom?: string,
+        public nom?: any,
         public prenom?: string,
         public profilImgUrl?: any,
         public pays?: any,

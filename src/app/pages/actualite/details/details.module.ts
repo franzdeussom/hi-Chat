@@ -7,12 +7,14 @@ import { IonicModule } from '@ionic/angular';
 import { DetailsPageRoutingModule } from './details-routing.module';
 
 import { DetailsPage } from './details.page';
+import { AutosizeModule } from 'ngx-autosize';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
+    AutosizeModule,
     DetailsPageRoutingModule
   ],
   declarations: [DetailsPage]

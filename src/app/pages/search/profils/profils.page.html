@@ -15,7 +15,7 @@
 <ion-content>
  
   <div class="header">
-    <h2>{{ dataUserFound.nom }} {{ dataUserFound.prenom }} </h2>
+    <h2>{{ dataUserFound.nom }} {{ dataUserFound.prenom }} <span *ngIf="dataUserFound.isPremiumAccount"> <ion-icon name="ribbon-outline" color="tertiary"></ion-icon> </span> </h2>
 
     <div class="space-between">
 
@@ -75,7 +75,7 @@
       </ion-segment-button>
   </ion-segment>
 
-  <div style="text-align: center" *ngIf="listPublication.length === 0 || listAbonne.length === 0 || listAbonnenment.length === 0" >
+  <div style="text-align: center" *ngIf="showSpinnear" >
     <ion-spinner name="dots" style="margin: auto;">
     </ion-spinner>
   </div>

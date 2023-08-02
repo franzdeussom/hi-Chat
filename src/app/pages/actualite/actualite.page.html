@@ -68,7 +68,7 @@
               
                   <div *ngIf="!showApercu" >
                     <ion-item>
-                      <ion-textarea class="custom-textarea" [(ngModel)]="publication.libelle" placeholder="Quoi de neuf ?"></ion-textarea>
+                      <ion-textarea class="custom-textarea" [(ngModel)]="publication.libelle" placeholder="Quoi de neuf ?" autosize></ion-textarea>
                     </ion-item>
                   </div>
 
@@ -89,7 +89,7 @@
                         </ion-list>  
                       <div class="apercu" [ngStyle]="{'background':  colorBgApercu}" (click)="renitAp()" >
                           
-                          <span class="message"> {{ publication.libelle }} </span>
+                          <span class="message" style="white-space: pre-line;"> {{ publication.libelle }} </span>
                       </div>
                 </div>
                 <div *ngIf="publication.url_file != null && typePublication === isImage" class="apercuImg" style="margin-top: 15px;">
@@ -118,7 +118,7 @@
       </ion-modal>
 
       <div class="pub">
-        <div *ngIf="listPublication.length === 0" style="text-align: center;">
+        <div *ngIf="waitingResponse" style="text-align: center;">
           <ion-spinner name="dots" style="margin: auto;">
           </ion-spinner>
         </div>
@@ -154,7 +154,7 @@
                          <div *ngIf="pub.url_file == null;then text_content else other_content"></div>
                           <ng-template #text_content>
                               <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
-                                <span class="message"> {{ pub.libelle }} </span>
+                                <span class="message" style="white-space: pre-line;"> {{ pub.libelle }} </span>
                               </div>
                           </ng-template>
                           <ng-template #other_content>
@@ -162,7 +162,7 @@
                             <div *ngIf="pub.type_pub === isVideo;then video_content else image_content">here is ignored</div>
                             <ng-template #video_content>
                               <div class="pubImg" >  
-                               <span class="message" style="margin-bottom: 10px;"> {{ pub.libelle }} </span>
+                               <span class="message" style="margin-bottom: 10px;white-space: pre-line;"> {{ pub.libelle }} </span>
                                 <div>
                                   <video  width="100%" alt="" controls>
                                       <source [src]="pub.url_file" type="video/mp4"> 
@@ -173,7 +173,7 @@
 
                             <ng-template #image_content>
                               <div class="pubImg">   
-                                <span class="message" style="margin-bottom: 10px;"> {{ pub.libelle }} </span>
+                                <span class="message" style="margin-bottom: 10px; white-space: pre-line;"> {{ pub.libelle }} </span>
                                 <div>
 
                                   <img [src]="pub.url_file | safePipe:'url' " width="100%" alt="" (click)="showFullScreen(pub.url_file)">
@@ -296,7 +296,7 @@
     </div>
 
     <div *ngSwitchCase="'globe'">
-      <div *ngIf="listPublicationGLobe.length === 0" style="text-align: center;">
+      <div *ngIf="waitingResponse" style="text-align: center;">
           <ion-spinner name="dots" style="margin: auto;">
           </ion-spinner>
         </div>
@@ -330,7 +330,7 @@
                         <div *ngIf="pub.url_file == null">  
 
                           <div class="apercu" [ngStyle]="{'background':  pub.colorBg}">   
-                              <span class="message"> {{ pub.libelle }} </span>
+                              <span class="message" style="white-space: pre-line;"> {{ pub.libelle }} </span>
                           </div>
 
                          </div>
@@ -338,14 +338,14 @@
                          <div *ngIf="pub.url_file != null">   
 
                               <div class="pubImg" *ngIf="pub.type_pub === isImage" >   
-                                  <span class="message" style="margin-bottom: 10px;"> {{ pub.libelle }} </span>
+                                  <span class="message" style="margin-bottom: 10px; white-space: pre-line;"> {{ pub.libelle }} </span>
                                   <div>
                                     <img [src]="pub.url_file | safePipe:'url' " width="100%" alt="" (click)="showFullScreen(pub.url_file)">
                                   </div>
                               </div>
 
                               <div class="pubImg" *ngIf="pub.type_pub === isVideo" >   
-                                <span class="message" style="margin-bottom: 10px;"> {{ pub.libelle }} </span>
+                                <span class="message" style="margin-bottom: 10px; white-space: pre-line;"> {{ pub.libelle }} </span>
                                 <div>
                                   <video [src]="pub.url_file | safePipe:'url' " width="100%" alt="" autoplay controls></video>
                                 </div>
