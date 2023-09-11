@@ -68,6 +68,10 @@
                 return $this->img_full_path;
         }
 
+        public function deleteOldProfile($path){
+                return unlink($this->FOLDER_NAME.$path); 
+        }
+
     }
 
 ?>

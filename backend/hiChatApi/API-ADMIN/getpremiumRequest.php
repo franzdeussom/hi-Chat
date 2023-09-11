@@ -7,7 +7,7 @@
 
      global $conn;
 
-     $sql = "SELECT PREMIUM_REQUEST.id_request,
+     $sql = "SELECT DISTINCT PREMIUM_REQUEST.id_request,
                     PREMIUM_REQUEST.id_user,
                     PREMIUM_REQUEST.date_request,
                     PREMIUM_REQUEST.premiumType,
@@ -16,7 +16,8 @@
                     USERS.nom,
                     USERS.prenom,
                     USERS.profilImgUrl
-             FROM HiChat.PREMIUM_REQUEST, HiChat.USERS WHERE REQUEST_DECISION = 'NOT VALID' AND PREMIUM_REQUEST.id_user = USERS.id_users";
+             FROM HiChat.PREMIUM_REQUEST, HiChat.USERS WHERE  PREMIUM_REQUEST.id_user = USERS.id_users";
+     
      $query = $conn->prepare($sql);
      $query->execute();
      

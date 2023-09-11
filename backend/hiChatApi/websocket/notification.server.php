@@ -3,6 +3,7 @@
     use Ratchet\Http\HttpServer;
     use Ratchet\WebSocket\WsServer;
     require('../header.php');
+    require('../autoload.php');
     require 'Notification.php';
     require 'vendor/autoload.php';
 

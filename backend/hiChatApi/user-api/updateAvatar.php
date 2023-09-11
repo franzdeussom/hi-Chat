@@ -16,10 +16,12 @@
     if($data->isBase64File){
         //base64 user image
          $saveFile = new SaveFile($data->profilImgUrl, $data->id_users, Standard::PUBLICATION_IMAGE->value);
-       $fileToDecode = $saveFile->decodeFile();
+        $fileToDecode = $saveFile->decodeFile();
        
       if($saveFile->moveFileAvatar($fileToDecode)){
-
+        if($data->isUrlPresent){
+            $saveFile->deleteOldProfile($data->imgUrl);
+        }
             $query = $conn->prepare('UPDATE HiChat.USERS 
                              SET USERS.profilImgUrl = :img
                             WHERE USERS.id_users = :idUser
@@ -32,7 +34,8 @@
             if($query){
                 $response = [
                     'success' => true,
-                    'valid' => true
+                    'valid' => true,
+                    'imgUrl'=> $saveFile->getFileFullPath()
                 ];
                 echo json_encode($response);
             }else{

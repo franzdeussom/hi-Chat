@@ -21,6 +21,7 @@
     array_push($array, getAllMale($conn));
     array_push($array, getAllFemalle($conn));
     array_push($array, $data);
+    
     echo json_encode($array);
 
 ?>

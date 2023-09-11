@@ -1,4 +1,6 @@
 <?php
+    session_start();
+
     require('../connectDB.php');
     require('../header.php');
     require('../user-api/getFollowers.php');
