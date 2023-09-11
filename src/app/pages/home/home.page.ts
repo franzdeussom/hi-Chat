@@ -101,7 +101,7 @@ export class HomePage implements OnInit {
     return  new Promise((resolve, reject)=>{
       this.accountServ.post('user-api/getUserFollowersHome.php', JSON.stringify(this.dataUser[0])).subscribe((data)=>{
           if(Object.keys(data).length > 0){
-            resolve(JSON.parse(data));
+            resolve(data);
           }
         }, (err)=>{
             reject(err);
@@ -256,6 +256,7 @@ if(this.listOfSender.length > 0){
   };
 
   upDateSenderList(msg: Message){
+      this.rangeMessage.checkLocalStoreSize();
       this.listOfSender = this.rangeMessage.backupMessage;
       let count = 0;
       let i = 0;

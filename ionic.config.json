@@ -1,7 +1,8 @@
 {
   "name": "Hi-Chat",
   "integrations": {
-    "cordova": {}
+    "cordova": {},
+    "capacitor": {}
   },
   "type": "angular"
 }

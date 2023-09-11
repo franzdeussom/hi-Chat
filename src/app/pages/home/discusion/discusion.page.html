@@ -27,7 +27,7 @@
           <div *ngIf="item.type === typeMsg.TEXT">
             <div [ngClass]="item.isReceived === 1 || item.isReceived ? 'received':'sending'" (click)="showDetailmsg(item, index)">
                       <span class="msg">
-                        {{item.libelle}}   
+                          {{item.libelle}}
                       </span><br>
             </div> 
         </div>
@@ -53,7 +53,7 @@
           </ion-buttons>
         </span>
        
-        <ion-textarea class="custom-textarea" (ionChange)="setColor('primary')" [(ngModel)]="value" [value]="value" [autocapitalize]="true" placeholder="Type something here" autosize></ion-textarea>
+        <ion-textarea class="custom-textarea" (ionChange)="setColor('primary')" [(ngModel)]="value" [value]="value" [autocapitalize]="true" placeholder="Type something here"></ion-textarea>
           <span class="send">
             <ion-buttons (click)="sendMessage()">
                 <ion-icon name="send-outline" [color]="colorSendBtn"></ion-icon>

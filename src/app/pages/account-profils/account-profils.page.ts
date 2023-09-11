@@ -279,7 +279,7 @@ export class AccountProfilsPage implements OnInit {
 
     this.accountApi.post('user-api/getFwAbmPub.php', this.getParamQuery()).subscribe((response: any)=>{
         if(Object.keys(response).length > 0 ? true:false){
-              this.setValuelist(JSON.parse(response));
+              this.setValuelist(response);
               this.buildTabIdAbmnt(); 
               this.network.CONNEXION_DB_STATE = 200;
           }else{

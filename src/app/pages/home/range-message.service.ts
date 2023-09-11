@@ -122,7 +122,7 @@ export class RangeMessageService {
         console.log('pas de backUp');
 
     }else{
-
+      //load all message with sender stored id (element == old sender);
       backUpSender.forEach(async (element:any) => {
         keyDiscussion = 'MSG_BUP_WITDH='+element+'AND'+this.id_currentUser;
         let msg;
@@ -130,12 +130,15 @@ export class RangeMessageService {
         msg = await this.localSave.getData(keyDiscussion);
        
         if(Array.isArray(msg)){
+          //get the position of the last message and add it on the main backup message for ui
           if(msg.length == 1){
             size = 0;
           }else if(msg.length > 1) {
             size = msg.length-1;
           }
+
           this.backupMessage.push(msg[size]);        
+        
         }
         
           //console.log('is already present present on the list')
@@ -143,6 +146,19 @@ export class RangeMessageService {
          });
     }
      
+  }
+
+  //backup auto delete when the size >= 4.95
+  checkLocalStoreSize(){
+    const tailleTotal = JSON.stringify(localStorage).length;
+    const taille = (tailleTotal / (1024*1024)).toFixed(2);
+    console.log('la taille courante du localstorage est', taille);
+
+    if(Number(taille) >= 4.95 ){
+        this.backupMessage = [];
+        this.localSave.clear();
+    }
+    
   }
 
   async checkDestinataireID(id_destinateur_user: any, msg : Message, changeSender?: boolean): Promise<number>{
@@ -168,7 +184,7 @@ export class RangeMessageService {
    
   }  
 
-
+  
   async addInBackupMsgMissed(msgMissed: any){
     //ajout des messages pas recu directement dans le Backup des message Locaux
     if(Array.isArray(msgMissed)){

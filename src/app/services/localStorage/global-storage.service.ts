@@ -18,6 +18,10 @@ public listLike : any;
       });
   }
 
+  clearWithKey(key: string){
+    Storage.remove({key: key});
+  }
+
   async getData(key: string): Promise<any>{
     const { value } = await Storage.get({ key: key });
     if(!value || value === '[]' || value.length === 0){

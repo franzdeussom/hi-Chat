@@ -29,7 +29,7 @@ export class DiscusionPage implements OnInit {
   currentUserData!: any;
   isMsgSend: boolean = true;
   dataForProfil!: any;
-  message!: Array<Message>;
+  message: Array<Message> = [];
   colorSendBtn!:string; 
   stopInterval: boolean = false;
   messageToSend : Message;
@@ -182,6 +182,7 @@ async showDetailmsg(msg: Message, index: number){
   }  
 
   async sendMessage(isImage?: boolean, imgBase64?: any, extension?:string){
+    this.rangeMessage.checkLocalStoreSize();
     const sendMsg = (isImg?: boolean, imgeBase64?:any, ext?:string )=>{
       if(isImg){
         this.setParamImgMessage(imgeBase64, ext);
@@ -399,7 +400,7 @@ isFileValid(file: File): any{
 
   }
 
-  ///store in sqlite DB
+  ///store in sqlite DB(to implement later ! );
   async storeOutgoingMessage(){
     let key = 'SENDER_ID';
     let keyTab = Array();

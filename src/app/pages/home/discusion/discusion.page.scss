@@ -54,22 +54,23 @@
     .received{
       width: fit-content;
       max-width: 250px;
-      padding-left: 3px;
-      padding-bottom: 4px;
+      padding-left: 6px;
+      padding-bottom: 6px;
       padding-top: 6px;
-      padding-right: 3px;
-      display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
+      padding-right: 6px;
       height: fit-content;
       background-color: #1b046e;
       color: #fff;
+      word-break: break-word;
+
       border-radius: 20px;
         .msg{
           padding-left: 3px;
           padding-right: 5px;
           margin-bottom: 2px;
           margin-top: 3px;
+          width: 100%;
+          width: fit-content;
           margin-left: 5px;
         }
       .date{

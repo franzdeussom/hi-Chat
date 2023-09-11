@@ -15,7 +15,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content  *ngIf=" showFullScreen ? true:false">
+<ion-content  *ngIf=" !showFullScreenImg ? true:false">
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
@@ -51,7 +51,7 @@
           <ion-content class="ion-padding">
             <ion-list id="ion-margin">
               <ion-item>
-                <ion-label>Booster la Publication:</ion-label>
+                <ion-label>Booster cette Publication :</ion-label>
                 <ion-toggle name="public" (click)="setOrUnsetPub()"></ion-toggle>
               </ion-item>
                 <ion-item id="ion-padding">
@@ -83,7 +83,7 @@
                                       </ion-avatar>
                                     <ion-label>
                                        <span class="name">{{ dataUser.nom }} {{ dataUser.prenom }}</span><br>
-                                      <span class="datePub">19h30 min</span> <span class="isPublic">*****</span>
+                                      <span class="datePub">19 h 30 min</span> <span class="isPublic">*****</span>
                                     </ion-label>
                               </ion-item>
                         </ion-list>  
@@ -223,11 +223,11 @@
                                         <div *ngIf="!activeFieldListLikeRslt">
                                             <ion-segment slot="end" [(ngModel)]="typeList">
                                               <ion-segment-button value="girl">
-                                                  Filles
+                                                  Femmes 
                                               </ion-segment-button>
                                               
                                               <ion-segment-button value="boy">
-                                                  Garçons
+                                                  Hommes
                                               </ion-segment-button>
                                       
                                           </ion-segment>

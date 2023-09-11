@@ -3,6 +3,7 @@ import { GlobalStorageService } from './../../services/localStorage/global-stora
 import { NavController } from '@ionic/angular';
 import { AccountApiService } from './../../services/account-api.service';
 import { Component, OnInit } from '@angular/core';
+import { RangeMessageService } from '../home/range-message.service';
 
 @Component({
   selector: 'app-login',
@@ -23,7 +24,9 @@ export class LoginPage implements OnInit {
     showSpinner: boolean = false;
     
   constructor(private apiAccount: AccountApiService, private navController: NavController,
-              private globalStorage : GlobalStorageService, private dataUser: DataUserService ) {  
+              private globalStorage : GlobalStorageService, private dataUser: DataUserService,
+              private rangeMessage: RangeMessageService
+              ) {  
                 this.rememberMe = false; 
                 const checking = async ()=>{
                   if(await this.checkLocalUserData()){
@@ -68,23 +71,25 @@ export class LoginPage implements OnInit {
 
   sendData(){
     this.showSpinner = true;
-    this.apiAccount.post('user-api/login.php', JSON.stringify(this.account)).subscribe((data)=>{
+    this.apiAccount.login('user-api/login.php', JSON.stringify(this.account)).subscribe((data)=>{
       this.init();
       if(data.length > 0 ){
          if(!data.noData){
-          this.currentUserData = JSON.stringify(JSON.parse(data)[0]);
+          console.log('dat retrieve', );
+          this.currentUserData = JSON.stringify(data[0]);
           this.globalStorage.currentUser = this.currentUserData;
-          this.globalStorage.listLike = JSON.parse(data)[1];
+         // this.globalStorage.listLike = JSON.parse(data)[1];
           this.showSpinner = false;
          // console.log(JSON.parse(data)[2]);
 
           //localStorage.setItem('id_users', );
-          
+          this.rangeMessage.checkLocalStoreSize();
+
           if(this.rememberMe){
             this.saveUserData();
           }
           //save data of the current user, to use in the App
-          this.dataUser.userData = JSON.stringify(JSON.parse(data)[0]);
+          this.dataUser.userData = JSON.stringify(data[0]);
          }
           
           this.navController.navigateRoot('tabs/home');
@@ -95,17 +100,17 @@ export class LoginPage implements OnInit {
         }
     },(error)=>{
         if(error.statut === 500){
-          this.showSpinner = false;
           this.errorMessage = 'Erreur Interne du Serveur.';
           this.hideMessage();
         }else if(error.statut === 404){
           //no connection
           this.errorMessage = 'Echec de connexion verifier votre connexion WIFI ou donnee mobile'
         }else{
-          this.showSpinner = false;
           this.errorMessage = 'Echec de connexion verifier votre connexion WIFI ou donnee mobile'
           this.hideMessage();
         }
+        this.showSpinner = false;
+
     }
     
     )
@@ -134,6 +139,7 @@ export class LoginPage implements OnInit {
 
   saveUserData(){
     //set data with plugin Capacitor Storage  
+    this.globalStorage.clearWithKey('userAccountData');
     this.globalStorage.saveData(this.currentUserData, 'userAccountData');
   }
 

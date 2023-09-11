@@ -377,7 +377,7 @@ let base64Url;
   loadFriendPublications(){
     this.waitingResponse = true;
         this.accountApi.post('user-api/getFriendPub.php', JSON.stringify(this.dataUser)).subscribe((data)=>{
-            let response = JSON.parse(data);
+            let response = data;
             this.waitingResponse =false;
             this.addOnListPub(response);
             this.network.CONNEXION_DB_STATE = 200;
